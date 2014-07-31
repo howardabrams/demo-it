@@ -1,0 +1,30 @@
+#+TITLE:  An Example of Demo-It
+#+AUTHOR: Howard Abrams
+#+DATE:   2014 Jul 29
+
+This document is a simple presentation that can show off the
+many...well, the few features of the =demo-it= project.
+
+* Introduction
+
+  Demo-It is a very simple project that allows you to execute
+  pre-defined steps within Emacs.
+
+  I use it along with org-tree-slide in order to begin with a
+  nifty-swell presentation explaining the source code I've written.
+
+* Source Code Highlighting
+
+  We can show source code using Emacs'
+  built in capabilities, including connecting
+  to a REPL.
+
+  Of course, this depends on what source
+  code and how well you have integrated
+  that language with Emacs. ;-)
+
+* Code Demonstration
+
+  At this point, we can assume that we
+  have some sort of script that would be
+  great to actually run in a shell...
