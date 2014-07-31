@@ -25,7 +25,7 @@
 
 (defun dit-load-source-code ()
   "Load some source code in a side window."
-  (demo-it/load-fancy-side-file "example.py" 'line 5 10 t)
+  (demo-it/load-fancy-side-file "example.py" 'line 5 12 t)
   (demo-it/org-presentation-advance))
 
 (defun dit-run-code ()
@@ -56,8 +56,7 @@
 
 ;; ----------------------------------------------------------------------
 ;; Start the presentation whenever this script is evaluated. Good idea?
-(dit-start-presentation)
 
-(provide 'example)
+(dit-start-presentation)
 
 ;;; example.el ends here

@@ -1,19 +1,23 @@
+#+TITLE:  README for the demo-it Project
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2014 Jul 30
+#+TAGS:   emacs
+#+STARTUP: inlineimages
+
   When making demonstrations of new products, technologies and other
   geekery, I love the versatility of using Emacs to demonstrate the
   trifecta of sprint reviews:
 
   - Presentations explaining the technology and whatnot
   - Source code ... correctly highlighted and interactive
-  - Executing the code in Eshell.
+  - Reviewing code using a connected REPL
+  - Executing the code in Eshell
 
   However, I don't want to fat-finger, mentally burp, or even delay
-  the gratification while I type, so I predefine each "step" as an
-  Elisp function, and then have =demo-it= execute each function when I
-  hit the F6 key.
-
-  From my view, various Emacs windows do what they do best, but to my
-  audience, the end result is sections of the laptop screen showing
-  off. To see this approach in action, check out these examples of mine:
+  gratification for my audience while I laboriously type, so I
+  predefine each "step" as an Elisp function, and then have =demo-it=
+  execute each function when I hit the =F6= key.
 
   - [[https://www.youtube.com/watch?v%3D3T00X_sNg4Q][Learn You Some Lisp for Great Good]]
   - [[https://www.youtube.com/watch?v%3DB6jfrrwR10k][Emacs: An Introduction for the Curious]]
@@ -36,7 +40,7 @@
 
   (defun my-demo/step-2 ()
     (demo-it/load-side-window "~/Work/my-proj/src/my-proj.py")
-    (demo-it/org-presentation-return))
+    (demo-it/org-presentation-advance))
 
   ;; Wrap the collection of functions in another function...
   (defun my-demo ()
@@ -52,9 +56,13 @@
 #+END_EXAMPLE
 
   Each "step" is an Elisp functions that does something like load some
-  source code, or show off an org-mode file as a presentation.
-  While this package has a collection of helping functions, the steps
-  can use any Elisp command to show off a feature.
+  source code, or show off an org-mode file as a presentation.  While
+  this package has a collection of helping functions, the steps can
+  use any Elisp command to show off a feature.
+
+  For a more complete example, see [[file:example.el][example.el]].
+
+  [[http://youtu.be/TSprQzowhAQ]]
 
   I recommend installing these other Emacs packages:
 
