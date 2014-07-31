@@ -20,7 +20,7 @@
     "Display $1.org (an 'org-mode' file) as a presentation."
     (demo-it-frame-fullscreen)
     (delete-other-windows)
-    (demo-it-org-presentation "$1.org"))
+    (demo-it-presentation "$1.org"))
 
 (defun $3-load-source-code ()
     "Load some source code in a side window."

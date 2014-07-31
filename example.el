@@ -21,24 +21,24 @@
 
 (defun dit-load-presentation ()
   "Display example.org (an 'org-mode' file) as a presentation."
-  (demo-it-org-presentation "example.org"))
+  (demo-it-presentation "example.org"))
 
 (defun dit-load-source-code ()
   "Load some source code in a side window."
   (demo-it-load-fancy-side-file "example.py" 'line 5 12 t)
-  (demo-it-org-presentation-advance))
+  (demo-it-presentation-advance))
 
 (defun dit-run-code ()
   "Execute our source code in an Eshell buffer."
   (demo-it-run-in-eshell "~/Other/demo-it" "python example.py Snoopy")
-  (demo-it-org-presentation-advance))
+  (demo-it-presentation-advance))
 
 (defun dit-cleanup ()
   "Cleans up the mess of the presentation."
-  (insert "exit")                      ;; Delete and close the Eshell window
+  (insert "exit")                     ;; Delete and close the Eshell window
   (eshell-send-input)
-  (demo-it-org-presentation-return)   ;; Close other windows, et.al
-  (demo-it-org-presentation-quit))
+  (demo-it-presentation-return)       ;; Close other windows, et.al
+  (demo-it-presentation-quit))
 
 ;; ----------------------------------------------------------------------
 ;; Demonstration and/or Presentation Order

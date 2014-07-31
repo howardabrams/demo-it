@@ -23,35 +23,35 @@
 ;;   When making demonstrations of new products, technologies and other
 ;;   geekery, I love the versatility of using Emacs to demonstrate the
 ;;   trifecta of sprint reviews, including:
-
+;;
 ;;   - Presentations explaining the technologies
 ;;   - Source code ... correctly highlighted
 ;;   - Executing the code in Eshell ... or similar demonstration
-
+;;
 ;;   However, I don't want to fat-finger, mentally burp, or even delay
 ;;   the gratification while I type, so I predefine each "step" as an
 ;;   Elisp function, and then have =demo-it= execute each function when I
 ;;   hit the F6 key.
-
+;;
 ;;   Using the library is a three step process:
-
+;;
 ;;   1. Load the library in your own Elisp source code file
 ;;   2. Create a collection of functions that "do things".
 ;;   3. Call the =demo-it-start= function with the ordered list of
 ;;      functions.
-
+;;
 ;;   For instance:
-
+;;
 ;;   (load-library "demo-it")   ;; Load this library of functions
-
+;;
 ;;   (defun my-demo/step-1 ()
 ;;     (delete-other-windows)
 ;;     (demo/org-presentation "~/presentations/emacs-demo/emacs-demo-start.org"))
-
+;;
 ;;   (defun my-demo/step-2 ()
-;;     (demo-it-load-side-window "~/Work/my-proj/src/my-proj.py")
-;;     (demo-it-org-presentation-return))
-
+;;     (demo-it-load-side-file "~/Work/my-proj/src/my-proj.py")
+;;     (demo-it-presentation-return))
+;;
 ;;   (defun my-demo ()
 ;;      "My fabulous demonstration."
 ;;      (interactive)
@@ -60,15 +60,15 @@
 ;;                      'my-demo/step-2
 ;;                      ;; ...
 ;;                    )))
-
+;;
 ;;   (my-demo) ;; Optionally start the demo when file is loaded.
-
+;;
 ;;   Each "step" is a series of Elisp functions that "do things".
 ;;   While this package has a collection of helping functions, the steps
 ;;   can use any Elisp command to show off a feature.
-
+;;
 ;;   I recommend installing these other Emacs packages:
-
+;;
 ;;   - https://github.com/takaxp/org-tree-slide
 ;;   - https://github.com/sabof/org-bullets
 ;;   - https://github.com/magnars/expand-region.el
@@ -79,9 +79,9 @@
 ;;   To begin, we need a "global" variable (shudder) that keeps track of
 ;;   the current state of the demonstration.
 
-(defvar demo-it-step 0  "Stores the current demo 'step' function.")
+(defvar demo-it--step 0  "Stores the current demo 'step' function.")
 
-(defvar demo-it-steps '() "The list of functions to be executed in order.")
+(defvar demo-it--steps '() "The list of functions to be executed in order.")
 
 ;; Starting a Demonstration
 ;;
@@ -92,8 +92,8 @@
 (defun demo-it-start (steps)
    "Start the current demonstration and kick off the first step.
 STEPS is a list of functions to execute."
-   (setq demo-it-step 0)          ;; Reset the step to the beginning
-   (setq demo-it-steps steps)     ;; Store the steps.
+   (setq demo-it--step 0)          ;; Reset the step to the beginning
+   (setq demo-it--steps steps)     ;; Store the steps.
    (demo-it-step))
 
 ;; Next Step
@@ -105,16 +105,16 @@ STEPS is a list of functions to execute."
   "Execute the next step in the current demonstration.  Just to a particular STEP if the optional parameter is given, i.e. C-6 <F6> to run the 6th step."
   (interactive "P")
     (if step
-        (setq demo-it-step step)    ;; Changing Global state, yay!
-      (setq demo-it-step (1+ demo-it-step)))
+        (setq demo-it--step step)    ;; Changing Global state, yay!
+      (setq demo-it--step (1+ demo-it--step)))
     (let
         ;; At this point, step is 1-based, and I need it 0-based
         ;; and f-step is the function to call for this step...
-        ((f-step (nth (1- demo-it-step) demo-it-steps)))
+        ((f-step (nth (1- demo-it--step) demo-it--steps)))
       (if f-step
           (progn
             (funcall f-step)
-            (message "  %d" demo-it-step))
+            (message "  %d" demo-it--step))
         (message "Finished the entire demonstration."))))
 
 ;; Bind the =demo-it-step= function to the F6 key:
@@ -154,8 +154,9 @@ STEPS is a list of functions to execute."
 ;;    packages that can be loaded without barfing.
 
 (defun demo-it--autofeaturep (feature)
-  "For a FEATURE like 'foo, return true if the feature can be required.
+  "For a FEATURE like 'foo, return true if feature is available.
 The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
+  (require feature nil t)
   (catch 'result
     (let ((feature-name (symbol-name feature)))
       (unless (string-match "-autoloads$" feature-name)
@@ -166,18 +167,6 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 
 ;; Fancy Region Highlighting
 ;;
-;;    When talking about a single function or area, we use the
-;;    =expand-region= project along with the =fancy-narrow=:
-
-(when (demo-it--autofeaturep 'expand-region)
-  (require 'expand-region)
-  (global-set-key (kbd "C-=") 'er/expand-region))
-
-(when (demo-it--autofeaturep 'fancy-narrow)
-  (require 'fancy-narrow)
-  (global-set-key (kbd "M-C-=") 'highlight-section)
-  (global-set-key (kbd "M-C-+") 'fancy-widen))
-
 ;; While sometimes I want highlight some code, it is usually a
 ;;    function, so instead of remembering two key combinations, let's
 ;;    just have the =C-+= narrow to the region if active, otherwise,
@@ -186,42 +175,42 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 (defun highlight-section ()
   "If the region is active, call 'fancy-narrow-to-region on it, otherwise, call 'fancy-narrow-to-defun, and see what happens."
   (interactive)
-  (if (region-active-p)
-      (fancy-narrow-to-region (region-beginning) (region-end))
-    (fancy-narrow-to-defun)))
+  (when (demo-it--autofeaturep 'fancy-narrow)
+    (if (region-active-p)
+        (fancy-narrow-to-region (region-beginning) (region-end))
+      (fancy-narrow-to-defun))))
+
+;;    When talking about a single function or area, we use the
+;;    =expand-region= project along with the =fancy-narrow=:
+
+(when (demo-it--autofeaturep 'expand-region)
+  (global-set-key (kbd "C-=") 'er/expand-region))
+
+(when (demo-it--autofeaturep 'fancy-narrow)
+  (global-set-key (kbd "M-C-=") 'highlight-section)
+  (global-set-key (kbd "M-C-+") 'fancy-widen))
+
 
 ;; Hiding the Modeline
 ;;
-;;    Call the =hidden-mode-line= when displaying images and org-mode
-;;    files displayed as "presentations"...or just not
-;;    wanting to be bothered by the sight of the mode. This code was
-;;    graciously lifted from [[http://bzg.fr/emacs-hide-mode-line.html][here]].
+;;    Call the demo-it-hide-mode-line when displaying images and
+;;    org-mode files displayed as "presentations", so that we aren't
+;;    bothered by the sight of the mode.
 
-(defvar-local hidden-mode-line-mode nil)
-(defvar-local hide-mode-line nil)
+(defvar-local demo-it--old-mode-line nil)
 
-(define-minor-mode hidden-mode-line-mode
-  "Minor mode to hide the mode-line in the current buffer."
-  :init-value nil
-  :global nil
-  :variable hidden-mode-line-mode
-  :group 'editing-basics
-  (if hidden-mode-line-mode
-      (progn
-        (setq hide-mode-line mode-line-format
-              mode-line-format nil)
-        (linum-mode -1))
-    (setq mode-line-format hide-mode-line
-          hide-mode-line nil))
-  (force-mode-line-update)
-  (set-window-buffer nil (current-buffer))
+(defun demo-it-hide-mode-line ()
+  "Hide mode line for a particular buffer."
+  (interactive)
+  (setq demo-it--old-mode-line mode-line-format)
+  (setq mode-line-format nil))
 
-  (when (and (called-interactively-p 'interactive)
-             hidden-mode-line-mode)
-    (run-with-idle-timer
-     0 nil 'message
-     (concat "Hidden Mode Line Mode enabled.  "
-             "Use M-x hidden-mode-line-mode RET to make the mode-line appear."))))
+(defun demo-it-show-mode-line ()
+  "Show mode line for a particular buffer, if it was previously hidden with 'demo-it--hide-mode-line."
+  (interactive)
+  (if demo-it--old-mode-line
+      (setq mode-line-format demo-it--old-mode-line)))
+
 
 ;; Making a Side Window
 ;;
@@ -302,7 +291,7 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 
   (find-file file)
   (show-all)
-  (hidden-mode-line-mode)
+  (demo-it-hide-mode-line)
   (setq cursor-type nil)
   (flyspell-mode -1)
   (variable-pitch-mode 1)
@@ -319,17 +308,16 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 ;;    Uses org-tree-slide if available.
 ;;    See https://github.com/takaxp/org-tree-slide
 
-(defvar demo-it-org-presentation-file "")
-(defvar demo-it-org-presentation-buffer "")
+(defvar demo-it--presentation-file "")
+(defvar demo-it--presentation-buffer "")
 
-(defun demo-it-org-presentation (file &optional size)
+(defun demo-it-presentation (file &optional size)
   "Load FILE (org-mode?) as presentation.  Start org-tree-slide if available.  SIZE specifies the text scale, and defaults to 2 steps larger."
   (find-file file)
-  (setq demo-it-org-presentation-file file)
-  (setq demo-it-org-presentation-buffer (buffer-name))
+  (setq demo-it--presentation-file file)
+  (setq demo-it--presentation-buffer (buffer-name))
 
   (when (demo-it--autofeaturep 'org-tree-slide)
-    (require 'org-tree-slide)
     (setq org-tree-slide-heading-emphasis t)
     (org-tree-slide-mode))
 
@@ -337,11 +325,11 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
   (setq cursor-type nil)
   (variable-pitch-mode 1)
   (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
-  (hidden-mode-line-mode)
+  (demo-it-hide-mode-line)
   (if size (text-scale-set size)
            (text-scale-set 2))
 
-  (when (demo-it--autofeaturep 'org-bullets-mode)
+  (when (demo-it--autofeaturep 'org-bullets)
     (org-bullets-mode 1)))
 
 ;; Jumping Back to the Presentation
@@ -350,14 +338,14 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 ;;    "messed up", calling this function returns back to the
 ;;    presentation.
 
-(defun demo-it-org-presentation-return-noadvance ()
+(defun demo-it-presentation-return-noadvance ()
   "Return to the presentation buffer and delete other windows."
-  (switch-to-buffer demo-it-org-presentation-buffer)
+  (switch-to-buffer demo-it--presentation-buffer)
   (delete-other-windows))
 
-(defun demo-it-org-presentation-return ()
+(defun demo-it-presentation-return ()
   "Return to the presentation buffer, delete other windows, and advance to the next 'org-mode' section."
-  (demo-it-org-presentation-return-noadvance)
+  (demo-it-presentation-return-noadvance)
   (when (demo-it--autofeaturep 'org-tree-slide)
      (org-tree-slide-move-next-tree)))
 
@@ -367,10 +355,10 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 ;;    presentation buffer, returns to the window where our focus was
 ;;    initially.
 
-(defun demo-it-org-presentation-advance ()
+(defun demo-it-presentation-advance ()
   "Advance the presentation to the next frame (if the buffer is an 'org-mode' and 'org-tree-slide' is available), but doesn't change focus or other windows.  Only useful if using the org-tree-slide mode for the presentation buffer."
   (let ((orig-window (current-buffer)))
-    (switch-to-buffer demo-it-org-presentation-buffer)
+    (switch-to-buffer demo-it--presentation-buffer)
     (when (demo-it--autofeaturep 'org-tree-slide)
       (org-tree-slide-move-next-tree))
     (switch-to-buffer orig-window)))
@@ -381,7 +369,7 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 ;;    is displayed. This function returns it back to a normal, editable
 ;;    state.
 
-(defun demo-it-org-presentation-quit ()
+(defun demo-it-presentation-quit ()
   "Undo display settings made to the presentation buffer."
   (when (demo-it--autofeaturep 'org-tree-slide)
     (org-tree-slide-mode -1))
@@ -389,17 +377,17 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
   (flyspell-mode t)
   (setq cursor-type t)
   (variable-pitch-mode nil)
-  (hidden-mode-line-mode nil)
+  (demo-it-show-mode-line)
   (text-scale-set 0))
 
 ;; Display an Image on the Side
 
-(defun demo-it-show-an-image (image-file)
+(defun demo-it-show-image (image-file)
   "Load IMAGE-FILE as image (or any other special file) in buffer on right side without a mode line."
   (split-window-horizontally)
   (other-window 1)
   (find-file image-file)
-  (hidden-mode-line-mode))
+  (demo-it-hide-mode-line))
 
 ;; Switch Framesize
 ;;
