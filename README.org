@@ -39,8 +39,8 @@
     (demo/org-presentation "~/presentations/emacs-demo/emacs-demo-start.org"))
 
   (defun my-demo/step-2 ()
-    (demo-it/load-side-window "~/Work/my-proj/src/my-proj.py")
-    (demo-it/org-presentation-advance))
+    (demo-it-load-side-window "~/Work/my-proj/src/my-proj.py")
+    (demo-it-org-presentation-advance))
 
   ;; Wrap the collection of functions in another function...
   (defun my-demo ()

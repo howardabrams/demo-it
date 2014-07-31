@@ -32,8 +32,8 @@
 ;;     (demo/org-presentation "~/presentations/emacs-demo/emacs-demo-start.org"))
 
 ;;   (defun my-demo/step-2 ()
-;;     (demo-it/load-side-window "~/Work/my-proj/src/my-proj.py")
-;;     (demo-it/org-presentation-return))
+;;     (demo-it-load-side-window "~/Work/my-proj/src/my-proj.py")
+;;     (demo-it-org-presentation-return))
 
 ;;   ;; Wrap the collection of functions in another function...
 ;;   (defun my-demo ()
@@ -66,9 +66,9 @@
 ;;   To begin, we need a "global" variable (shudder) that keeps track of
 ;;   the current state of the demonstration.
 
-(defvar demo-it/step 0  "Stores the current demo 'step' function.")
+(defvar demo-it-step 0  "Stores the current demo 'step' function.")
 
-(defvar demo-it/steps '() "The list of functions to be executed in order.")
+(defvar demo-it-steps '() "The list of functions to be executed in order.")
 
 ;; Starting a Demonstration
 
@@ -78,8 +78,8 @@
 
 (defun demo-it-start (steps)
    "Start (or restart) the current demonstration and kick off the first step."
-   (setq demo-it/step 0)          ;; Reset the step to the beginning
-   (setq demo-it/steps steps)     ;; Store the steps.
+   (setq demo-it-step 0)          ;; Reset the step to the beginning
+   (setq demo-it-steps steps)     ;; Store the steps.
    (demo-it-step))
 
 ;; Next Step
@@ -91,16 +91,16 @@
   "Execute the next step in the current demonstration."
   (interactive "P")
     (if step
-        (setq demo-it/step step)    ;; Changing Global state, yay!
-      (setq demo-it/step (1+ demo-it/step)))
+        (setq demo-it-step step)    ;; Changing Global state, yay!
+      (setq demo-it-step (1+ demo-it-step)))
     (let
         ;; At this point, step is 1-based, and I need it 0-based
         ;; and f-step is the function to call for this step...
-        ((f-step (nth (1- demo-it/step) demo-it/steps)))
+        ((f-step (nth (1- demo-it-step) demo-it-steps)))
       (if f-step
           (progn
             (funcall f-step)
-            (message "  %d" demo-it/step))
+            (message "  %d" demo-it-step))
         (message "Finished the entire demonstration."))))
 
 ;; Bind the =demo-it-step= function to the F6 key:
@@ -109,7 +109,7 @@
 
 ;; Position or advance the slide? Depends...
 
-(defun demo-it/set-mouse-or-advance (evt)
+(defun demo-it-set-mouse-or-advance (evt)
   "If clicked on the right side of any window, the demonstration
   advances a step. Otherwise, it just position the point in the
   window like normal."
@@ -126,7 +126,7 @@
   (interactive "P")
   (message ""))
 
-(global-set-key (kbd "<mouse-1>") 'demo-it/set-mouse-or-advance)
+(global-set-key (kbd "<mouse-1>") 'demo-it-set-mouse-or-advance)
 (global-set-key [nil mouse-1] 'demo-it-step)
 (global-set-key [nil wheel-up] 'ignore-event)
 (global-set-key [nil wheel-down] 'ignore-event)
@@ -218,7 +218,7 @@ otherwise, call 'fancy-narrow-to-defun, and see what happens."
 ;;    fun in, as the main window would serve as little more than an
 ;;    outline.
 
-(defun demo-it/make-side-window ()
+(defun demo-it-make-side-window ()
   "Splits the window horizontally and puts point on right side window."
   (split-window-horizontally)
   (other-window 1))
@@ -227,9 +227,9 @@ otherwise, call 'fancy-narrow-to-defun, and see what happens."
 
 ;;    Splits the window and loads a file on the right side of the screen.
 
-(defun demo-it/load-side-file (file &optional size)
+(defun demo-it-load-side-file (file &optional size)
   "Splits the window and loads a file on the right side of the screen."
-  (demo-it/make-side-window)
+  (demo-it-make-side-window)
   (find-file file)
   (if size (text-scale-set size)
            (text-scale-set 1)))
@@ -239,7 +239,7 @@ otherwise, call 'fancy-narrow-to-defun, and see what happens."
 ;;    Would be nice to load up a file and automatically highlight some
 ;;    lines.
 
-(defun demo-it/load-fancy-side-file (file type line1 line2 &optional side size)
+(defun demo-it-load-fancy-side-file (file type line1 line2 &optional side size)
   "Load up 'file', and then use the fancy region highlighting to
    show off some of the file. If 'type' is set to 'char, then
    'line1' and 'line2' are actually points in the file,
@@ -247,7 +247,7 @@ otherwise, call 'fancy-narrow-to-defun, and see what happens."
    of the file that should be highlighted. If 'side' is true,
    this puts the buffer in a new window on the right side of the
    screen."
-  (if side (demo-it/make-side-window))
+  (if side (demo-it-make-side-window))
   (find-file file)
   (if size (text-scale-set size)
            (text-scale-set 1))
@@ -266,7 +266,7 @@ otherwise, call 'fancy-narrow-to-defun, and see what happens."
 ;;    lower half of the window. Changes to a particular directory, and
 ;;    automatically runs something.
 
-(defun demo-it/run-in-eshell (directory &optional shell-line name size)
+(defun demo-it-run-in-eshell (directory &optional shell-line name size)
    "Starts an Eshell instance, and runs the command specified by
     'shell-line' automatically in the 'directory' The variable 'name'
     labels the buffer."
@@ -292,7 +292,7 @@ otherwise, call 'fancy-narrow-to-defun, and see what happens."
 ;;    Create a file to serve as a "title" as it will be displayed with a
 ;;    larger-than-life font.
 
-(defun demo-it/title-screen (file)
+(defun demo-it-title-screen (file)
   (delete-other-windows)
   (fringe-mode '(0 . 0))
 
@@ -314,14 +314,14 @@ otherwise, call 'fancy-narrow-to-defun, and see what happens."
 
 ;;    If [[https://github.com/takaxp/org-tree-slide][org-tree-slide]] is available, it automatically uses it.
 
-(defvar demo-it/org-presentation-file "")
-(defvar demo-it/org-presentation-buffer "")
+(defvar demo-it-org-presentation-file "")
+(defvar demo-it-org-presentation-buffer "")
 
-(defun demo-it/org-presentation (org-file &optional size)
+(defun demo-it-org-presentation (org-file &optional size)
   "Loads up an org-mode file as a presentation using the org-tree-slide project."
   (find-file org-file)
-  (setq demo-it/org-presentation-file org-file)
-  (setq demo-it/org-presentation-buffer (buffer-name))
+  (setq demo-it-org-presentation-file org-file)
+  (setq demo-it-org-presentation-buffer (buffer-name))
 
   (when (autofeaturep 'org-tree-slide)
     (require 'org-tree-slide)
@@ -345,15 +345,15 @@ otherwise, call 'fancy-narrow-to-defun, and see what happens."
 ;;    "messed up", calling this function returns back to the
 ;;    presentation.
 
-(defun demo-it/org-presentation-return-noadvance ()
+(defun demo-it-org-presentation-return-noadvance ()
   "Returns to the org-mode presentation and deletes other windows."
-  (switch-to-buffer demo-it/org-presentation-buffer)
+  (switch-to-buffer demo-it-org-presentation-buffer)
   (delete-other-windows))
 
-(defun demo-it/org-presentation-return ()
+(defun demo-it-org-presentation-return ()
   "Returns to the org-mode presentation, deletes other windows,
 and advances to the next org-mode section."
-  (demo-it/org-presentation-return-noadvance)
+  (demo-it-org-presentation-return-noadvance)
   (when (autofeaturep 'org-tree-slide)
      (org-tree-slide-move-next-tree)))
 
@@ -363,12 +363,12 @@ and advances to the next org-mode section."
 ;;    presentation buffer, returns to the window where our focus was
 ;;    initially.
 
-(defun demo-it/org-presentation-advance ()
+(defun demo-it-org-presentation-advance ()
   "Advances the org-mode presentation to the next frame, but
 doesn't change the focus or other windows. Only useful if using
 the org-tree-slide mode for the presentation buffer."
   (let ((orig-window (current-buffer)))
-    (switch-to-buffer demo-it/org-presentation-buffer)
+    (switch-to-buffer demo-it-org-presentation-buffer)
     (when (autofeaturep 'org-tree-slide)
       (org-tree-slide-move-next-tree))
     (switch-to-buffer orig-window)))
@@ -379,7 +379,7 @@ the org-tree-slide mode for the presentation buffer."
 ;;    is displayed. This function returns it back to a normal, editable
 ;;    state.
 
-(defun demo-it/org-presentation-quit ()
+(defun demo-it-org-presentation-quit ()
   "Undoes the changes made to the presentation display."
   (when (autofeaturep 'org-tree-slide)
     (org-tree-slide-mode -1))
@@ -392,7 +392,7 @@ the org-tree-slide mode for the presentation buffer."
 
 ;; Display an Image on the Side
 
-(defun demo-it/show-an-image (image-file)
+(defun demo-it-show-an-image (image-file)
   "Loads an image, or other file in a buffer on the right side without a mode line."
   (split-window-horizontally)
   (other-window 1)
@@ -404,7 +404,7 @@ the org-tree-slide mode for the presentation buffer."
 ;;    During a demonstration, it might be nice to toggle between
 ;;    full screen and "regular window" in a programmatic way:
 
-(defun demo-it/toggle-fullscreen ()
+(defun demo-it-toggle-fullscreen ()
   "Toggle full screen"
   (interactive)
   (set-frame-parameter
@@ -413,14 +413,14 @@ the org-tree-slide mode for the presentation buffer."
 
 ;; We can force the window to be full screen:
 
-(defun demo-it/frame-fullscreen ()
+(defun demo-it-frame-fullscreen ()
   "Set the frame window to cover the full screen."
   (interactive)
   (set-frame-parameter nil 'fullscreen 'fullboth))
 
 ;; Let's make a right-side frame window:
 
-(defun demo-it/frame-leftside ()
+(defun demo-it-frame-leftside ()
   "Set the window frame to be exactly half of the physical
 display screen, and place it on the left side of the screen. This
 can be helpful when showing off some other application running on

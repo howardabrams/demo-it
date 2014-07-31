@@ -18,17 +18,17 @@
 
 (defun ${3:my-demo}-load-presentation ()
     "Display $1.org (an 'org-mode' file) as a presentation."
-    (demo-it/frame-fullscreen)
+    (demo-it-frame-fullscreen)
     (delete-other-windows)
-    (demo-it/org-presentation "$1.org"))
+    (demo-it-org-presentation "$1.org"))
 
 (defun $3-load-source-code ()
     "Load some source code in a side window."
-    (demo-it/load-side-file "some-source.py"))
+    (demo-it-load-side-file "some-source.py"))
 
 (defun $3-run-code ()
     "Execute our source code in an Eshell buffer."
-    (demo-it/run-in-eshell "~/Work" "python some-source.py"))
+    (demo-it-run-in-eshell "~/Work" "python some-source.py"))
 
 ;; ----------------------------------------------------------------------
 ;; Demonstration and/or Presentation Order
