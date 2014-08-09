@@ -1,4 +1,4 @@
-;;; blah.el --- Utility functions for creating demonstrations within Emacs
+;;; demo-it.el --- Utility functions for creating demonstrations within Emacs
 
 ;; Copyright (C) 2014  Howard Abrams
 
@@ -92,9 +92,17 @@
 (defun demo-it-start (steps)
    "Start the current demonstration and kick off the first step.
 STEPS is a list of functions to execute."
-   (setq demo-it--step 0)          ;; Reset the step to the beginning
-   (setq demo-it--steps steps)     ;; Store the steps.
+   (setq demo-it--step 0)      ;; Reset the step to the beginning
+   (setq demo-it--steps steps) ;; Store the steps.
+   (demo-it-mode t)            ;; Turn on global keymapping mode
    (demo-it-step))
+
+(defun demo-it-end ()
+  "End the current demonstration by resetting the values inflicted on the presentation buffer as well as closing other windows."
+  (interactive)
+  (demo-it-mode -1)
+  (demo-it-presentation-return-noadvance) ;; Close other windows
+  (demo-it-presentation-quit))
 
 ;; Next Step
 ;;
@@ -117,10 +125,6 @@ STEPS is a list of functions to execute."
             (message "  %d" demo-it--step))
         (message "Finished the entire demonstration."))))
 
-;; Bind the =demo-it-step= function to the F6 key:
-
-(global-set-key (kbd "<f6>") 'demo-it-step)
-
 ;; Position or advance the slide? Depends...
 
 (defun demo-it-set-mouse-or-advance (evt)
@@ -139,12 +143,6 @@ STEPS is a list of functions to execute."
   (interactive "P")
   (message ""))
 
-(global-set-key (kbd "<mouse-1>") 'demo-it-set-mouse-or-advance)
-(global-set-key [nil mouse-1] 'demo-it-step)
-(global-set-key [nil wheel-up] 'demo-it-ignore-event)
-(global-set-key [nil wheel-down] 'demo-it-ignore-event)
-(global-set-key [nil wheel-left] 'demo-it-ignore-event)
-(global-set-key [nil wheel-right] 'demo-it-ignore-event)
 
 ;; Auto Loading of Available Features
 ;;
@@ -180,17 +178,6 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
         (fancy-narrow-to-region (region-beginning) (region-end))
       (fancy-narrow-to-defun))))
 
-;;    When talking about a single function or area, we use the
-;;    =expand-region= project along with the =fancy-narrow=:
-
-(when (demo-it--autofeaturep 'expand-region)
-  (global-set-key (kbd "C-=") 'er/expand-region))
-
-(when (demo-it--autofeaturep 'fancy-narrow)
-  (global-set-key (kbd "M-C-=") 'highlight-section)
-  (global-set-key (kbd "M-C-+") 'fancy-widen))
-
-
 ;; Hiding the Modeline
 ;;
 ;;    Call the demo-it-hide-mode-line when displaying images and
@@ -202,15 +189,15 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 (defun demo-it-hide-mode-line ()
   "Hide mode line for a particular buffer."
   (interactive)
-  (setq demo-it--old-mode-line mode-line-format)
-  (setq mode-line-format nil))
+  (when mode-line-format
+    (setq demo-it--old-mode-line mode-line-format)
+    (setq mode-line-format nil)))
 
 (defun demo-it-show-mode-line ()
   "Show mode line for a particular buffer, if it was previously hidden with 'demo-it--hide-mode-line."
   (interactive)
   (if demo-it--old-mode-line
       (setq mode-line-format demo-it--old-mode-line)))
-
 
 ;; Making a Side Window
 ;;
@@ -340,7 +327,8 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 
 (defun demo-it-presentation-return-noadvance ()
   "Return to the presentation buffer and delete other windows."
-  (switch-to-buffer demo-it--presentation-buffer)
+  (when demo-it--presentation-buffer
+    (switch-to-buffer demo-it--presentation-buffer))
   (delete-other-windows))
 
 (defun demo-it-presentation-return ()
@@ -371,23 +359,30 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 
 (defun demo-it-presentation-quit ()
   "Undo display settings made to the presentation buffer."
-  (when (demo-it--autofeaturep 'org-tree-slide)
-    (org-tree-slide-mode -1))
+  (when demo-it--presentation-buffer
+    (switch-to-buffer demo-it--presentation-buffer)
+    (when (demo-it--autofeaturep 'org-tree-slide)
+      (org-tree-slide-mode -1))
 
-  (flyspell-mode t)
-  (setq cursor-type t)
-  (variable-pitch-mode nil)
-  (demo-it-show-mode-line)
-  (text-scale-set 0))
+    (flyspell-mode t)
+    (setq cursor-type t)
+    (variable-pitch-mode nil)
+    (demo-it-show-mode-line)
+    (text-scale-set 0)))
 
 ;; Display an Image on the Side
 
 (defun demo-it-show-image (image-file)
+  "Load IMAGE-FILE as image (or any other special file) replacing the current buffer."
+  (find-file image-file)
+  (fringe-mode '(0 . 0))
+  (demo-it-hide-mode-line))
+
+(defun demo-it-show-side-image (image-file)
   "Load IMAGE-FILE as image (or any other special file) in buffer on right side without a mode line."
   (split-window-horizontally)
   (other-window 1)
-  (find-file image-file)
-  (demo-it-hide-mode-line))
+  (demo-it-show-image image-file))
 
 ;; Switch Framesize
 ;;
@@ -419,6 +414,51 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
     (set-frame-parameter nil 'fullscreen nil)
     (set-frame-parameter nil 'width dest-width)
     (set-frame-parameter nil 'left 0)))
+
+;; Demo Mode
+;;
+;;   Allows us to advance to the next step by pressing the
+;;   space bar or return. Press the 'q' key to stop the mode.
+
+(defun demo-it-disable-mode ()
+  "Called when 'q' pressed to disable the 'demo-it-mode'."
+  (interactive)
+  (demo-it-mode -1))
+
+(define-minor-mode demo-it-mode "Pressing 'space' advances demo."
+    :lighter " demo"
+    :require 'demo-it
+    :global t
+    :keymap '((" ". demo-it-step)
+              ((kbd "RET") . demo-it-step)
+              ((kbd "<down>") . demo-it-step)
+              ((kbd "<mouse-1>") . demo-it-set-mouse-or-advance)
+              ([nil mouse-1] . demo-it-step)
+              ([nil wheel-up] . demo-it-ignore-event)
+              ([nil wheel-down] . demo-it-ignore-event)
+              ([nil wheel-left] . demo-it-ignore-event)
+              ([nil wheel-right] . demo-it-ignore-event)
+              ("q" . demo-it-disable-mode)))
+
+;; New Keybindings
+;;
+;;   I have found the following keybindings quite useful, but your mileage may vary.
+
+(defun demo-it-keybindings ()
+  "Add a few global keybindings if some other packages are installed.
+You probably want to look at the source, and create
+your own version of this, but it does the following:
+
+- C-=  Selects or increases the region using expand-region
+- M-C-=  Highlights the region (dimming the rest) using fancy-narrow
+- M-C-+  Unhighlights buffer (by colorizing entire buffer) using fancy-narrow"
+  (interactive)
+
+  (when (demo-it--autofeaturep 'expand-region)
+    (global-set-key (kbd "C-=") 'er/expand-region))
+  (when (demo-it--autofeaturep 'fancy-narrow)
+    (global-set-key (kbd "M-C-=") 'highlight-section)
+    (global-set-key (kbd "M-C-+") 'fancy-widen)))
 
 ;;   As a final harrah, we need to let other files know how to include
 ;;   this bad child.

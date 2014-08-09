@@ -37,8 +37,7 @@
   "Cleans up the mess of the presentation."
   (insert "exit")                     ;; Delete and close the Eshell window
   (eshell-send-input)
-  (demo-it-presentation-return)       ;; Close other windows, et.al
-  (demo-it-presentation-quit))
+  (demo-it-end))
 
 ;; ----------------------------------------------------------------------
 ;; Demonstration and/or Presentation Order

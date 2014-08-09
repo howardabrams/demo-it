@@ -13,3 +13,5 @@ def world(name):
 
 if __name__ == "__main__":
     world(sys.argv[1])
+
+# Hi-lock: (("^.*\\(?:%s\\).*$" (0 (quote hi-yellow) t)))

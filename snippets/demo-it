@@ -36,6 +36,7 @@
 (defun $3-start-presentation ()
      "$2."
      (interactive)
+     (demo-it-keybindings)
      (demo-it-start (list
                      '$3-load-presentation         ;; Frame 1
                      '$3-load-source-code          ;; Frame 2
