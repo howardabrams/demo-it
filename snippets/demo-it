@@ -24,7 +24,7 @@
 
 (defun $3-load-source-code ()
     "Load some source code in a side window."
-    (demo-it-load-side-file "some-source.py"))
+    (demo-it-load-file "some-source.py"))
 
 (defun $3-run-code ()
     "Execute our source code in an Eshell buffer."

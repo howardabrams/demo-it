@@ -25,7 +25,7 @@
 
 (defun dit-load-source-code ()
   "Load some source code in a side window."
-  (demo-it-load-fancy-side-file "example.py" 'line 5 12 t)
+  (demo-it-load-fancy-file "example.py" 'line 5 12 t)
   (demo-it-presentation-advance))
 
 (defun dit-run-code ()

@@ -49,7 +49,7 @@
 ;;     (demo/org-presentation "~/presentations/emacs-demo/emacs-demo-start.org"))
 ;;
 ;;   (defun my-demo/step-2 ()
-;;     (demo-it-load-side-file "~/Work/my-proj/src/my-proj.py")
+;;     (demo-it-load-file "~/Work/my-proj/src/my-proj.py")
 ;;     (demo-it-presentation-return))
 ;;
 ;;   (defun my-demo ()
@@ -205,18 +205,21 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 ;;    fun in, as the main window would serve as little more than an
 ;;    outline.
 
-(defun demo-it-make-side-window ()
-  "Splits the window horizontally and puts point on right side window."
-  (split-window-horizontally)
+(defun demo-it-make-side-window (&optional side)
+  "Splits the window horizontally and puts point on right side window.  SIDE is either 'below or 'side (for the right side)."
+  (if (eq side 'below)
+      (split-window-vertically)
+    (split-window-horizontally))
   (other-window 1))
 
 ;; Load a File in the Side Window
 ;;
 ;;    Splits the window and loads a file on the right side of the screen.
 
-(defun demo-it-load-side-file (file &optional size)
-  "Splits window and load FILE on the right side of the screen.  The SIZE can be used to scale the text font, which defaults to 1 step larger."
-  (demo-it-make-side-window)
+(defun demo-it-load-file (file &optional side size)
+  "Splits window and load FILE on the right side of the screen.  If SIDE is non-nil, the source code file is place in a window either 'below or to the 'side.  The SIZE can be used to scale the text font, which defaults to 1 step larger.  This function is called with source code since the mode line is still shown."
+  (if side
+      (demo-it-make-side-window side))
   (find-file file)
   (if size (text-scale-set size)
            (text-scale-set 1)))
@@ -226,12 +229,10 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 ;;    Would be nice to load up a file and automatically highlight some
 ;;    lines.
 
-(defun demo-it-load-fancy-side-file (file type line1 line2 &optional side size)
-  "Load FILE and use fancy narrow to highlight part of the buffer.  If TYPE is 'char, LINE1 and LINE2 are position in buffer, otherwise LINE1 and LINE2 are start and ending lines to highlight.  If SIDE is t, the buffer is placed in a new side window, and SIZE is the text scale, which defaults to 1."
-  (if side (demo-it-make-side-window))
-  (find-file file)
-  (if size (text-scale-set size)
-           (text-scale-set 1))
+(defun demo-it-load-fancy-file (file type line1 line2 &optional side size)
+  "Load FILE and use fancy narrow to highlight part of the buffer.  If TYPE is 'char, LINE1 and LINE2 are position in buffer, otherwise LINE1 and LINE2 are start and ending lines to highlight.  If SIDE is non-nil, the buffer is placed in a new side window, either 'below or to the 'side, and SIZE is the text scale, which defaults to 1."
+  (demo-it-load-file file side size)
+
   (let ((start line1)
         (end line2))
     (unless (eq type 'char)
@@ -241,17 +242,45 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
       (setq end (point)))
     (fancy-narrow-to-region start end)))
 
+
+;; Display an Image (or other non-textual scaled file) on the Side
+
+(defun demo-it-show-image (file &optional side)
+  "Load FILE as image (or any other special file) replacing the current buffer.  If SIDE is non-nil, the image is shown in another window, either 'below or to the 'side."
+  (demo-it-load-file file side)
+  (fringe-mode '(0 . 0))
+  (demo-it-hide-mode-line))
+
+
+;; Compare and Contrast Files
+;;
+;;   Places two files next to each other so that you can diff
+;;   or at least visually compare them. I suppose that after
+;;   they are loaded, you can switch to them with something like:
+;;      (pop-to-buffer "example.py")
+;;   To further manipulate them.
+
+(defun demo-it-compare-files (file1 file2 &optional side size)
+  "Load FILE1 and FILE2 as either two windows on top of each other on the right side of the screen, or two windows below (depending on the value of SIDE).  The SIZE specifies the text scaling of both buffers."
+  (if (eq side 'below)
+      (progn
+        (demo-it-load-file file1 'below size)
+        (demo-it-load-file file2 'side size))
+    (progn
+      (demo-it-load-file file1 'side size)
+      (demo-it-load-file file2 'below size))))
+
+
 ;; Start an Eshell and Run Something
 ;;
 ;;    This function assumes you want an Eshell instance running in the
 ;;    lower half of the window. Changes to a particular directory, and
 ;;    automatically runs something.
 
-(defun demo-it-run-in-eshell (directory &optional shell-line name size)
-   "Start Eshell instance, and change to DIRECTORY to execute SHELL-LINE.  NAME optionally labels the buffer, and SIZE specifies the text scale, which defaults to 1 level larger."
+(defun demo-it-run-in-eshell (directory &optional shell-line name side size)
+   "Start Eshell instance, and change to DIRECTORY to execute SHELL-LINE.  NAME optionally labels the buffer.  SIDE can be either 'below or to the 'side, and SIZE specifies the text scale, which defaults to 1 level larger."
    (let ((title (if name (concat "Shell: " name) "Shell")))
-     (split-window-vertically)
-     (other-window 1)
+     (demo-it-make-side-window side)
      (eshell "new")
      (rename-buffer title)
      (if size (text-scale-set size)
@@ -271,8 +300,8 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 ;;    Create a file to serve as a "title" as it will be displayed with a
 ;;    larger-than-life font.
 
-(defun demo-it-title-screen (file)
-  "Use FILE to serve as a presentation title, as it will be displayed with a larger-than-life font."
+(defun demo-it-title-screen (file &optional size)
+  "Use FILE to serve as a presentation title, as it will be displayed with a larger-than-life font.  SIZE specifies the text scale, which defaults to 5x."
   (delete-other-windows)
   (fringe-mode '(0 . 0))
 
@@ -282,7 +311,8 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
   (setq cursor-type nil)
   (flyspell-mode -1)
   (variable-pitch-mode 1)
-  (text-scale-set 5)
+  (if size (text-scale-set size)
+           (text-scale-set 5))
 
   (message "%s" "† This presentation is running within Emacs."))
 
@@ -333,9 +363,10 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 
 (defun demo-it-presentation-return ()
   "Return to the presentation buffer, delete other windows, and advance to the next 'org-mode' section."
-  (demo-it-presentation-return-noadvance)
-  (when (demo-it--autofeaturep 'org-tree-slide)
-     (org-tree-slide-move-next-tree)))
+  (when demo-it--presentation-buffer
+    (demo-it-presentation-return-noadvance)
+    (when (demo-it--autofeaturep 'org-tree-slide)
+      (org-tree-slide-move-next-tree))))
 
 ;; Advance Presentation without Changing Focus
 ;;
@@ -345,11 +376,12 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 
 (defun demo-it-presentation-advance ()
   "Advance the presentation to the next frame (if the buffer is an 'org-mode' and 'org-tree-slide' is available), but doesn't change focus or other windows.  Only useful if using the org-tree-slide mode for the presentation buffer."
-  (let ((orig-window (current-buffer)))
-    (switch-to-buffer demo-it--presentation-buffer)
-    (when (demo-it--autofeaturep 'org-tree-slide)
-      (org-tree-slide-move-next-tree))
-    (switch-to-buffer orig-window)))
+  (when demo-it--presentation-buffer
+    (let ((orig-window (current-buffer)))
+      (switch-to-buffer demo-it--presentation-buffer)
+      (when (demo-it--autofeaturep 'org-tree-slide)
+        (org-tree-slide-move-next-tree))
+      (switch-to-buffer orig-window))))
 
 ;; Clean up the Presentation
 ;;
@@ -369,20 +401,6 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
     (variable-pitch-mode nil)
     (demo-it-show-mode-line)
     (text-scale-set 0)))
-
-;; Display an Image on the Side
-
-(defun demo-it-show-image (image-file)
-  "Load IMAGE-FILE as image (or any other special file) replacing the current buffer."
-  (find-file image-file)
-  (fringe-mode '(0 . 0))
-  (demo-it-hide-mode-line))
-
-(defun demo-it-show-side-image (image-file)
-  "Load IMAGE-FILE as image (or any other special file) in buffer on right side without a mode line."
-  (split-window-horizontally)
-  (other-window 1)
-  (demo-it-show-image image-file))
 
 ;; Switch Framesize
 ;;
