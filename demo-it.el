@@ -1,4 +1,4 @@
-;;; demo-it.el --- Utility functions for creating demonstrations within Emacs
+;;; demo-it.el --- Utility functions for creating demonstrations
 
 ;; Copyright (C) 2014  Howard Abrams
 
@@ -46,7 +46,7 @@
 ;;
 ;;   (defun my-demo/step-1 ()
 ;;     (delete-other-windows)
-;;     (demo/org-presentation "~/presentations/emacs-demo/emacs-demo-start.org"))
+;;     (demo/org-presentation "~/presentations/my-demo/demo-start.org"))
 ;;
 ;;   (defun my-demo/step-2 ()
 ;;     (demo-it-load-file "~/Work/my-proj/src/my-proj.py")
@@ -80,8 +80,15 @@
 ;;   the current state of the demonstration.
 
 (defvar demo-it--step 0  "Stores the current demo 'step' function.")
+(defvar demo-it--steps '() "List of functions to be executed in order.")
 
-(defvar demo-it--steps '() "The list of functions to be executed in order.")
+;; The following functions come from other projects I like to use
+(declare-function fancy-narrow-to-region "ext:fancy-narrow")
+(declare-function fancy-narrow-to-defun "ext:fancy-narrow")
+(declare-function eshell-send-input "ext:eshell")
+(declare-function show-all "ext:eshell.c")
+(defvar org-tree-slide-heading-emphasis)
+
 
 ;; Starting a Demonstration
 ;;
@@ -144,25 +151,6 @@ STEPS is a list of functions to execute."
   (message ""))
 
 
-;; Auto Loading of Available Features
-;;
-;;    The following "supporting functions" often depend on other packages
-;;    from ELPA, but we don't want to simply 'require' something that
-;;    hasn't been installed. This function can be used to look up
-;;    packages that can be loaded without barfing.
-
-(defun demo-it--autofeaturep (feature)
-  "For a FEATURE like 'foo, return true if feature is available.
-The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
-  (require feature nil t)
-  (catch 'result
-    (let ((feature-name (symbol-name feature)))
-      (unless (string-match "-autoloads$" feature-name)
-        (let ((feature-autoloads (intern-soft (concat feature-name "-autoloads"))))
-          (when (and feature-autoloads (featurep feature-autoloads))
-            (throw 'result t))))
-      (featurep feature))))
-
 ;; Fancy Region Highlighting
 ;;
 ;; While sometimes I want highlight some code, it is usually a
@@ -170,10 +158,10 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 ;;    just have the =C-+= narrow to the region if active, otherwise,
 ;;    narrow to the function:
 
-(defun highlight-section ()
+(defun demo-it-highlight-section ()
   "If the region is active, call 'fancy-narrow-to-region on it, otherwise, call 'fancy-narrow-to-defun, and see what happens."
   (interactive)
-  (when (demo-it--autofeaturep 'fancy-narrow)
+  (when (fboundp 'fancy-narrow-to-region)
     (if (region-active-p)
         (fancy-narrow-to-region (region-beginning) (region-end))
       (fancy-narrow-to-defun))))
@@ -184,7 +172,8 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
 ;;    org-mode files displayed as "presentations", so that we aren't
 ;;    bothered by the sight of the mode.
 
-(defvar-local demo-it--old-mode-line nil)
+(defvar demo-it--old-mode-line nil)
+(make-variable-buffer-local 'demo-it--old-mode-line)
 
 (defun demo-it-hide-mode-line ()
   "Hide mode line for a particular buffer."
@@ -233,14 +222,17 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
   "Load FILE and use fancy narrow to highlight part of the buffer.  If TYPE is 'char, LINE1 and LINE2 are position in buffer, otherwise LINE1 and LINE2 are start and ending lines to highlight.  If SIDE is non-nil, the buffer is placed in a new side window, either 'below or to the 'side, and SIZE is the text scale, which defaults to 1."
   (demo-it-load-file file side size)
 
-  (let ((start line1)
-        (end line2))
-    (unless (eq type 'char)
-      (goto-char (point-min)) (forward-line (1- line1))  ;; Heh: (goto-line line1)
-      (setq start (point))
-      (goto-char (point-min)) (forward-line line2)
-      (setq end (point)))
-    (fancy-narrow-to-region start end)))
+  ; If fancy-narrow hasn't been installed, this behaves
+  ; just like demo-it-load-file
+  (when (fboundp 'fancy-narrow-to-region)
+    (let ((start line1)
+          (end line2))
+      (unless (eq type 'char)
+        (goto-char (point-min)) (forward-line (1- line1))  ;; Heh: (goto-line line1)
+        (setq start (point))
+        (goto-char (point-min)) (forward-line line2)
+        (setq end (point)))
+      (fancy-narrow-to-region start end))))
 
 
 ;; Display an Image (or other non-textual scaled file) on the Side
@@ -309,7 +301,8 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
   (show-all)
   (demo-it-hide-mode-line)
   (setq cursor-type nil)
-  (flyspell-mode -1)
+  (if (fboundp 'flyspell-mode)
+    (flyspell-mode -1))
   (variable-pitch-mode 1)
   (if size (text-scale-set size)
            (text-scale-set 5))
@@ -334,11 +327,12 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
   (setq demo-it--presentation-file file)
   (setq demo-it--presentation-buffer (buffer-name))
 
-  (when (demo-it--autofeaturep 'org-tree-slide)
+  (when (fboundp 'org-tree-slide-mode)
     (setq org-tree-slide-heading-emphasis t)
     (org-tree-slide-mode))
 
-  (flyspell-mode -1)
+  (when (fboundp 'flyspell-mode)
+    (flyspell-mode -1))
   (setq cursor-type nil)
   (variable-pitch-mode 1)
   (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
@@ -346,7 +340,7 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
   (if size (text-scale-set size)
            (text-scale-set 2))
 
-  (when (demo-it--autofeaturep 'org-bullets)
+  (when (fboundp 'org-bullets-mode)
     (org-bullets-mode 1)))
 
 ;; Jumping Back to the Presentation
@@ -365,7 +359,7 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
   "Return to the presentation buffer, delete other windows, and advance to the next 'org-mode' section."
   (when demo-it--presentation-buffer
     (demo-it-presentation-return-noadvance)
-    (when (demo-it--autofeaturep 'org-tree-slide)
+    (when (fboundp 'org-tree-slide-move-next-tree)
       (org-tree-slide-move-next-tree))))
 
 ;; Advance Presentation without Changing Focus
@@ -379,7 +373,7 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
   (when demo-it--presentation-buffer
     (let ((orig-window (current-buffer)))
       (switch-to-buffer demo-it--presentation-buffer)
-      (when (demo-it--autofeaturep 'org-tree-slide)
+      (when (fboundp 'org-tree-slide-move-next-tree)
         (org-tree-slide-move-next-tree))
       (switch-to-buffer orig-window))))
 
@@ -393,10 +387,10 @@ The result is equivalent to: (or (featurep 'foo-autoloads) (featurep 'foo))"
   "Undo display settings made to the presentation buffer."
   (when demo-it--presentation-buffer
     (switch-to-buffer demo-it--presentation-buffer)
-    (when (demo-it--autofeaturep 'org-tree-slide)
+    (when (fboundp 'org-tree-slide-mode)
       (org-tree-slide-mode -1))
-
-    (flyspell-mode t)
+    (when (fboundp 'flyspell-mode)
+      (flyspell-mode t))
     (setq cursor-type t)
     (variable-pitch-mode nil)
     (demo-it-show-mode-line)
@@ -472,9 +466,9 @@ your own version of this, but it does the following:
 - M-C-+  Unhighlights buffer (by colorizing entire buffer) using fancy-narrow"
   (interactive)
 
-  (when (demo-it--autofeaturep 'expand-region)
+  (when (fboundp 'er/expand-region)
     (global-set-key (kbd "C-=") 'er/expand-region))
-  (when (demo-it--autofeaturep 'fancy-narrow)
+  (when (fboundp 'fancy-widen)
     (global-set-key (kbd "M-C-=") 'highlight-section)
     (global-set-key (kbd "M-C-+") 'fancy-widen)))
 
