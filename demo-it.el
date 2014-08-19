@@ -73,6 +73,10 @@
 ;;   - https://github.com/sabof/org-bullets
 ;;   - https://github.com/magnars/expand-region.el
 ;;   - https://github.com/Bruce-Connor/fancy-narrow
+;;
+;;   See http://github.com/howardabrams/demo-it for more details and
+;;   better examples.  You will want to walk through the source code
+;;   for all the utility functions.
 
 ;;; Code:
 
