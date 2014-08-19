@@ -41,6 +41,7 @@
                      '$3-load-presentation         ;; Frame 1
                      '$3-load-source-code          ;; Frame 2
                      '$3-run-code                  ;; Frame 3
+                     'demo-it-end
                  )))
 
 ;; ----------------------------------------------------------------------
