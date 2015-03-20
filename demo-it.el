@@ -284,8 +284,9 @@ STEPS is a list of functions to execute."
 
      (insert (concat "cd " directory))
      (eshell-send-input)
-     (erase-buffer)
-     (eshell-send-input)
+     (let ((inhibit-read-only t))
+       (erase-buffer)
+       (eshell-send-input))
 
      (when shell-line
        (insert shell-line)
