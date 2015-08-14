@@ -100,13 +100,18 @@
 ;;   to call for each step, and then call =demo-step= to execute the
 ;;   first one on the list.
 
-(defun demo-it-start (steps)
-   "Start the current demonstration and kick off the first step.
-STEPS is a list of functions to execute."
-   (setq demo-it--step 0)      ;; Reset the step to the beginning
-   (setq demo-it--steps steps) ;; Store the steps.
-   (demo-it-mode t)            ;; Turn on global keymapping mode
-   (demo-it-step))
+(defun demo-it-start (steps &optional advanced-mode)
+  "Start the current demonstration and kick off the first step.
+STEPS is a list of functions to execute.  If non-nil, the
+optional ADVANCED-MODE turns on keybindings where <F6> advances
+the steps instead of space.  This mode is better for more
+interactive demonstrations."
+  (setq demo-it--step 0)      ;; Reset the step to the beginning
+  (setq demo-it--steps steps) ;; Store the steps.
+  (if (not advanced-mode)
+      (demo-it-mode t)            ;; Turn on global keymapping mode
+    (demo-it-mode-adv t))
+  (demo-it-step))
 
 (defun demo-it-end ()
   "End the current demonstration by resetting the values inflicted on the presentation buffer as well as closing other windows."
@@ -123,18 +128,16 @@ STEPS is a list of functions to execute."
 (defun demo-it-step (&optional step)
   "Execute the next step in the current demonstration.  Just to a particular STEP if the optional parameter is given, i.e. C-6 <F6> to run the 6th step."
   (interactive "P")
-    (if step
-        (setq demo-it--step step)    ;; Changing Global state, yay!
-      (setq demo-it--step (1+ demo-it--step)))
-    (let
-        ;; At this point, step is 1-based, and I need it 0-based
-        ;; and f-step is the function to call for this step...
-        ((f-step (nth (1- demo-it--step) demo-it--steps)))
-      (if f-step
-          (progn
-            (funcall f-step)
-            (message "  %d" demo-it--step))
-        (message "Finished the entire demonstration."))))
+  (if step
+      (setq demo-it--step step)    ;; Changing Global state, yay!
+    (setq demo-it--step (1+ demo-it--step)))
+  (let
+      ;; At this point, step is 1-based, and I need it 0-based
+      ;; and f-step is the function to call for this step...
+      ((f-step (nth (1- demo-it--step) demo-it--steps)))
+    (if f-step
+        (funcall f-step)
+      (message "Finished the entire demonstration."))))
 
 ;; Position or advance the slide? Depends...
 
@@ -431,6 +434,20 @@ STEPS is a list of functions to execute."
     (set-frame-parameter nil 'width dest-width)
     (set-frame-parameter nil 'left 0)))
 
+;; Helper Functions
+
+(defun demo-it-insert-typewriter (str)
+  "Insert STR into the current buffer as if you were typing it by hand."
+  (interactive "s")
+  (dolist (ch (string-to-list str))
+    (insert ch)
+    (sit-for (/ 1.0 (+ 10 (random 100))) nil)))
+
+(defun demo-it-message-keybinding (key command)
+  "Display message showing the KEY keybinding and its COMMAND."
+  (interactive)
+  (message "Typed: '%s' Command: '%s'" key command))
+
 ;; Demo Mode
 ;;
 ;;   Allows us to advance to the next step by pressing the
@@ -442,19 +459,32 @@ STEPS is a list of functions to execute."
   (demo-it-mode -1))
 
 (define-minor-mode demo-it-mode "Pressing 'space' advances demo."
-    :lighter " demo"
-    :require 'demo-it
-    :global t
-    :keymap '((" ". demo-it-step)
-              ((kbd "RET") . demo-it-step)
-              ((kbd "<down>") . demo-it-step)
-              ((kbd "<mouse-1>") . demo-it-set-mouse-or-advance)
-              ([nil mouse-1] . demo-it-step)
-              ([nil wheel-up] . demo-it-ignore-event)
-              ([nil wheel-down] . demo-it-ignore-event)
-              ([nil wheel-left] . demo-it-ignore-event)
-              ([nil wheel-right] . demo-it-ignore-event)
-              ("q" . demo-it-disable-mode)))
+  :lighter " demo"
+  :require 'demo-it
+  :global t
+  :keymap '((" "               . demo-it-step)
+            ((kbd "RET")       . demo-it-step)
+            ((kbd "<down>")    . demo-it-step)
+            ((kbd "<mouse-1>") . demo-it-set-mouse-or-advance)
+            ([nil mouse-1]     . demo-it-step)
+            ([nil wheel-up]    . demo-it-ignore-event)
+            ([nil wheel-down]  . demo-it-ignore-event)
+            ([nil wheel-left]  . demo-it-ignore-event)
+            ([nil wheel-right] . demo-it-ignore-event)
+            ("q"               . demo-it-disable-mode)))
+
+(define-minor-mode demo-it-mode-adv "Pressing '<f1>' advances demo."
+  :lighter " demo-adv"
+  :require 'demo-it
+  :global t
+  :keymap '(((kbd "<f1>")      . demo-it-step)
+            ((kbd "<mouse-1>") . demo-it-set-mouse-or-advance)
+            ([nil mouse-1]     . demo-it-step)
+            ([nil wheel-up]    . demo-it-ignore-event)
+            ([nil wheel-down]  . demo-it-ignore-event)
+            ([nil wheel-left]  . demo-it-ignore-event)
+            ([nil wheel-right] . demo-it-ignore-event)
+            ((kbd "M-<f1>")    . demo-it-disable-mode)))
 
 ;; New Keybindings
 ;;
