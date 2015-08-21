@@ -152,6 +152,12 @@ interactive demonstrations."
           (demo-it-step)
         (mouse-set-point evt)))))
 
+(defun demo-it-show-step ()
+  "Display the expected function to be run during the next step."
+  (interactive)
+  (let ((func  (nth demo-it--step demo-it--steps)))
+    (message "Step: %d - Going to run: %s" demo-it--step func)))
+
 (defun demo-it-ignore-event (evt)
   "Empty function that absorbs the EVT parameter to keep demonstration from flpping out."
   (interactive "P")
@@ -463,28 +469,30 @@ interactive demonstrations."
   :require 'demo-it
   :global t
   :keymap '((" "               . demo-it-step)
-            ((kbd "RET")       . demo-it-step)
-            ((kbd "<down>")    . demo-it-step)
-            ((kbd "<mouse-1>") . demo-it-set-mouse-or-advance)
+            (""              . demo-it-step)
+            ("[down]"          . demo-it-step)
+            ("[mouse-1]"       . demo-it-set-mouse-or-advance)
             ([nil mouse-1]     . demo-it-step)
             ([nil wheel-up]    . demo-it-ignore-event)
             ([nil wheel-down]  . demo-it-ignore-event)
             ([nil wheel-left]  . demo-it-ignore-event)
             ([nil wheel-right] . demo-it-ignore-event)
-            ("q"               . demo-it-disable-mode)))
+            ("q"               . demo-it-disable-mode)
+            ("Q"               . demo-it-end)))
 
 (define-minor-mode demo-it-mode-adv "Pressing '<f1>' advances demo."
   :lighter " demo-adv"
   :require 'demo-it
   :global t
-  :keymap '(((kbd "<f1>")      . demo-it-step)
-            ((kbd "<mouse-1>") . demo-it-set-mouse-or-advance)
+  :keymap '(("[f1]"            . demo-it-step)
+            ("[mouse-1]"       . demo-it-set-mouse-or-advance)
             ([nil mouse-1]     . demo-it-step)
             ([nil wheel-up]    . demo-it-ignore-event)
             ([nil wheel-down]  . demo-it-ignore-event)
             ([nil wheel-left]  . demo-it-ignore-event)
             ([nil wheel-right] . demo-it-ignore-event)
-            ((kbd "M-<f1>")    . demo-it-disable-mode)))
+            ("[S-f1]"          . demo-it-disable-mode)
+            ("[M-f1]"          . demo-it-end)))
 
 ;; New Keybindings
 ;;
