@@ -139,6 +139,19 @@ interactive demonstrations."
         (funcall f-step)
       (message "Finished the entire demonstration."))))
 
+(defun demo-it-restep ()
+  "Execute the previous step in the current demonstration.
+
+Useful when the previous step failed, and you want to redo it."
+  (interactive)
+  (let
+      ;; At this point, step is 1-based, and I need it 0-based
+      ;; and f-step is the function to call for this step...
+      ((f-step (nth (1- demo-it--step) demo-it--steps)))
+    (if f-step
+        (funcall f-step)
+      (message "Finished the entire demonstration."))))
+
 ;; Position or advance the slide? Depends...
 
 (defun demo-it-set-mouse-or-advance (evt)
