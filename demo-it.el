@@ -306,8 +306,9 @@ Useful when the previous step failed, and you want to redo it."
 
      (insert (concat "cd " directory))
      (eshell-send-input)
-     (erase-buffer)
-     (eshell-send-input)
+     (let ((inhibit-read-only t))
+       (erase-buffer)
+       (eshell-send-input))
 
      (when shell-line
        (insert shell-line)
