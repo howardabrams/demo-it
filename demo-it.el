@@ -541,4 +541,4 @@ your own version of this, but it does the following:
 
 (provide 'demo-it)
 
-;;; demo-it ends here
+;;; demo-it.el ends here
