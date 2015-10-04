@@ -373,7 +373,7 @@ If NAME is not specified, it defaults to `Shell'."
   (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
   (demo-it-hide-mode-line)
   (if size (text-scale-set size)
-           (text-scale-set 2))
+    (text-scale-set 2))
 
   (when (fboundp 'org-bullets-mode)
     (org-bullets-mode 1)))
@@ -464,12 +464,33 @@ If NAME is not specified, it defaults to `Shell'."
 
 ;; Helper Functions
 
+(defvar demo-it-text-entries (make-hash-table)
+  "Collection of insertable text and keys for `demo-it-insert-text'.
+Strings to insert Assign a collection of characters as keys and
+strings, and call the `C-c i` to insert the text string as if you
+were typing it.
+
+For instance:
+   (setq demo-it-text-entries #s(hash-table data
+                         (?1 \"How about that?\"
+                          ?2 \"Nah, this really ain't it.\")))")
+
+(defun demo-it-insert-text (key)
+  "Insert text into the current buffer based on a single character KEY.
+
+The text is inserted as if you were typing it.  Make sure the
+`demo-it-text-entries' hash-table has been initialized with a
+character to be used as a key, and the text to insert."
+  (interactive "cInsert text from which key?")
+  (demo-it-insert-typewriter (gethash key demo-it-text-entries)))
+
 (defun demo-it-insert-typewriter (str)
   "Insert STR into the current buffer as if you were typing it by hand."
   (interactive "s")
   (dolist (ch (string-to-list str))
     (insert ch)
     (sit-for (/ 1.0 (+ 10 (random 100))) nil)))
+
 
 (defun demo-it-message-keybinding (key command)
   "Display message showing the KEY keybinding and its COMMAND."
@@ -503,18 +524,19 @@ If NAME is not specified, it defaults to `Shell'."
             ("Q"               . demo-it-end)))
 
 (define-minor-mode demo-it-mode-adv "Pressing '<f1>' advances demo."
-  :lighter " demo-adv"
-  :require 'demo-it
-  :global t
-  :keymap '(("[f1]"            . demo-it-step)
-            ("[mouse-1]"       . demo-it-set-mouse-or-advance)
-            ([nil mouse-1]     . demo-it-step)
-            ([nil wheel-up]    . demo-it-ignore-event)
-            ([nil wheel-down]  . demo-it-ignore-event)
-            ([nil wheel-left]  . demo-it-ignore-event)
-            ([nil wheel-right] . demo-it-ignore-event)
-            ("[S-f1]"          . demo-it-disable-mode)
-            ("[M-f1]"          . demo-it-end)))
+                   :lighter " demo-adv"
+                   :require 'demo-it
+                   :global t
+                   :keymap '(("[f1]"            . demo-it-step)
+                             ("[mouse-1]"       . demo-it-set-mouse-or-advance)
+                             ([nil mouse-1]     . demo-it-step)
+                             ([nil wheel-up]    . demo-it-ignore-event)
+                             ([nil wheel-down]  . demo-it-ignore-event)
+                             ([nil wheel-left]  . demo-it-ignore-event)
+                             ([nil wheel-right] . demo-it-ignore-event)
+                             ("C-ci"            . demo-it-insert-text)
+                             ("[S-f1]"          . demo-it-disable-mode)
+                             ("[M-f1]"          . demo-it-end)))
 
 ;; New Keybindings
 ;;
