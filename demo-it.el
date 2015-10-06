@@ -524,19 +524,16 @@ character to be used as a key, and the text to insert."
             ("Q"               . demo-it-end)))
 
 (define-minor-mode demo-it-mode-adv "Pressing '<f1>' advances demo."
-                   :lighter " demo-adv"
-                   :require 'demo-it
-                   :global t
-                   :keymap '(("[f1]"            . demo-it-step)
-                             ("[mouse-1]"       . demo-it-set-mouse-or-advance)
-                             ([nil mouse-1]     . demo-it-step)
-                             ([nil wheel-up]    . demo-it-ignore-event)
-                             ([nil wheel-down]  . demo-it-ignore-event)
-                             ([nil wheel-left]  . demo-it-ignore-event)
-                             ([nil wheel-right] . demo-it-ignore-event)
-                             ("C-ci"            . demo-it-insert-text)
-                             ("[S-f1]"          . demo-it-disable-mode)
-                             ("[M-f1]"          . demo-it-end)))
+  :lighter " demo-adv"
+  :require 'demo-it
+  :global  t
+  :keymap  (let ((map (make-sparse-keymap)))
+             (define-key map (kbd   "<f1>") 'demo-it-step)
+             (define-key map (kbd  "C-c i") 'demo-it-insert-text)
+             (define-key map (kbd "s-<f1>") 'demo-it-insert-text)
+             (define-key map (kbd "A-<f1>") 'demo-it-insert-text)
+             (define-key map (kbd "M-<f1>") 'demo-it-end)
+             map))
 
 ;; New Keybindings
 ;;
