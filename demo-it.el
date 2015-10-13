@@ -116,7 +116,7 @@ interactive demonstrations."
 (defun demo-it-end ()
   "End the current demonstration by resetting the values inflicted on the presentation buffer as well as closing other windows."
   (interactive)
-  (demo-it-mode -1)
+  (demo-it-disable-mode)
   (demo-it-presentation-return-noadvance) ;; Close other windows
   (demo-it-presentation-quit))
 
@@ -222,9 +222,10 @@ Useful when the previous step failed, and you want to redo it."
 
 (defun demo-it-make-side-window (&optional side)
   "Splits the window horizontally and puts point on right side window.  SIDE is either 'below or 'side (for the right side)."
-  (if (eq side 'below)
-      (split-window-vertically)
-    (split-window-horizontally))
+  (when side
+    (if (eq side 'below)
+        (split-window-vertically)
+      (split-window-horizontally)))
   (other-window 1))
 
 ;; Load a File in the Side Window
@@ -505,35 +506,36 @@ character to be used as a key, and the text to insert."
 (defun demo-it-disable-mode ()
   "Called when 'q' pressed to disable the 'demo-it-mode'."
   (interactive)
-  (demo-it-mode -1))
+  (demo-it-mode -1)
+  (demo-it-mode-adv -1))
 
 (define-minor-mode demo-it-mode "Pressing 'space' advances demo."
-  :lighter " demo"
-  :require 'demo-it
-  :global t
-  :keymap '((" "               . demo-it-step)
-            (""              . demo-it-step)
-            ("[down]"          . demo-it-step)
-            ("[mouse-1]"       . demo-it-set-mouse-or-advance)
-            ([nil mouse-1]     . demo-it-step)
-            ([nil wheel-up]    . demo-it-ignore-event)
-            ([nil wheel-down]  . demo-it-ignore-event)
-            ([nil wheel-left]  . demo-it-ignore-event)
-            ([nil wheel-right] . demo-it-ignore-event)
-            ("q"               . demo-it-disable-mode)
-            ("Q"               . demo-it-end)))
+                   :lighter " demo"
+                   :require 'demo-it
+                   :global t
+                   :keymap '((" "               . demo-it-step)
+                             (""              . demo-it-step)
+                             ("[down]"          . demo-it-step)
+                             ("[mouse-1]"       . demo-it-set-mouse-or-advance)
+                             ([nil mouse-1]     . demo-it-step)
+                             ([nil wheel-up]    . demo-it-ignore-event)
+                             ([nil wheel-down]  . demo-it-ignore-event)
+                             ([nil wheel-left]  . demo-it-ignore-event)
+                             ([nil wheel-right] . demo-it-ignore-event)
+                             ("q"               . demo-it-disable-mode)
+                             ("Q"               . demo-it-end)))
 
 (define-minor-mode demo-it-mode-adv "Pressing '<f1>' advances demo."
-  :lighter " demo-adv"
-  :require 'demo-it
-  :global  t
-  :keymap  (let ((map (make-sparse-keymap)))
-             (define-key map (kbd   "<f1>") 'demo-it-step)
-             (define-key map (kbd  "C-c i") 'demo-it-insert-text)
-             (define-key map (kbd "s-<f1>") 'demo-it-insert-text)
-             (define-key map (kbd "A-<f1>") 'demo-it-insert-text)
-             (define-key map (kbd "M-<f1>") 'demo-it-end)
-             map))
+                   :lighter " demo-adv"
+                   :require 'demo-it
+                   :global  t
+                   :keymap  (let ((map (make-sparse-keymap)))
+                              (define-key map (kbd   "<f1>") 'demo-it-step)
+                              (define-key map (kbd  "C-c i") 'demo-it-insert-text)
+                              (define-key map (kbd "s-<f1>") 'demo-it-insert-text)
+                              (define-key map (kbd "A-<f1>") 'demo-it-insert-text)
+                              (define-key map (kbd "M-<f1>") 'demo-it-end)
+                              map))
 
 ;; New Keybindings
 ;;
