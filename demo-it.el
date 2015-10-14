@@ -2,8 +2,8 @@
 
 ;; Copyright (C) 2014  Howard Abrams
 
-;; Author: Howard Abrams <howard.abrams@workday.com>
-;; Keywords: abbrev
+;; Author: Howard Abrams <howard.abrams@gmail.com>
+;; Keywords: demonstration presentation
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -510,32 +510,31 @@ character to be used as a key, and the text to insert."
   (demo-it-mode-adv -1))
 
 (define-minor-mode demo-it-mode "Pressing 'space' advances demo."
-                   :lighter " demo"
-                   :require 'demo-it
-                   :global t
-                   :keymap '((" "               . demo-it-step)
-                             (""              . demo-it-step)
-                             ("[down]"          . demo-it-step)
-                             ("[mouse-1]"       . demo-it-set-mouse-or-advance)
-                             ([nil mouse-1]     . demo-it-step)
-                             ([nil wheel-up]    . demo-it-ignore-event)
-                             ([nil wheel-down]  . demo-it-ignore-event)
-                             ([nil wheel-left]  . demo-it-ignore-event)
-                             ([nil wheel-right] . demo-it-ignore-event)
-                             ("q"               . demo-it-disable-mode)
-                             ("Q"               . demo-it-end)))
+  :lighter " demo"
+  :require 'demo-it
+  :global t
+  :keymap '((" "               . demo-it-step)
+            (""              . demo-it-step)
+            ("[down]"          . demo-it-step)
+            ("[mouse-1]"       . demo-it-set-mouse-or-advance)
+            ([nil mouse-1]     . demo-it-step)
+            ([nil wheel-up]    . demo-it-ignore-event)
+            ([nil wheel-down]  . demo-it-ignore-event)
+            ([nil wheel-left]  . demo-it-ignore-event)
+            ([nil wheel-right] . demo-it-ignore-event)
+            ("q"               . demo-it-disable-mode)
+            ("Q"               . demo-it-end)))
 
-(define-minor-mode demo-it-mode-adv "Pressing '<f1>' advances demo."
-                   :lighter " demo-adv"
-                   :require 'demo-it
-                   :global  t
-                   :keymap  (let ((map (make-sparse-keymap)))
-                              (define-key map (kbd   "<f1>") 'demo-it-step)
-                              (define-key map (kbd  "C-c i") 'demo-it-insert-text)
-                              (define-key map (kbd "s-<f1>") 'demo-it-insert-text)
-                              (define-key map (kbd "A-<f1>") 'demo-it-insert-text)
-                              (define-key map (kbd "M-<f1>") 'demo-it-end)
-                              map))
+(define-minor-mode demo-it-mode-adv "Pressing '<f12>' advances demo."
+  :lighter " demo-adv"
+  :require 'demo-it
+  :global  t
+  :keymap  (let ((map (make-sparse-keymap)))
+             (define-key map (kbd   "<f12>") 'demo-it-step)
+             (define-key map (kbd "s-<f12>") 'demo-it-insert-text)
+             (define-key map (kbd "A-<f12>") 'demo-it-insert-text)
+             (define-key map (kbd "M-<f12>") 'demo-it-end)
+             map))
 
 ;; New Keybindings
 ;;
