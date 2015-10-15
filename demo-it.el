@@ -320,6 +320,14 @@ Useful when the previous step failed, and you want to redo it."
 If NAME is not specified, it defaults to `Shell'."
   (let ((title (if name (concat "Shell: " name) "Shell")))
     (pop-to-buffer title)
+    (insert command)
+    (eshell-send-input)))
+
+(defun demo-it-type-in-eshell (command &optional name)
+  "Run shell command COMMAND in a previously initialized Eshell.
+If NAME is not specified, it defaults to `Shell'."
+  (let ((title (if name (concat "Shell: " name) "Shell")))
+    (pop-to-buffer title)
     (demo-it-insert-typewriter command)
     (eshell-send-input)))
 
@@ -338,10 +346,10 @@ If NAME is not specified, it defaults to `Shell'."
   (demo-it-hide-mode-line)
   (setq cursor-type nil)
   (if (fboundp 'flyspell-mode)
-    (flyspell-mode -1))
+      (flyspell-mode -1))
   (variable-pitch-mode 1)
   (if size (text-scale-set size)
-           (text-scale-set 5))
+    (text-scale-set 5))
 
   (message "%s" "† This presentation is running within Emacs."))
 
