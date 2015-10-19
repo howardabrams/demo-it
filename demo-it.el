@@ -99,6 +99,8 @@
 ;;   When we start a demonstration, we would pass in a list of functions
 ;;   to call for each step, and then call =demo-step= to execute the
 ;;   first one on the list.
+(defvar demo-it-start-winconf nil
+  "Window configuration when starting demo.")
 
 (defun demo-it-start (steps &optional advanced-mode)
   "Start the current demonstration and kick off the first step.
@@ -106,6 +108,7 @@ STEPS is a list of functions to execute.  If non-nil, the
 optional ADVANCED-MODE turns on keybindings where <F6> advances
 the steps instead of space.  This mode is better for more
 interactive demonstrations."
+  (setq demo-it-start-winconf (current-window-configuration))
   (setq demo-it--step 0)      ;; Reset the step to the beginning
   (setq demo-it--steps steps) ;; Store the steps.
   (if (not advanced-mode)
@@ -137,7 +140,8 @@ interactive demonstrations."
       ((f-step (nth (1- demo-it--step) demo-it--steps)))
     (if f-step
         (funcall f-step)
-      (message "Finished the entire demonstration."))))
+      (read-event "Finished the entire demonstration. Hit any key to return.")
+      (set-window-configuration demo-it-start-winconf))))
 
 (defun demo-it-restep ()
   "Execute the previous step in the current demonstration.
