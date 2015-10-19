@@ -121,7 +121,8 @@ interactive demonstrations."
   (interactive)
   (demo-it-disable-mode)
   (demo-it-presentation-return-noadvance) ;; Close other windows
-  (demo-it-presentation-quit))
+  (demo-it-presentation-quit)
+  (set-window-configuration demo-it-start-winconf))
 
 ;; Next Step
 ;;
@@ -141,7 +142,7 @@ interactive demonstrations."
     (if f-step
         (funcall f-step)
       (read-event "Finished the entire demonstration. Hit any key to return.")
-      (set-window-configuration demo-it-start-winconf))))
+      (demo-it-end))))
 
 (defun demo-it-restep ()
   "Execute the previous step in the current demonstration.
