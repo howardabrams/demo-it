@@ -111,6 +111,7 @@ interactive demonstrations."
   (setq demo-it-start-winconf (current-window-configuration))
   (setq demo-it--step 0)      ;; Reset the step to the beginning
   (setq demo-it--steps steps) ;; Store the steps.
+  (delete-other-windows)
   (if (not advanced-mode)
       (demo-it-mode t)            ;; Turn on global keymapping mode
     (demo-it-mode-adv t))
