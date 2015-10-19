@@ -363,7 +363,7 @@ If NAME is not specified, it defaults to `Shell'."
 ;;    See https://github.com/takaxp/org-tree-slide
 
 (defvar demo-it--presentation-file "")
-(defvar demo-it--presentation-buffer "")
+(defvar demo-it--presentation-buffer nil)
 
 (defun demo-it-presentation (file &optional size)
   "Load FILE (org-mode?) as presentation.  Start org-tree-slide if available.  SIZE specifies the text scale, and defaults to 2 steps larger."
