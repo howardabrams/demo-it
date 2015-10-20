@@ -55,7 +55,7 @@
 ;;   (defun my-demo ()
 ;;      "My fabulous demonstration."
 ;;      (interactive)
-;;      (demo-start (list
+;;      (demo-it-start (list
 ;;                      'my-demo/step-1
 ;;                      'my-demo/step-2
 ;;                      ;; ...
