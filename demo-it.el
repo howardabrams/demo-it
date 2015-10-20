@@ -102,6 +102,7 @@
 (defvar demo-it-start-winconf nil
   "Window configuration when starting demo.")
 
+;;;###autoload
 (defun demo-it-start (steps &optional advanced-mode)
   "Start the current demonstration and kick off the first step.
 STEPS is a list of functions to execute.  If non-nil, the
