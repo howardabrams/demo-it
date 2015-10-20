@@ -92,7 +92,7 @@
 (declare-function eshell-send-input "ext:eshell")
 (declare-function show-all "ext:eshell.c")
 (defvar org-tree-slide-heading-emphasis)
-
+(defvar org-hide-emphasis-markers)
 
 ;; Starting a Demonstration
 ;;
@@ -371,6 +371,7 @@ If NAME is not specified, it defaults to `Shell'."
 
 (defvar demo-it--presentation-file "")
 (defvar demo-it--presentation-buffer nil)
+(defvar demo-it--presentation-prev-settings (make-hash-table))
 
 (defun demo-it-presentation (file &optional size)
   "Load FILE (org-mode?) as presentation.  Start org-tree-slide if available.  SIZE specifies the text scale, and defaults to 2 steps larger."
@@ -386,13 +387,63 @@ If NAME is not specified, it defaults to `Shell'."
     (flyspell-mode -1))
   (setq cursor-type nil)
   (variable-pitch-mode 1)
-  (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
+
+  ;; Make the display of the org-mode file more presentable
+  (demo-it--presentation-display-set)
+
   (demo-it-hide-mode-line)
   (if size (text-scale-set size)
     (text-scale-set 2))
 
   (when (fboundp 'org-bullets-mode)
     (org-bullets-mode 1)))
+
+
+(defun demo-it--presentation-display-set ()
+  "Change some typical `org-mode' display values to make more presentation-friendly.  Store the changed values in a hashtable.  See `demo-it--presentation-display-restore'."
+  (puthash :emphais-markers org-hide-emphasis-markers demo-it--presentation-prev-settings)
+  (setq org-hide-emphasis-markers t)
+
+  (puthash :table-inherit (face-attribute 'org-table :inherit)
+           demo-it--presentation-prev-settings)
+  (puthash :verbatim-inherit (face-attribute 'org-verbatim :inherit)
+           demo-it--presentation-prev-settings)
+  (puthash :block-inherit (face-attribute 'org-block-background :inherit)
+           demo-it--presentation-prev-settings)
+  (puthash :begin-block-height (face-attribute 'org-block-begin-line :height)
+           demo-it--presentation-prev-settings)
+  (puthash :begin-block-foregd (face-attribute 'org-block-begin-line :foreground)
+           demo-it--presentation-prev-settings)
+  (puthash :end-block-height (face-attribute 'org-block-end-line :height)
+           demo-it--presentation-prev-settings)
+  (puthash :end-block-foregd (face-attribute 'org-block-end-line :foreground)
+           demo-it--presentation-prev-settings)
+
+  (let ((begin-backgd (face-attribute 'org-block-begin-line :background))
+        (end-backgd   (face-attribute 'org-block-end-line :background)))
+    (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-verbatim nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-block-background nil :inherit 'fixed-pitch)
+    (set-face-attribute 'org-block-begin-line nil :height 1 :foreground begin-backgd)
+    (set-face-attribute 'org-block-end-line nil :height 1 :foreground end-backgd)))
+
+(defun demo-it--presentation-display-restore ()
+  "After `demo-it--presentation-display-set', call to restore previous settings."
+  (setq org-hide-emphasis-markers
+        (gethash :emphais-markers demo-it--presentation-prev-settings))
+
+  (set-face-attribute 'org-table nil :inherit
+                      (gethash :table-inherit demo-it--presentation-prev-settings))
+  (set-face-attribute 'org-verbatim nil :inherit
+                      (gethash :table-verbatim demo-it--presentation-prev-settings))
+  (set-face-attribute 'org-block-background nil :inherit
+                      (gethash :block-inherit demo-it--presentation-prev-settings))
+  (set-face-attribute 'org-block-begin-line nil
+                      :height (gethash :begin-block-height demo-it--presentation-prev-settings)
+                      :foreground  (gethash :begin-block-foregd demo-it--presentation-prev-settings))
+  (set-face-attribute 'org-block-end-line nil
+                      :height (gethash :end-block-height demo-it--presentation-prev-settings)
+                      :foreground  (gethash :end-block-foregd demo-it--presentation-prev-settings)))
 
 ;; Jumping Back to the Presentation
 ;;
@@ -443,6 +494,7 @@ If NAME is not specified, it defaults to `Shell'."
     (when (fboundp 'flyspell-mode)
       (flyspell-mode t))
     (setq cursor-type t)
+    (demo-it--presentation-display-restore)  ; Restore previous changes
     (variable-pitch-mode nil)
     (demo-it-show-mode-line)
     (text-scale-set 0)))
