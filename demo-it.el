@@ -55,7 +55,7 @@
 ;;   (defun my-demo ()
 ;;      "My fabulous demonstration."
 ;;      (interactive)
-;;      (demo-start (list
+;;      (demo-it-start (list
 ;;                      'my-demo/step-1
 ;;                      'my-demo/step-2
 ;;                      ;; ...
@@ -102,6 +102,7 @@
 (defvar demo-it-start-winconf nil
   "Window configuration when starting demo.")
 
+;;;###autoload
 (defun demo-it-start (steps &optional advanced-mode)
   "Start the current demonstration and kick off the first step.
 STEPS is a list of functions to execute.  If non-nil, the
