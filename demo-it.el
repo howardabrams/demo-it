@@ -472,6 +472,7 @@ If NAME is not specified, it defaults to `Shell'."
 
 (defun demo-it-presentation-advance ()
   "Advance the presentation to the next frame (if the buffer is an 'org-mode' and 'org-tree-slide' is available), but doesn't change focus or other windows.  Only useful if using the org-tree-slide mode for the presentation buffer."
+  (interactive)
   (when demo-it--presentation-buffer
     (let ((orig-window (current-buffer)))
       (switch-to-buffer demo-it--presentation-buffer)
@@ -614,7 +615,13 @@ your own version of this, but it does the following:
 
 - C-=  Selects or increases the region using expand-region
 - M-C-=  Highlights the region (dimming the rest) using fancy-narrow
-- M-C-+  Unhighlights buffer (by colorizing entire buffer) using fancy-narrow"
+- M-C-+  Unhighlights buffer (by colorizing entire buffer) using fancy-narrow
+
+This function should never had been written, as it is better to
+just add your own keybindings to the demo-it-mode instead, as in:
+
+   (define-key demo-it-mode-map (kbd \"C-<f12>\") 'demo-it-presentation-advance)"
+  (declare (obsolete "Add keybinds to demo-it-mode directly." "Dec 2015"))
   (interactive)
 
   (when (fboundp 'er/expand-region)
