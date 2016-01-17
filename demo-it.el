@@ -464,6 +464,15 @@ If NAME is not specified, it defaults to `Shell'."
     (when (fboundp 'org-tree-slide-move-next-tree)
       (org-tree-slide-move-next-tree))))
 
+(defun demo-it-single-presentation (file)
+  "Demonstration that presents on `org-mode' FILE as a full-screen presentation."
+  (interactive "fPresentation File: ")
+  (cl-flet ((present-it ()
+                        (demo-it-frame-fullscreen)
+                        (delete-other-windows)
+                        (demo-it-presentation file)))
+    (demo-it-start (list #'present-it) t)))
+
 ;; Advance Presentation without Changing Focus
 ;;
 ;;    Advances the org-mode presentation, but after popping into that
