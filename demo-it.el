@@ -398,52 +398,36 @@ If NAME is not specified, it defaults to `Shell'."
   (when (fboundp 'org-bullets-mode)
     (org-bullets-mode 1)))
 
-
 (defun demo-it--presentation-display-set ()
-  "Change some typical `org-mode' display values to make more presentation-friendly.  Store the changed values in a hashtable.  See `demo-it--presentation-display-restore'."
-  (puthash :emphais-markers org-hide-emphasis-markers demo-it--presentation-prev-settings)
-  (setq org-hide-emphasis-markers t)
-
-  (puthash :table-inherit (face-attribute 'org-table :inherit)
-           demo-it--presentation-prev-settings)
-  (puthash :verbatim-inherit (face-attribute 'org-verbatim :inherit)
-           demo-it--presentation-prev-settings)
-  (puthash :block-inherit (face-attribute 'org-block-background :inherit)
-           demo-it--presentation-prev-settings)
-  (puthash :begin-block-height (face-attribute 'org-block-begin-line :height)
-           demo-it--presentation-prev-settings)
-  (puthash :begin-block-foregd (face-attribute 'org-block-begin-line :foreground)
-           demo-it--presentation-prev-settings)
-  (puthash :end-block-height (face-attribute 'org-block-end-line :height)
-           demo-it--presentation-prev-settings)
-  (puthash :end-block-foregd (face-attribute 'org-block-end-line :foreground)
-           demo-it--presentation-prev-settings)
-
-  (let ((begin-backgd (face-attribute 'org-block-begin-line :background))
-        (end-backgd   (face-attribute 'org-block-end-line :background)))
-    (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
-    (set-face-attribute 'org-verbatim nil :inherit 'fixed-pitch)
-    (set-face-attribute 'org-block-background nil :inherit 'fixed-pitch)
-    (set-face-attribute 'org-block-begin-line nil :height 1 :foreground begin-backgd)
-    (set-face-attribute 'org-block-end-line nil :height 1 :foreground end-backgd)))
+  "Change some typical `org-mode' display values to make more
+presentation-friendly.  Store the changed values in a hashtable.
+See `demo-it--presentation-display-restore'."
+  ;; Save everything that is interesting into a hash table:
+  (make-local-variable 'demo-it--presentation-prev-settings)
+  (let* ((backgd (face-attribute 'org-block-background :background))
+         (border (list (list :foreground backgd :background backgd :height 3))))
+    (cl-flet ((set-attr (attr values) (puthash attr
+                                               (face-remap-add-relative attr values)
+                                               demo-it--presentation-prev-settings)))
+      (set-attr 'org-block-begin-line border)
+      (set-attr 'org-block-end-line   border)
+      (set-attr 'org-block-background '((:family "monospace")))
+      (set-attr 'org-verbatim         '((:family "monospace")))
+      (set-attr 'org-code             '((:family "monospace")))
+      (set-attr 'org-table            '((:family "monospace")))
+      (set-attr 'org-special-keyword  '((:family "monospace")))))
+  (puthash :emphasis-markers org-hide-emphasis-markers demo-it--presentation-prev-settings)
+  (setq org-hide-emphasis-markers t))
 
 (defun demo-it--presentation-display-restore ()
   "After `demo-it--presentation-display-set', call to restore previous settings."
   (setq org-hide-emphasis-markers
-        (gethash :emphais-markers demo-it--presentation-prev-settings))
+        (gethash :emphasis-markers demo-it--presentation-prev-settings))
 
-  (set-face-attribute 'org-table nil :inherit
-                      (gethash :table-inherit demo-it--presentation-prev-settings))
-  (set-face-attribute 'org-verbatim nil :inherit
-                      (gethash :table-verbatim demo-it--presentation-prev-settings))
-  (set-face-attribute 'org-block-background nil :inherit
-                      (gethash :block-inherit demo-it--presentation-prev-settings))
-  (set-face-attribute 'org-block-begin-line nil
-                      :height (gethash :begin-block-height demo-it--presentation-prev-settings)
-                      :foreground  (gethash :begin-block-foregd demo-it--presentation-prev-settings))
-  (set-face-attribute 'org-block-end-line nil
-                      :height (gethash :end-block-height demo-it--presentation-prev-settings)
-                      :foreground  (gethash :end-block-foregd demo-it--presentation-prev-settings)))
+  (cl-flet ((rest-attr (attr) (face-remap-remove-relative
+                               (gethash attr demo-it--presentation-prev-settings))))
+    (mapcar #'rest-attr (list 'org-block-begin-line 'org-block-end-line 'org-block-background
+                              'org-verbatim 'org-code 'org-table 'org-special-keyword))))
 
 ;; Jumping Back to the Presentation
 ;;
