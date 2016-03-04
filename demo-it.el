@@ -373,7 +373,7 @@ If NAME is not specified, it defaults to `Shell'."
 (defvar demo-it--presentation-buffer nil)
 (defvar demo-it--presentation-prev-settings (make-hash-table))
 
-(defun demo-it-presentation (file &optional size)
+(defun demo-it-presentation (file &optional size variablep)
   "Load FILE (org-mode?) as presentation.  Start org-tree-slide if available.  SIZE specifies the text scale, and defaults to 2 steps larger."
   (find-file file)
   (setq demo-it--presentation-file file)
@@ -386,7 +386,9 @@ If NAME is not specified, it defaults to `Shell'."
   (when (fboundp 'flyspell-mode)
     (flyspell-mode -1))
   (setq cursor-type nil)
-  (variable-pitch-mode 1)
+
+  (when variablep
+    (variable-pitch-mode 1))
 
   ;; Make the display of the org-mode file more presentable
   (demo-it--presentation-display-set)
@@ -404,14 +406,14 @@ presentation-friendly.  Store the changed values in a hashtable.
 See `demo-it--presentation-display-restore'."
   ;; Save everything that is interesting into a hash table:
   (make-local-variable 'demo-it--presentation-prev-settings)
-  (let* ((backgd (face-attribute 'org-block-background :background))
-         (border (list (list :foreground backgd :background backgd :height 3))))
+  (let* ((backgd (face-attribute 'default :background))
+         (border (list (list :foreground backgd :background backgd :height 1))))
     (cl-flet ((set-attr (attr values) (puthash attr
                                                (face-remap-add-relative attr values)
                                                demo-it--presentation-prev-settings)))
       (set-attr 'org-block-begin-line border)
       (set-attr 'org-block-end-line   border)
-      (set-attr 'org-block-background '((:family "monospace")))
+      (set-attr 'org-block            '((:family "monospace")))
       (set-attr 'org-verbatim         '((:family "monospace")))
       (set-attr 'org-code             '((:family "monospace")))
       (set-attr 'org-table            '((:family "monospace")))
@@ -426,7 +428,7 @@ See `demo-it--presentation-display-restore'."
 
   (cl-flet ((rest-attr (attr) (face-remap-remove-relative
                                (gethash attr demo-it--presentation-prev-settings))))
-    (mapcar #'rest-attr (list 'org-block-begin-line 'org-block-end-line 'org-block-background
+    (mapcar #'rest-attr (list 'org-block-begin-line 'org-block-end-line 'org-block
                               'org-verbatim 'org-code 'org-table 'org-special-keyword))))
 
 ;; Jumping Back to the Presentation
@@ -481,6 +483,7 @@ See `demo-it--presentation-display-restore'."
 
 (defun demo-it-presentation-quit ()
   "Undo display settings made to the presentation buffer."
+  (interactive)
   (when demo-it--presentation-buffer
     (switch-to-buffer demo-it--presentation-buffer)
     (when (fboundp 'org-tree-slide-mode)
