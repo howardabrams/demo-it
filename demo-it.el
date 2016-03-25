@@ -80,6 +80,11 @@
 
 ;;; Code:
 
+(require 'cl-lib)
+
+;;   Predefined necessary external functions:
+(declare-function face-remap-remove-relative "face-remap.el")
+
 ;;   To begin, we need a "global" variable (shudder) that keeps track of
 ;;   the current state of the demonstration.
 
@@ -373,8 +378,12 @@ If NAME is not specified, it defaults to `Shell'."
 (defvar demo-it--presentation-buffer nil)
 (defvar demo-it--presentation-prev-settings (make-hash-table))
 
-(defun demo-it-presentation (file &optional size variablep)
-  "Load FILE (org-mode?) as presentation.  Start org-tree-slide if available.  SIZE specifies the text scale, and defaults to 2 steps larger."
+(defun demo-it-presentation (file &optional size style)
+  "Load FILE (org-mode?) as presentation.  Start org-tree-slide
+if available.  SIZE specifies the text scale, and defaults to 2
+steps larger. STYLE can either be :variable for variable pitch of
+the font, :blocks for diminished headers on org-blocks, or :both
+for both features."
   (find-file file)
   (setq demo-it--presentation-file file)
   (setq demo-it--presentation-buffer (buffer-name))
@@ -387,11 +396,17 @@ If NAME is not specified, it defaults to `Shell'."
     (flyspell-mode -1))
   (setq cursor-type nil)
 
-  (when variablep
+  ;; Style things up correctly...
+  (make-local-variable 'demo-it--presentation-prev-settings)
+  (puthash :emphasis-markers org-hide-emphasis-markers demo-it--presentation-prev-settings)
+  (setq org-hide-emphasis-markers t)
+
+  (when (or (eq style :variable) (eq style :both))
     (variable-pitch-mode 1))
 
   ;; Make the display of the org-mode file more presentable
-  (demo-it--presentation-display-set)
+  (when (or (eq style :block) (eq style :both))
+    (demo-it--presentation-display-set))
 
   (demo-it-hide-mode-line)
   (if size (text-scale-set size)
@@ -405,7 +420,7 @@ If NAME is not specified, it defaults to `Shell'."
 presentation-friendly.  Store the changed values in a hashtable.
 See `demo-it--presentation-display-restore'."
   ;; Save everything that is interesting into a hash table:
-  (make-local-variable 'demo-it--presentation-prev-settings)
+  (puthash :restore t demo-it--presentation-prev-settings)
   (let* ((backgd (face-attribute 'default :background))
          (border (list (list :foreground backgd :background backgd :height 1))))
     (cl-flet ((set-attr (attr values) (puthash attr
@@ -417,19 +432,18 @@ See `demo-it--presentation-display-restore'."
       (set-attr 'org-verbatim         '((:family "monospace")))
       (set-attr 'org-code             '((:family "monospace")))
       (set-attr 'org-table            '((:family "monospace")))
-      (set-attr 'org-special-keyword  '((:family "monospace")))))
-  (puthash :emphasis-markers org-hide-emphasis-markers demo-it--presentation-prev-settings)
-  (setq org-hide-emphasis-markers t))
+      (set-attr 'org-special-keyword  '((:family "monospace"))))))
 
 (defun demo-it--presentation-display-restore ()
   "After `demo-it--presentation-display-set', call to restore previous settings."
   (setq org-hide-emphasis-markers
         (gethash :emphasis-markers demo-it--presentation-prev-settings))
-
-  (cl-flet ((rest-attr (attr) (face-remap-remove-relative
-                               (gethash attr demo-it--presentation-prev-settings))))
-    (mapcar #'rest-attr (list 'org-block-begin-line 'org-block-end-line 'org-block
-                              'org-verbatim 'org-code 'org-table 'org-special-keyword))))
+  (when (gethash :restore demo-it--presentation-prev-settings)
+    (remhash :restore demo-it--presentation-prev-settings)
+    (cl-flet ((rest-attr (attr) (face-remap-remove-relative
+                                 (gethash attr demo-it--presentation-prev-settings))))
+      (mapcar #'rest-attr (list 'org-block-begin-line 'org-block-end-line 'org-block
+                                'org-verbatim 'org-code 'org-table 'org-special-keyword)))))
 
 ;; Jumping Back to the Presentation
 ;;
