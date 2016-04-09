@@ -489,6 +489,25 @@ See `demo-it--presentation-display-restore'."
         (org-tree-slide-move-next-tree))
       (switch-to-buffer orig-window))))
 
+(defun demo-it--presentation-highlight-phrase (phrase &optional color)
+  "Highlight a PHRASE (based on a regular expression) in the
+presentation buffer. This is useful to highlight bullet point
+items while executing appropriate code."
+  (when demo-it--presentation-buffer
+    (let ((orig-window (current-buffer))
+          (hilite-color (if (null color) 'hi-green-b color)))
+      (switch-to-buffer demo-it--presentation-buffer)
+      (hi-lock-unface-buffer t)
+      (hi-lock-face-phrase-buffer phrase hilite-color)
+      (switch-to-buffer orig-window))))
+
+(defun demo-it--presentation-unhighlight-all ()
+  (when demo-it--presentation-buffer
+    (let ((orig-window (current-buffer)))
+      (switch-to-buffer demo-it--presentation-buffer)
+      (hi-lock-unface-buffer t)
+      (switch-to-buffer orig-window))))
+
 ;; Clean up the Presentation
 ;;
 ;;    The org-presentation-start function alters the way an org-mode file
