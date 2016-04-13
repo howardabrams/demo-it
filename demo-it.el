@@ -310,7 +310,7 @@ Useful when the previous step failed, and you want to redo it."
 
 (defun demo-it-start-eshell (&optional directory command name side size)
   "Start Eshell instance, and change to DIRECTORY to execute COMMAND.  NAME optionally labels the buffer.  SIDE can be either 'below or to the 'side, and SIZE specifies the text scale, which defaults to 1 level larger."
-  (let ((title (if name (concat "Shell: " name) "Shell")))
+  (let ((title (demo-it--eshell-buffer-name name)))
     (demo-it-make-side-window side)
     (eshell "new")
     (rename-buffer title)
@@ -327,21 +327,31 @@ Useful when the previous step failed, and you want to redo it."
       (insert command)
       (eshell-send-input))))
 
+(defun demo-it--eshell-buffer-name (name)
+  "Return the buffer NAME for the EShell window."
+  (if name
+      (concat "Shell: " name)
+    "Shell"))
+
+(defun demo-it-show-eshell (&optional name side)
+  "Call if the shell window of a given NAME has been
+hidden. Optionally specify the SIDE (either 'below or 'side)."
+  (demo-it-make-side-window side)
+  (switch-to-buffer (demo-it--eshell-buffer-name name)))
+
 (defun demo-it-run-in-eshell (command &optional name)
   "Run shell command COMMAND in a previously initialized Eshell.
 If NAME is not specified, it defaults to `Shell'."
-  (let ((title (if name (concat "Shell: " name) "Shell")))
-    (pop-to-buffer title)
-    (insert command)
-    (eshell-send-input)))
+  (switch-to-buffer (demo-it--eshell-buffer-name name))
+  (insert command)
+  (eshell-send-input))
 
 (defun demo-it-type-in-eshell (command &optional name)
-  "Run shell command COMMAND in a previously initialized Eshell.
+  "Type slowly and run shell command COMMAND in a previously initialized Eshell.
 If NAME is not specified, it defaults to `Shell'."
-  (let ((title (if name (concat "Shell: " name) "Shell")))
-    (pop-to-buffer title)
-    (demo-it-insert-typewriter command)
-    (eshell-send-input)))
+  (switch-to-buffer (demo-it--eshell-buffer-name name))
+  (demo-it-insert-typewriter command)
+  (eshell-send-input))
 
 ;; Title Display
 ;;
