@@ -388,19 +388,24 @@ If NAME is not specified, it defaults to `Shell'."
 (defvar demo-it--presentation-buffer nil)
 (defvar demo-it--presentation-prev-settings (make-hash-table))
 
-(defun demo-it-presentation (file &optional size style)
+(defun demo-it-presentation (file &optional size style section)
   "Load FILE (org-mode?) as presentation.  Start org-tree-slide
 if available.  SIZE specifies the text scale, and defaults to 2
 steps larger. STYLE can either be :variable for variable pitch of
 the font, :blocks for diminished headers on org-blocks, or :both
-for both features."
+for both features.
+
+The SECTION is the name of an org-mode header to specify as the
+first section to display."
   (find-file file)
   (setq demo-it--presentation-file file)
   (setq demo-it--presentation-buffer (buffer-name))
 
   (when (fboundp 'org-tree-slide-mode)
     (setq org-tree-slide-heading-emphasis t)
-    (org-tree-slide-mode))
+    (org-tree-slide-mode)
+    (when section
+      (demo-it--presentation-section section)))
 
   (when (fboundp 'flyspell-mode)
     (flyspell-mode -1))
@@ -431,6 +436,8 @@ presentation-friendly.  Store the changed values in a hashtable.
 See `demo-it--presentation-display-restore'."
   ;; Save everything that is interesting into a hash table:
   (puthash :restore t demo-it--presentation-prev-settings)
+  ;; Allow us to resize our images:
+  (setq org-image-actual-width nil)
   (let* ((backgd (face-attribute 'default :background))
          (border (list (list :foreground backgd :background backgd :height 1))))
     (cl-flet ((set-attr (attr values) (puthash attr
@@ -438,6 +445,8 @@ See `demo-it--presentation-display-restore'."
                                                demo-it--presentation-prev-settings)))
       (set-attr 'org-block-begin-line border)
       (set-attr 'org-block-end-line   border)
+      (set-attr 'org-meta-line        border)
+      (set-attr 'org-special-keyword  border)
       (set-attr 'org-block            '((:family "monospace")))
       (set-attr 'org-verbatim         '((:family "monospace")))
       (set-attr 'org-code             '((:family "monospace")))
@@ -452,8 +461,20 @@ See `demo-it--presentation-display-restore'."
     (remhash :restore demo-it--presentation-prev-settings)
     (cl-flet ((rest-attr (attr) (face-remap-remove-relative
                                  (gethash attr demo-it--presentation-prev-settings))))
-      (mapcar #'rest-attr (list 'org-block-begin-line 'org-block-end-line 'org-block
+      (mapcar #'rest-attr (list 'org-block-begin-line 'org-block-end-line 'org-block 'org-meta-line
                                 'org-verbatim 'org-code 'org-table 'org-special-keyword)))))
+
+;; Specify a section in the presentation
+
+(defun demo-it--presentation-section (section)
+  "Moves the displayed presentation to a SECTION header."
+  (interactive "s")
+  (when demo-it--presentation-buffer
+    (switch-to-buffer demo-it--presentation-buffer)
+    (org-tree-slide-content)
+    (goto-char (point-min))
+    (re-search-forward (format "^\*+ +%s" section))
+    (org-tree-slide-move-next-tree)))
 
 ;; Jumping Back to the Presentation
 ;;
@@ -474,13 +495,13 @@ See `demo-it--presentation-display-restore'."
     (when (fboundp 'org-tree-slide-move-next-tree)
       (org-tree-slide-move-next-tree))))
 
-(defun demo-it-single-presentation (file)
+(defun demo-it-single-presentation (file &optional size style section)
   "Demonstration that presents on `org-mode' FILE as a full-screen presentation."
   (interactive "fPresentation File: ")
   (cl-flet ((present-it ()
                         (demo-it-frame-fullscreen)
                         (delete-other-windows)
-                        (demo-it-presentation file)))
+                        (demo-it-presentation file size style section)))
     (demo-it-start (list #'present-it) t)))
 
 ;; Advance Presentation without Changing Focus
