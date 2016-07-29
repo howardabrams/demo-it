@@ -10,7 +10,7 @@ trifecta of sprint reviews:
 However, I don't want to fat-finger, mentally burp, or even delay
 gratification for my audience while I laboriously type, so I
 predefine each "step" as an Elisp function, and then have `demo-it`
-execute each function when I hit the `F6` key.
+execute each function when I hit either the `SPACE` or the `F12` key.
 
   * [Learn You Some Lisp for Great Good][yt1]
   * [Emacs: An Introduction for the Curious][yt2]
