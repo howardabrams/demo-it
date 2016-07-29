@@ -31,7 +31,7 @@
 ;;   However, I don't want to fat-finger, mentally burp, or even delay
 ;;   the gratification while I type, so I predefine each "step" as an
 ;;   Elisp function, and then have =demo-it= execute each function when I
-;;   hit the F6 key.
+;;   hit either the SPACE key or the F12 key (advanced minor mode).
 ;;
 ;;   Using the library is a three step process:
 ;;
@@ -111,8 +111,8 @@
 (defun demo-it-start (steps &optional advanced-mode)
   "Start the current demonstration and kick off the first step.
 STEPS is a list of functions to execute.  If non-nil, the
-optional ADVANCED-MODE turns on keybindings where <F6> advances
-the steps instead of space.  This mode is better for more
+optional ADVANCED-MODE turns on keybindings where <F12> advances
+the steps instead of Space.  This mode is better for more
 interactive demonstrations."
   (setq demo-it-start-winconf (current-window-configuration))
   (setq demo-it--step 0)      ;; Reset the step to the beginning
@@ -124,7 +124,9 @@ interactive demonstrations."
   (demo-it-step))
 
 (defun demo-it-end ()
-  "End the current demonstration by resetting the values inflicted on the presentation buffer as well as closing other windows."
+  "End the current demonstration by resetting the values
+inflicted on the presentation buffer as well as closing other
+windows."
   (interactive)
   (demo-it-disable-mode)
   (demo-it-presentation-return-noadvance) ;; Close other windows
@@ -133,11 +135,13 @@ interactive demonstrations."
 
 ;; Next Step
 ;;
-;;   Hitting the <F6> key should be bound to triggering the next step in
+;;   Hitting the <F12> key should be bound to triggering the next step in
 ;;   the demonstration.
 
 (defun demo-it-step (&optional step)
-  "Execute the next step in the current demonstration.  Just to a particular STEP if the optional parameter is given, i.e. C-6 <F6> to run the 6th step."
+  "Execute the next step in the current demonstration.  Jump to a
+particular STEP if the optional parameter is given, i.e. C-6 <F12>
+to run the 6th step."
   (interactive "P")
   (if step
       (setq demo-it--step step)    ;; Changing Global state, yay!
