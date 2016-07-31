@@ -1,9 +1,9 @@
-;;; demo-it.el --- Utility functions for creating demonstrations
+;;; demo-it.el --- Utility functions for creating demonstrations and tests with eyes
 
 ;; Copyright (C) 2014  Howard Abrams
 
 ;; Author: Howard Abrams <howard.abrams@gmail.com>
-;; Keywords: demonstration presentation
+;; Keywords: demonstration presentation test
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -27,11 +27,13 @@
 ;;   - Presentations explaining the technologies
 ;;   - Source code ... correctly highlighted
 ;;   - Executing the code in Eshell ... or similar demonstration
+;;   - Test a new feature
 ;;
 ;;   However, I don't want to fat-finger, mentally burp, or even delay
 ;;   the gratification while I type, so I predefine each "step" as an
-;;   Elisp function, and then have =demo-it= execute each function when I
-;;   hit either the SPACE key or the F12 key (advanced minor mode).
+;;   Elisp function or keyboard macro, and then have =demo-it= execute
+;;   each function when I hit either the SPACE key or the F12 key
+;;   (advanced minor mode).
 ;;
 ;;   Using the library is a three step process:
 ;;
