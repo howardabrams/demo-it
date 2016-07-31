@@ -4,7 +4,7 @@
 
 ;; This is a simple demonstration that shows off a few of the
 ;; functions and options of the demo-it system.  Evaluating this
-;; buffer starts off the presentation, and hitting F6 steps through
+;; buffer starts off the presentation, and hitting SPC steps through
 ;; the demonstration.
 
 ;;; Code:
