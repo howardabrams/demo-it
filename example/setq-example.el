@@ -1,4 +1,4 @@
-;;; setq-example.el --- Demonstration of Demonstration of demo-it-setq  -*- lexical-binding: t; -*-
+;;; setq-example.el --- Demonstration of demo-it-setq  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 
