@@ -562,7 +562,8 @@ items while executing appropriate code."
     (demo-it--presentation-display-restore)  ; Restore previous changes
     (variable-pitch-mode nil)
     (demo-it-show-mode-line)
-    (text-scale-set 0)))
+    (text-scale-set 0)
+    (demo-it--setq-restore)))
 
 ;; Switch Framesize
 ;;
@@ -594,6 +595,46 @@ items while executing appropriate code."
     (set-frame-parameter nil 'fullscreen nil)
     (set-frame-parameter nil 'width dest-width)
     (set-frame-parameter nil 'left 0)))
+
+;; Temporary variables
+;;
+;;    Set variables during a demonstration.
+;;    They are restored after the demonstration.
+
+(defvar demo-it--setq-tempvars (make-hash-table))
+(defvar demo-it--setq-voidvars nil)
+(defvar demo-it--setq-nilvars nil)
+(defun demo-it--setq (l)
+  (cl-case (length l)
+    (0)
+    (1
+     (error "Argument length is odd"))
+    (t
+     (let ((name (car l))
+           (var  (eval (cadr l))))
+       (cond ((and (boundp name) (symbol-value name))
+              (puthash name (symbol-value name) demo-it--setq-tempvars))
+             ((boundp name)
+              (push name demo-it--setq-nilvars))
+             (t
+              (push name demo-it--setq-voidvars)))
+       (set name var)
+       (demo-it--setq (nthcdr 2 l))))))
+
+(defmacro demo-it-setq (&rest list)
+  "Like `setq', but the values are restored to original after the demo.
+Actually restored by `demo-it--setq-restore'."
+  `(demo-it--setq '(,@list)))
+
+(defun demo-it--setq-restore ()
+  "Restore values of setting by `demo-it-setq'."
+  (cl-loop for name being the hash-keys in demo-it--setq-tempvars using (hash-values value)
+           do (set name value))
+  (dolist (name demo-it--setq-nilvars) (set name nil))
+  (mapc 'makunbound demo-it--setq-voidvars)
+  (clrhash demo-it--setq-tempvars)
+  (setq demo-it--setq-nilvars nil
+        demo-it--setq-voidvars nil))
 
 ;; Helper Functions
 
