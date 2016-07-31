@@ -110,10 +110,10 @@
 ;;;###autoload
 (defun demo-it-start (steps &optional advanced-mode)
   "Start the current demonstration and kick off the first step.
-STEPS is a list of functions to execute.  If non-nil, the
-optional ADVANCED-MODE turns on keybindings where <F12> advances
-the steps instead of Space.  This mode is better for more
-interactive demonstrations."
+STEPS is a list of functions or keystrokes to execute.
+If non-nil, the optional ADVANCED-MODE turns on keybindings where
+<F12> advances the steps instead of Space.  This mode is better
+for more interactive demonstrations."
   (setq demo-it-start-winconf (current-window-configuration))
   (setq demo-it--step 0)      ;; Reset the step to the beginning
   (setq demo-it--steps steps) ;; Store the steps.
@@ -151,7 +151,7 @@ to run the 6th step."
       ;; and f-step is the function to call for this step...
       ((f-step (nth (1- demo-it--step) demo-it--steps)))
     (if f-step
-        (funcall f-step)
+        (demo-it--execute-step f-step)
       (read-event "Finished the entire demonstration. Hit any key to return.")
       (demo-it-end))))
 
@@ -165,8 +165,13 @@ Useful when the previous step failed, and you want to redo it."
       ;; and f-step is the function to call for this step...
       ((f-step (nth (1- demo-it--step) demo-it--steps)))
     (if f-step
-        (funcall f-step)
+        (demo-it--execute-step f-step)
       (message "Finished the entire demonstration."))))
+
+(defun demo-it--execute-step (f-step)
+  (cond ((functionp f-step) (funcall f-step))
+        ((stringp f-step)   (execute-kbd-macro (kbd f-step)))
+        (t                  (error "invaid step: %s" f-step))))
 
 ;; Position or advance the slide? Depends...
 
