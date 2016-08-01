@@ -171,9 +171,12 @@ Useful when the previous step failed, and you want to redo it."
       (message "Finished the entire demonstration."))))
 
 (defun demo-it--execute-step (f-step)
-  (cond ((functionp f-step) (funcall f-step))
-        ((stringp f-step)   (execute-kbd-macro (kbd f-step)))
-        (t                  (error "invaid step: %s" f-step))))
+  (condition-case err
+      (cond ((functionp f-step) (funcall f-step))
+            ((stringp f-step)   (execute-kbd-macro (kbd f-step)))
+            (t                  (error "invaid step: %s" f-step)))
+    (error (read-event (format "Abort the demonstration because of error. Hit any key to return.\n%S" err))
+           (demo-it-end))))
 
 ;; Position or advance the slide? Depends...
 
