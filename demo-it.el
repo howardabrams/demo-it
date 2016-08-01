@@ -1,9 +1,9 @@
-;;; demo-it.el --- Utility functions for creating demonstrations
+;;; demo-it.el --- Utility functions for creating demonstrations and tests with eyes
 
 ;; Copyright (C) 2014  Howard Abrams
 
 ;; Author: Howard Abrams <howard.abrams@gmail.com>
-;; Keywords: demonstration presentation
+;; Keywords: demonstration presentation test
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -27,11 +27,13 @@
 ;;   - Presentations explaining the technologies
 ;;   - Source code ... correctly highlighted
 ;;   - Executing the code in Eshell ... or similar demonstration
+;;   - Test a new feature
 ;;
 ;;   However, I don't want to fat-finger, mentally burp, or even delay
 ;;   the gratification while I type, so I predefine each "step" as an
-;;   Elisp function, and then have =demo-it= execute each function when I
-;;   hit either the SPACE key or the F12 key (advanced minor mode).
+;;   Elisp function or keyboard macro, and then have =demo-it= execute
+;;   each function when I hit either the SPACE key or the F12 key
+;;   (advanced minor mode).
 ;;
 ;;   Using the library is a three step process:
 ;;
@@ -110,10 +112,10 @@
 ;;;###autoload
 (defun demo-it-start (steps &optional advanced-mode)
   "Start the current demonstration and kick off the first step.
-STEPS is a list of functions to execute.  If non-nil, the
-optional ADVANCED-MODE turns on keybindings where <F12> advances
-the steps instead of Space.  This mode is better for more
-interactive demonstrations."
+STEPS is a list of functions or keystrokes to execute.
+If non-nil, the optional ADVANCED-MODE turns on keybindings where
+<F12> advances the steps instead of Space.  This mode is better
+for more interactive demonstrations."
   (setq demo-it-start-winconf (current-window-configuration))
   (setq demo-it--step 0)      ;; Reset the step to the beginning
   (setq demo-it--steps steps) ;; Store the steps.
@@ -151,7 +153,7 @@ to run the 6th step."
       ;; and f-step is the function to call for this step...
       ((f-step (nth (1- demo-it--step) demo-it--steps)))
     (if f-step
-        (funcall f-step)
+        (demo-it--execute-step f-step)
       (read-event "Finished the entire demonstration. Hit any key to return.")
       (demo-it-end))))
 
@@ -165,8 +167,13 @@ Useful when the previous step failed, and you want to redo it."
       ;; and f-step is the function to call for this step...
       ((f-step (nth (1- demo-it--step) demo-it--steps)))
     (if f-step
-        (funcall f-step)
+        (demo-it--execute-step f-step)
       (message "Finished the entire demonstration."))))
+
+(defun demo-it--execute-step (f-step)
+  (cond ((functionp f-step) (funcall f-step))
+        ((stringp f-step)   (execute-kbd-macro (kbd f-step)))
+        (t                  (error "invaid step: %s" f-step))))
 
 ;; Position or advance the slide? Depends...
 
@@ -552,6 +559,7 @@ items while executing appropriate code."
 (defun demo-it-presentation-quit ()
   "Undo display settings made to the presentation buffer."
   (interactive)
+  (demo-it--setq-restore)
   (when demo-it--presentation-buffer
     (switch-to-buffer demo-it--presentation-buffer)
     (when (fboundp 'org-tree-slide-mode)
@@ -594,6 +602,46 @@ items while executing appropriate code."
     (set-frame-parameter nil 'fullscreen nil)
     (set-frame-parameter nil 'width dest-width)
     (set-frame-parameter nil 'left 0)))
+
+;; Temporary variables
+;;
+;;    Set variables during a demonstration.
+;;    They are restored after the demonstration.
+
+(defvar demo-it--setq-tempvars (make-hash-table))
+(defvar demo-it--setq-voidvars nil)
+(defvar demo-it--setq-nilvars nil)
+(defun demo-it--setq (l)
+  (cl-case (length l)
+    (0)
+    (1
+     (error "Argument length is odd"))
+    (t
+     (let ((name (car l))
+           (var  (eval (cadr l))))
+       (cond ((and (boundp name) (symbol-value name))
+              (puthash name (symbol-value name) demo-it--setq-tempvars))
+             ((boundp name)
+              (push name demo-it--setq-nilvars))
+             (t
+              (push name demo-it--setq-voidvars)))
+       (set name var)
+       (demo-it--setq (nthcdr 2 l))))))
+
+(defmacro demo-it-setq (&rest list)
+  "Like `setq', but the values are restored to original after the demo.
+Actually restored by `demo-it--setq-restore'."
+  `(demo-it--setq '(,@list)))
+
+(defun demo-it--setq-restore ()
+  "Restore values of setting by `demo-it-setq'."
+  (cl-loop for name being the hash-keys in demo-it--setq-tempvars using (hash-values value)
+           do (set name value))
+  (dolist (name demo-it--setq-nilvars) (set name nil))
+  (mapc 'makunbound demo-it--setq-voidvars)
+  (clrhash demo-it--setq-tempvars)
+  (setq demo-it--setq-nilvars nil
+        demo-it--setq-voidvars nil))
 
 ;; Helper Functions
 
