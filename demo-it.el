@@ -559,6 +559,7 @@ items while executing appropriate code."
 (defun demo-it-presentation-quit ()
   "Undo display settings made to the presentation buffer."
   (interactive)
+  (demo-it--setq-restore)
   (when demo-it--presentation-buffer
     (switch-to-buffer demo-it--presentation-buffer)
     (when (fboundp 'org-tree-slide-mode)
@@ -569,8 +570,7 @@ items while executing appropriate code."
     (demo-it--presentation-display-restore)  ; Restore previous changes
     (variable-pitch-mode nil)
     (demo-it-show-mode-line)
-    (text-scale-set 0)
-    (demo-it--setq-restore)))
+    (text-scale-set 0)))
 
 ;; Switch Framesize
 ;;
