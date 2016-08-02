@@ -116,6 +116,8 @@ STEPS is a list of functions or keystrokes to execute.
 If non-nil, the optional ADVANCED-MODE turns on keybindings where
 <F12> advances the steps instead of Space.  This mode is better
 for more interactive demonstrations."
+  (when (or demo-it-mode demo-it-mode-adv)
+    (error "Do not start new demonstrations DURING demonstration"))
   (setq demo-it-start-winconf (current-window-configuration))
   (setq demo-it--step 0)      ;; Reset the step to the beginning
   (setq demo-it--steps steps) ;; Store the steps.
@@ -171,9 +173,12 @@ Useful when the previous step failed, and you want to redo it."
       (message "Finished the entire demonstration."))))
 
 (defun demo-it--execute-step (f-step)
-  (cond ((functionp f-step) (funcall f-step))
-        ((stringp f-step)   (execute-kbd-macro (kbd f-step)))
-        (t                  (error "invaid step: %s" f-step))))
+  (condition-case err
+      (cond ((functionp f-step) (funcall f-step))
+            ((stringp f-step)   (execute-kbd-macro (kbd f-step)))
+            (t                  (error "invaid step: %s" f-step)))
+    (error (read-event (format "Abort the demonstration because of error. Hit any key to return.\n%S" err))
+           (demo-it-end))))
 
 ;; Position or advance the slide? Depends...
 
