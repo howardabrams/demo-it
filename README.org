@@ -1,0 +1,106 @@
+When making demonstrations of new products, technologies and other
+geekery, I love the versatility of using Emacs to demonstrate the
+trifecta of sprint reviews:
+
+  * Presentations explaining the technology and whatnot
+  * Reviewing source code ... correctly highlighted and interactive
+  * Executing the code in Eshell
+
+However, I don't want to fat-finger, mentally burp, or even delay
+gratification for my audience while I laboriously type, so I
+predefine each "step" as an Elisp function, and then have `demo-it`
+execute each function when I hit the /advance/ key.
+
+See the following videos as examples of what can be done:
+
+  * [[http://www.youtube.com/watch?v=3T00X_sNg4Q][Learn You Some Lisp for Great Good]]
+  * [[http://www.youtube.com/watch?v=B6jfrrwR10k][Emacs: An Introduction for the Curious]]
+
+Click the following for a quicker example:
+
+#+HTML: <a href="http://www.youtube.com/watch?v=TSprQzowhAQ"><img src="http://img.youtube.com/vi/TSprQzowhAQ/0.jpg" alt="Example and Demonstration"/></a>
+
+Using this project is a four step process:
+
+  1. Load the library in your own Elisp source code file
+  2. Create zero or more helper functions that "do things", or use the
+     functions provided by this project.
+  3. Order the functions by calling =(demo-it-create)=
+  4. Call =demo-it-start= to kick off the fun.
+
+When done, call =demo-it-end=.
+
+For instance:
+
+#+BEGIN_SRC elisp
+  (require 'demo-it)   ;; Load this library of functions
+
+  (defun my-demo-step/show-code ()
+    "Helper demo function that displays some sorce code and
+  advances the presentation at one time."
+    (demo-it-load-side-window "example/example.py")
+    (demo-it-presentation-advance))
+
+  ;; Order the functions and forms for this presentation:
+  (demo-it-create (demo-it-presentation "example/example.org")
+                   my-demo-step/show-code
+                  (message "Size: %d" (length demo-it--steps))
+                   demo-it-presentation-return
+                  (demo-it-run-in-eshell "python example/example.py"))
+
+  (demo-it-start)
+#+END_SRC
+
+Let's see:
+#+BEGIN_SRC elisp
+(functionp (cadr demo-it--steps))
+(eval (caddr demo-it--steps))
+(keywordp :hello)
+
+#+END_SRC
+Each "step" is an Elisp functions that does something like load some
+source code, or show off an org-mode file as a presentation.  While
+this package has a collection of helping functions, the steps can use
+any Elisp command to show off a feature.
+
+For a more complete example, see [example.el][e].
+
+I recommend installing these other Emacs packages:
+
+  * [org-tree-slide-mode][1]
+  * [org-bullets][2]
+  * [expand-region][3]
+  * [fancy-narrow][4]
+
+
+  [yt3]:
+  [e]: example/example.el
+  [1]: https://github.com/takaxp/org-tree-slide
+  [2]: https://github.com/sabof/org-bullets
+  [3]: https://github.com/magnars/expand-region.el
+  [4]: https://github.com/Bruce-Connor/fancy-narrow
+
+* Control by Keywords
+
+  The list of steps can also contain the following keywords.
+
+  - :simple-mode :: Use SPACE to advance demo
+  - :advanced-mode :: Use F12 to advance the demo
+  - :insert-quickly :: Shell commands are immediately entered (default)
+  - :insert-typing :: Shell commands are slowly entered
+  - :fullscreen :: Start the demonstration in fullscreen mode
+  - :start-one-window :: Delete other windows when started
+  - :use-side-windows :: Default to open windows on the side
+  - :use-lower-windows
+  - :show-mode-line
+  - :hide-mode-line (the default)
+  - :show-org-markers :: In org-mode files show
+  - :hide-org-markers (the default)
+  - :variable-width
+  - :fixed-width
+  - :show-block-headers
+  - :hide-block-headers (the default)
+  - :show-fringe-mode
+  - :hide-fringe-mode (the default)
+  - :use-shell
+  - :use-eshell

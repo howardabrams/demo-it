@@ -1,25 +1,28 @@
-;;; demo-it.el --- Utility functions for creating demonstrations and tests with eyes
-
-;; Copyright (C) 2014  Howard Abrams
-
+;;; DEMO-IT --- Create demonstrations
+;;
 ;; Author: Howard Abrams <howard.abrams@gmail.com>
+;; Copyright (C) 2014  Howard Abrams
 ;; Keywords: demonstration presentation test
-
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or
 ;; (at your option) any later version.
-
+;;
 ;; This program is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ;; GNU General Public License for more details.
-
+;;
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
 ;;; Commentary:
-
+;;
 ;;   When making demonstrations of new products, technologies and other
 ;;   geekery, I love the versatility of using Emacs to demonstrate the
 ;;   trifecta of sprint reviews, including:
@@ -84,48 +87,126 @@
 
 (require 'cl-lib)
 
-;;   Predefined necessary external functions:
+;; Predefined necessary external functions:
 (declare-function face-remap-remove-relative "face-remap.el")
+(defvar org-image-actual-width)
 
-;;   To begin, we need a "global" variable (shudder) that keeps track of
-;;   the current state of the demonstration.
-
-(defvar demo-it--step 0  "Stores the current demo 'step' function.")
-(defvar demo-it--steps '() "List of functions to be executed in order.")
-
-;; The following functions come from other projects I like to use
+;; And functions from other projects I like to use...
 (declare-function fancy-narrow-to-region "ext:fancy-narrow")
 (declare-function fancy-narrow-to-defun "ext:fancy-narrow")
 (declare-function eshell-send-input "ext:eshell")
 (declare-function show-all "ext:eshell.c")
+(declare-function org-tree-slide-content "ext:org-tree-slide")
+(declare-function org-tree-slide-move-next-tree "ext:org-tree-slide")
 (defvar org-tree-slide-heading-emphasis)
 (defvar org-hide-emphasis-markers)
 
-;; Starting a Demonstration
+;; Load our 'modules' from other files:
+(load-file "demo-it-custom.el")
+
+;; And specify the customization variables set in that module:
+(defvar demo-it--shell-or-eshell)
+(defvar demo-it--keymap-mode-style)
+(defvar demo-it--insert-text-speed)
+(defvar demo-it--side-windows)
+(defvar demo-it--text-scale)
+(declare-function demo-it--get-insert-text-speed "demo-it-custom.el")
+(declare-function demo-it--set-property "demo-it-custom.el")
+
+
+;; ----------------------------------------------------------------------
+;; MINOR MODES
+;;
+;;   We define two styles of minor modes for dealing with special keys
+;;   to advance the demonstration along ... a simple uses space and
+;;   return, and an 'advanced' mode that requires a special function
+;;   key...
+
+(define-minor-mode demo-it-mode "Pressing 'space' advances demo."
+  :lighter " demo"
+  :require 'demo-it
+  :global t
+  :keymap '((" "               . demo-it-step)
+            (""              . demo-it-step)
+            ("[down]"          . demo-it-step)
+            ("[mouse-1]"       . demo-it-set-mouse-or-advance)
+            ([nil mouse-1]     . demo-it-step)
+            ([nil wheel-up]    . demo-it-ignore-event)
+            ([nil wheel-down]  . demo-it-ignore-event)
+            ([nil wheel-left]  . demo-it-ignore-event)
+            ([nil wheel-right] . demo-it-ignore-event)
+            ("q"               . demo-it-disable-mode)
+            ("Q"               . demo-it-end)))
+
+(define-minor-mode demo-it-mode-adv "Pressing '<f12>' advances demo."
+  :lighter " demo-adv"
+  :require 'demo-it
+  :global  t
+  :keymap  (let ((map (make-sparse-keymap)))
+             (define-key map (kbd   "<f12>") 'demo-it-step)
+             (define-key map (kbd "s-<f12>") 'demo-it-insert-text)
+             (define-key map (kbd "A-<f12>") 'demo-it-insert-text)
+             (define-key map (kbd "M-<f12>") 'demo-it-end)
+             map))
+
+;; Demo Mode
+;;
+;;   Allows us to advance to the next step by pressing the
+;;   space bar or return. Press the 'q' key to stop the mode.
+
+(defun demo-it-disable-mode ()
+  "Called when 'q' (or similar key) pressed to disable either the
+simple or advanced version of `demo-it-mode'."
+  (interactive)
+  (demo-it-mode -1)
+  (demo-it-mode-adv -1))
+
+;; ----------------------------------------------------------------------
+;; DEMONSTRATION MAKER
 ;;
 ;;   When we start a demonstration, we would pass in a list of functions
 ;;   to call for each step, and then call =demo-step= to execute the
 ;;   first one on the list.
+
+;; A "global" variable (shudder) to track state of the demonstration:
+(defvar demo-it--step 0  "Stores the current demo 'step' function.")
+(defvar demo-it--steps '() "List of functions to be executed in order.")
 (defvar demo-it-start-winconf nil
-  "Window configuration when starting demo.")
+  "Window configuration when starting demo. Used to restore
+  buffer positions after demonstration is complete.")
 
 ;;;###autoload
-(defun demo-it-start (steps &optional advanced-mode)
+(defun demo-it-start (&optional steps advanced-mode)
   "Start the current demonstration and kick off the first step.
 STEPS is a list of functions or keystrokes to execute.
-If non-nil, the optional ADVANCED-MODE turns on keybindings where
-<F12> advances the steps instead of Space.  This mode is better
-for more interactive demonstrations."
+If nil, the STEPS must be specified by a call to `demo-it-create'.
+
+The optional ADVANCED-MODE turns on keybindings where <F12>
+advances the steps instead of Space.  This mode is better for
+more interactive demonstrations."
   (when (or demo-it-mode demo-it-mode-adv)
     (error "Do not start new demonstrations DURING demonstration"))
+
   (setq demo-it-start-winconf (current-window-configuration))
   (setq demo-it--step 0)      ;; Reset the step to the beginning
-  (setq demo-it--steps steps) ;; Store the steps.
-  (delete-other-windows)
-  (if (not advanced-mode)
-      (demo-it-mode t)            ;; Turn on global keymapping mode
-    (demo-it-mode-adv t))
+  (when steps
+    (setq demo-it--steps steps)) ;; Store the steps.
+
+  (if (or advanced-mode (eq demo-it--keymap-mode-style :advanced-mode))
+      (demo-it-mode-adv t)
+    (demo-it-mode t))
+
   (demo-it-step))
+
+(defmacro demo-it-create (&rest forms)
+  "Create and store an ordered list of steps and configuration values. The FORMS can be either function names, expressions or keywords, like :advanced-mode and :variable-width."
+  `(progn
+     (demo-it--set-properties (cl-remove-if-not 'keywordp '(,@forms)))
+     (setq demo-it--steps     (cl-remove-if     'keywordp '(,@forms)))))
+
+(defun demo-it--set-properties (l)
+  "Sets a series of single property values from list, L."
+  (mapcar 'demo-it--set-property l))
 
 (defun demo-it-end ()
   "End the current demonstration by resetting the values
@@ -133,7 +214,6 @@ inflicted on the presentation buffer as well as closing other
 windows."
   (interactive)
   (demo-it-disable-mode)
-  (demo-it-presentation-return-noadvance) ;; Close other windows
   (demo-it-presentation-quit)
   (set-window-configuration demo-it-start-winconf))
 
@@ -156,7 +236,7 @@ to run the 6th step."
       ((f-step (nth (1- demo-it--step) demo-it--steps)))
     (if f-step
         (demo-it--execute-step f-step)
-      (read-event "Finished the entire demonstration. Hit any key to return.")
+      (read-event "Demonstration finished. Hit any key to return.")
       (demo-it-end))))
 
 (defun demo-it-restep ()
@@ -173,9 +253,12 @@ Useful when the previous step failed, and you want to redo it."
       (message "Finished the entire demonstration."))))
 
 (defun demo-it--execute-step (f-step)
+  "Executes F-STEP depending on its type, e.g. expression, function, etc."
   (condition-case err
       (cond ((functionp f-step) (funcall f-step))
-            ((stringp f-step)   (execute-kbd-macro (kbd f-step)))
+            ((listp     f-step) (eval f-step))     ; An expression
+            ((stringp   f-step) (execute-kbd-macro (kbd f-step)))
+            ((keywordp  f-step) (demo-it--set-property f-step))
             (t                  (error "invaid step: %s" f-step)))
     (error (read-event (format "Abort the demonstration because of error. Hit any key to return.\n%S" err))
            (demo-it-end))))
@@ -183,7 +266,9 @@ Useful when the previous step failed, and you want to redo it."
 ;; Position or advance the slide? Depends...
 
 (defun demo-it-set-mouse-or-advance (evt)
-  "Advances to the next step if clicked on the right side of any window, otherwise, it position the point as expected.  With EVT, function can be bound to the mouse click."
+  "Advances to the next step if clicked on the right side of any
+window, otherwise, it position the point as expected.  With EVT,
+function can be bound to the mouse click."
   (interactive "e")
   (if (posn-area (event-start evt))  ;; Clicked in special area?
       (demo-it-step)
@@ -205,24 +290,10 @@ Useful when the previous step failed, and you want to redo it."
   (message ""))
 
 
-;; Fancy Region Highlighting
+;; ----------------------------------------------------------------------
+;; HIDE MODELINE
 ;;
-;; While sometimes I want highlight some code, it is usually a
-;;    function, so instead of remembering two key combinations, let's
-;;    just have the =C-+= narrow to the region if active, otherwise,
-;;    narrow to the function:
-
-(defun demo-it-highlight-section ()
-  "If the region is active, call 'fancy-narrow-to-region on it, otherwise, call 'fancy-narrow-to-defun, and see what happens."
-  (interactive)
-  (when (fboundp 'fancy-narrow-to-region)
-    (if (region-active-p)
-        (fancy-narrow-to-region (region-beginning) (region-end))
-      (fancy-narrow-to-defun))))
-
-;; Hiding the Modeline
-;;
-;;    Call the demo-it-hide-mode-line when displaying images and
+;;    Call the `demo-it-hide-mode-line' when displaying images and
 ;;    org-mode files displayed as "presentations", so that we aren't
 ;;    bothered by the sight of the mode.
 
@@ -242,62 +313,94 @@ Useful when the previous step failed, and you want to redo it."
   (if demo-it--old-mode-line
       (setq mode-line-format demo-it--old-mode-line)))
 
-;; Making a Side Window
+
+;; ----------------------------------------------------------------------
+;; SIDE WINDOWS
 ;;
 ;;    Typically, we make a side window that is large enough to have some
 ;;    fun in, as the main window would serve as little more than an
 ;;    outline.
 
-(defun demo-it-make-side-window (&optional side)
-  "Splits the window horizontally and puts point on right side window.  SIDE is either 'below or 'side (for the right side)."
-  (when side
-    (if (eq side 'below)
-        (split-window-vertically)
-      (split-window-horizontally)))
-  (other-window 1))
+(defun demo-it--make-side-window (&optional side)
+  "Splits window horizontally and selects other window.
+
+SIDE is either :below or :side and defaults to the value of
+`demo-it--side-windows'."
+  (if (null side)
+      (setq side demo-it--side-windows))
+
+  (select-window (if (or (eq side 'below) (eq side :below))
+                     (split-window-vertically)
+                   (split-window-horizontally))))
+
+;; Since the `make-side-window' shouldn't be called, it has two
+;; dashes, but to maintain backward compatibility, we make an alias:
+(define-obsolete-function-alias 'demo-it-make-side-window
+  'demo-it--make-side-window "2016-Oct")
 
 ;; Load a File in the Side Window
 ;;
 ;;    Splits the window and loads a file on the right side of the screen.
 
 (defun demo-it-load-file (file &optional side size)
-  "Splits window and load FILE on the right side of the screen.  If SIDE is non-nil, the source code file is place in a window either 'below or to the 'side.  The SIZE can be used to scale the text font, which defaults to 1 step larger.  This function is called with source code since the mode line is still shown."
-  (if side
-      (demo-it-make-side-window side))
+  "Splits window and load FILE in other buffer.
+
+SIDE can be :below (for vertical split) or :side (for
+horizontal), and defaults to the customized value of
+`demo-it--side-windows'.
+
+SIZE can specify the text font scale, and if `nil', it uses the value of ,
+which defaults to 1 step larger.  This function is called with
+source code since the mode line is still shown."
+  (demo-it-make-side-window side)
   (find-file file)
   (if size (text-scale-set size)
-           (text-scale-set 1)))
+           (text-scale-set demo-it--text-scale)))
 
-;; Load a File and Fancily Highlight Some Lines
-;;
-;;    Would be nice to load up a file and automatically highlight some
-;;    lines.
+(defun demo-it--get-section (type &optional start end)
+  "Return tuple of beginning and end of a section of buffer.
 
-(defun demo-it-load-fancy-file (file type line1 line2 &optional side size)
-  "Load FILE and use fancy narrow to highlight part of the buffer.  If TYPE is 'char, LINE1 and LINE2 are position in buffer, otherwise LINE1 and LINE2 are start and ending lines to highlight.  If SIDE is non-nil, the buffer is placed in a new side window, either 'below or to the 'side, and SIZE is the text scale, which defaults to 1."
+If TYPE is :char or 'char, START and END refers to specific
+character positions, but if TYPE is :line or 'line, this returns
+the point positions as if START and END are line numbers."
+
+  ;; Due to the way we call this function, we need to allow start and
+  ;; end to be null, and if so, we select the entire buffer.
+  (when (or (null start) (null end))
+    (setq type :char)
+    (setq start (point-min))
+    (setq end   (point-max)))
+
+  (when (or (eq type :line) (eq type 'line))
+    (save-excursion
+      ;; Re-implementing `goto-line' for the win!
+      (goto-char (point-min)) (forward-line (1- start))
+      (setq start (point))
+      (goto-char (point-min)) (forward-line end)
+      (setq end (point))))
+  (cons start end))
+
+(defun demo-it-load-part-file (file type start end &optional side size)
+  "Splits window and loads FILE, but narrow to particular region.
+
+If TYPE is set to :line, then START and END refers to the first
+and last lines to narrow. If TYPE is set to :char, then START and
+END refer to specific character positions.
+
+See `demo-it-load-file' for an explanation of SIDE and SIZE.
+Also see `demo-it-load-fancy-file' for an alternative version."
   (demo-it-load-file file side size)
-
-  ; If fancy-narrow hasn't been installed, this behaves
-  ; just like demo-it-load-file
-  (when (fboundp 'fancy-narrow-to-region)
-    (let ((start line1)
-          (end line2))
-      (unless (eq type 'char)
-        (goto-char (point-min)) (forward-line (1- line1))  ;; Heh: (goto-line line1)
-        (setq start (point))
-        (goto-char (point-min)) (forward-line line2)
-        (setq end (point)))
-      (fancy-narrow-to-region start end))))
-
-
-;; Display an Image (or other non-textual scaled file) on the Side
+  (let ((positions (demo-it--get-section type start end)))
+    (narrow-to-region (car positions) (cdr positions))))
 
 (defun demo-it-show-image (file &optional side)
-  "Load FILE as image (or any other special file) replacing the current buffer.  If SIDE is non-nil, the image is shown in another window, either 'below or to the 'side."
+  "Load FILE as image (or any other special file) in another
+window without a mode line or fringe.  SIDE can be either :side
+or :below, and if `nil', the default is to use the value of
+`demo-it--side-windows'."
   (demo-it-load-file file side)
   (fringe-mode '(0 . 0))
   (demo-it-hide-mode-line))
-
 
 ;; Compare and Contrast Files
 ;;
@@ -308,28 +411,41 @@ Useful when the previous step failed, and you want to redo it."
 ;;   To further manipulate them.
 
 (defun demo-it-compare-files (file1 file2 &optional side size)
-  "Load FILE1 and FILE2 as either two windows on top of each other on the right side of the screen, or two windows below (depending on the value of SIDE).  The SIZE specifies the text scaling of both buffers."
-  (if (eq side 'below)
+  "Load FILE1 and FILE2 as either two windows on top of each
+other on the side of the screen, or two windows below (depending
+on the value of SIDE).  The SIZE specifies the text scaling of
+both buffers."
+  (if (null side)
+      (setq side demo-it--side-windows))
+
+  (if (or (eq side 'below) (eq side :below))
       (progn
-        (demo-it-load-file file1 'below size)
-        (demo-it-load-file file2 'side size))
+        (demo-it-load-file file1 :below size)
+        (demo-it-load-file file2 :side size))
     (progn
-      (demo-it-load-file file1 'side size)
-      (demo-it-load-file file2 'below size))))
+      (demo-it-load-file file1 :side size)
+      (demo-it-load-file file2 :below size))))
 
-
-;; Start an Eshell and Run Something
+;; ----------------------------------------------------------------------
+;; SHELL WORK
 ;;
-;;    This function assumes you want an Eshell instance running in the
-;;    lower half of the window. Changes to a particular directory, and
-;;    automatically runs something.
+;;    Kick off a shell in another window, change to a particular
+;;    directory, and automatically run something.
 
-(defun demo-it-start-eshell (&optional directory command name side size)
-  "Start Eshell instance, and change to DIRECTORY to execute COMMAND.  NAME optionally labels the buffer.  SIDE can be either 'below or to the 'side, and SIZE specifies the text scale, which defaults to 1 level larger."
-  (let ((title (demo-it--eshell-buffer-name name)))
+(defun demo-it-start-shell (&optional directory command name side size)
+  "Start a shell or eshell instance, and change to DIRECTORY to
+execute COMMAND.  NAME optionally labels the buffer.  SIDE can be
+either 'below or to the 'side, and SIZE specifies the text scale,
+which defaults to 1 level larger."
+  (let ((title (demo-it--shell-buffer-name name)))
     (demo-it-make-side-window side)
-    (eshell "new")
-    (rename-buffer title)
+
+    (if (eq demo-it--shell-or-eshell :shell)
+        (shell title)
+
+      (eshell "new")
+      (rename-buffer title))
+
     (if size (text-scale-set size)
       (text-scale-set 1))
 
@@ -340,42 +456,66 @@ Useful when the previous step failed, and you want to redo it."
     (eshell-send-input)
 
     (when command
-      (insert command)
-      (eshell-send-input))))
+      (demo-it-insert-shell command))))
 
-(defun demo-it--eshell-buffer-name (name)
-  "Return the buffer NAME for the EShell window."
+(define-obsolete-function-alias 'demo-it-start-eshell 'demo-it-start-shell "2016-Oct")
+
+(defun demo-it--shell-buffer-name (name)
+  "Return the buffer NAME for the shell or eshell window."
   (if name
       (concat "Shell: " name)
     "Shell"))
 
-(defun demo-it-show-eshell (&optional name side)
+(defun demo-it-insert-shell (command)
+  "Inserts some text in the given shell or eshell."
+  (demo-it-insert command)
+  (eshell-send-input))
+
+(defun demo-it-insert (str)
+  "Insert STR into the current buffer as if you were typing it by hand."
+  (let ((timings (demo-it--get-insert-text-speed)))
+
+    (if (eq timings :instant)
+        (insert str)
+      (let ((bottom-limit (car timings))
+            (top-limit    (cdr timings)))
+
+        ;; If we are not inserting instantaneously, then loop over each
+        ;; character in the string with a random delay based on this range:
+        (dolist (ch (string-to-list str))
+          (insert ch)
+          (let ((tm  (+ (/ bottom-limit 1000.0)
+                        (/ (random top-limit) 1000.0))))
+            (sit-for tm)))))))
+
+(defun demo-it-run-in-shell (command &optional name)
+  "Run shell command COMMAND in a previously initialized Eshell.
+If NAME is not specified, it defaults to `Shell'."
+  (switch-to-buffer (demo-it--shell-buffer-name name))
+  (demo-it-insert-shell command))
+
+(define-obsolete-function-alias 'demo-it-run-in-eshell 'demo-it-run-in-shell "2016-Oct")
+(define-obsolete-function-alias 'demo-it-type-in-eshell 'demo-it-run-in-shell "2016-Oct")
+
+(defun demo-it-show-shell (&optional name side)
   "Call if the shell window of a given NAME has been
 hidden. Optionally specify the SIDE (either 'below or 'side)."
   (demo-it-make-side-window side)
-  (switch-to-buffer (demo-it--eshell-buffer-name name)))
+  (switch-to-buffer (demo-it--shell-buffer-name name)))
 
-(defun demo-it-run-in-eshell (command &optional name)
-  "Run shell command COMMAND in a previously initialized Eshell.
-If NAME is not specified, it defaults to `Shell'."
-  (switch-to-buffer (demo-it--eshell-buffer-name name))
-  (insert command)
-  (eshell-send-input))
+(define-obsolete-function-alias 'demo-it-show-eshell 'demo-it-show-shell "2016-Oct")
 
-(defun demo-it-type-in-eshell (command &optional name)
-  "Type slowly and run shell command COMMAND in a previously initialized Eshell.
-If NAME is not specified, it defaults to `Shell'."
-  (switch-to-buffer (demo-it--eshell-buffer-name name))
-  (demo-it-insert-typewriter command)
-  (eshell-send-input))
 
-;; Title Display
+;; TITLE DISPLAY
 ;;
 ;;    Create a file to serve as a "title" as it will be displayed with a
-;;    larger-than-life font.
+;;    larger-than-life font and make Emacs not look like Emacs.
 
 (defun demo-it-title-screen (file &optional size)
-  "Use FILE to serve as a presentation title, as it will be displayed with a larger-than-life font.  SIZE specifies the text scale, which defaults to 5x."
+  "Display FILE to serve as the demonstration's title, as it will
+be displayed with a larger-than-life font without a mode line,
+etc.  SIZE specifies the text scale, which ignores the
+`demo-it--text-scale' customization setting and defaults to 5x."
   (delete-other-windows)
   (fringe-mode '(0 . 0))
 
@@ -389,195 +529,12 @@ If NAME is not specified, it defaults to `Shell'."
   (if size (text-scale-set size)
     (text-scale-set 5))
 
+  ;; Time to brag a wee bit...
   (message "%s" "† This presentation is running within Emacs."))
 
-;; Starting an ORG Presentation
-;;
-;;    Since I often have an org-mode file on the side of the screen to
-;;    demonstrate an outline of what I will be demoing, I made it a
-;;    function.
 
-;;    Uses org-tree-slide if available.
-;;    See https://github.com/takaxp/org-tree-slide
-
-(defvar demo-it--presentation-file "")
-(defvar demo-it--presentation-buffer nil)
-(defvar demo-it--presentation-prev-settings (make-hash-table))
-
-(defun demo-it-presentation (file &optional size style section)
-  "Load FILE (org-mode?) as presentation.  Start org-tree-slide
-if available.  SIZE specifies the text scale, and defaults to 2
-steps larger. STYLE can either be :variable for variable pitch of
-the font, :blocks for diminished headers on org-blocks, or :both
-for both features.
-
-The SECTION is the name of an org-mode header to specify as the
-first section to display."
-  (find-file file)
-  (setq demo-it--presentation-file file)
-  (setq demo-it--presentation-buffer (buffer-name))
-
-  (when (fboundp 'org-tree-slide-mode)
-    (setq org-tree-slide-heading-emphasis t)
-    (org-tree-slide-mode)
-    (when section
-      (demo-it--presentation-section section)))
-
-  (when (fboundp 'flyspell-mode)
-    (flyspell-mode -1))
-  (setq cursor-type nil)
-
-  ;; Style things up correctly...
-  (make-local-variable 'demo-it--presentation-prev-settings)
-  (puthash :emphasis-markers org-hide-emphasis-markers demo-it--presentation-prev-settings)
-  (setq org-hide-emphasis-markers t)
-
-  (when (or (eq style :variable) (eq style :both))
-    (variable-pitch-mode 1))
-
-  ;; Make the display of the org-mode file more presentable
-  (when (or (eq style :block) (eq style :both))
-    (demo-it--presentation-display-set))
-
-  (demo-it-hide-mode-line)
-  (if size (text-scale-set size)
-    (text-scale-set 2))
-
-  (when (fboundp 'org-bullets-mode)
-    (org-bullets-mode 1)))
-
-(defun demo-it--presentation-display-set ()
-  "Change some typical `org-mode' display values to make more
-presentation-friendly.  Store the changed values in a hashtable.
-See `demo-it--presentation-display-restore'."
-  ;; Save everything that is interesting into a hash table:
-  (puthash :restore t demo-it--presentation-prev-settings)
-  ;; Allow us to resize our images:
-  (setq org-image-actual-width nil)
-  (let* ((backgd (face-attribute 'default :background))
-         (border (list (list :foreground backgd :background backgd :height 1))))
-    (cl-flet ((set-attr (attr values) (puthash attr
-                                               (face-remap-add-relative attr values)
-                                               demo-it--presentation-prev-settings)))
-      (set-attr 'org-block-begin-line border)
-      (set-attr 'org-block-end-line   border)
-      (set-attr 'org-meta-line        border)
-      (set-attr 'org-special-keyword  border)
-      (set-attr 'org-block            '((:family "monospace")))
-      (set-attr 'org-verbatim         '((:family "monospace")))
-      (set-attr 'org-code             '((:family "monospace")))
-      (set-attr 'org-table            '((:family "monospace")))
-      (set-attr 'org-special-keyword  '((:family "monospace"))))))
-
-(defun demo-it--presentation-display-restore ()
-  "After `demo-it--presentation-display-set', call to restore previous settings."
-  (setq org-hide-emphasis-markers
-        (gethash :emphasis-markers demo-it--presentation-prev-settings))
-  (when (gethash :restore demo-it--presentation-prev-settings)
-    (remhash :restore demo-it--presentation-prev-settings)
-    (cl-flet ((rest-attr (attr) (face-remap-remove-relative
-                                 (gethash attr demo-it--presentation-prev-settings))))
-      (mapcar #'rest-attr (list 'org-block-begin-line 'org-block-end-line 'org-block 'org-meta-line
-                                'org-verbatim 'org-code 'org-table 'org-special-keyword)))))
-
-;; Specify a section in the presentation
-
-(defun demo-it--presentation-section (section)
-  "Moves the displayed presentation to a SECTION header."
-  (interactive "s")
-  (when demo-it--presentation-buffer
-    (switch-to-buffer demo-it--presentation-buffer)
-    (org-tree-slide-content)
-    (goto-char (point-min))
-    (re-search-forward (format "^\*+ +%s" section))
-    (org-tree-slide-move-next-tree)))
-
-;; Jumping Back to the Presentation
-;;
-;;    In this case, we've been doing some steps, and the screen is
-;;    "messed up", calling this function returns back to the
-;;    presentation.
-
-(defun demo-it-presentation-return-noadvance ()
-  "Return to the presentation buffer and delete other windows."
-  (when demo-it--presentation-buffer
-    (switch-to-buffer demo-it--presentation-buffer))
-  (delete-other-windows))
-
-(defun demo-it-presentation-return ()
-  "Return to the presentation buffer, delete other windows, and advance to the next 'org-mode' section."
-  (when demo-it--presentation-buffer
-    (demo-it-presentation-return-noadvance)
-    (when (fboundp 'org-tree-slide-move-next-tree)
-      (org-tree-slide-move-next-tree))))
-
-(defun demo-it-single-presentation (file &optional size style section)
-  "Demonstration that presents on `org-mode' FILE as a full-screen presentation."
-  (interactive "fPresentation File: ")
-  (cl-flet ((present-it ()
-                        (demo-it-frame-fullscreen)
-                        (delete-other-windows)
-                        (demo-it-presentation file size style section)))
-    (demo-it-start (list #'present-it) t)))
-
-;; Advance Presentation without Changing Focus
-;;
-;;    Advances the org-mode presentation, but after popping into that
-;;    presentation buffer, returns to the window where our focus was
-;;    initially.
-
-(defun demo-it-presentation-advance ()
-  "Advance the presentation to the next frame (if the buffer is an 'org-mode' and 'org-tree-slide' is available), but doesn't change focus or other windows.  Only useful if using the org-tree-slide mode for the presentation buffer."
-  (interactive)
-  (when demo-it--presentation-buffer
-    (let ((orig-window (current-buffer)))
-      (switch-to-buffer demo-it--presentation-buffer)
-      (when (fboundp 'org-tree-slide-move-next-tree)
-        (org-tree-slide-move-next-tree))
-      (switch-to-buffer orig-window))))
-
-(defun demo-it--presentation-highlight-phrase (phrase &optional color)
-  "Highlight a PHRASE (based on a regular expression) in the
-presentation buffer. This is useful to highlight bullet point
-items while executing appropriate code."
-  (when demo-it--presentation-buffer
-    (let ((orig-window (current-buffer))
-          (hilite-color (if (null color) 'hi-green-b color)))
-      (switch-to-buffer demo-it--presentation-buffer)
-      (hi-lock-unface-buffer t)
-      (hi-lock-face-phrase-buffer phrase hilite-color)
-      (switch-to-buffer orig-window))))
-
-(defun demo-it--presentation-unhighlight-all ()
-  (when demo-it--presentation-buffer
-    (let ((orig-window (current-buffer)))
-      (switch-to-buffer demo-it--presentation-buffer)
-      (hi-lock-unface-buffer t)
-      (switch-to-buffer orig-window))))
-
-;; Clean up the Presentation
-;;
-;;    The org-presentation-start function alters the way an org-mode file
-;;    is displayed. This function returns it back to a normal, editable
-;;    state.
-
-(defun demo-it-presentation-quit ()
-  "Undo display settings made to the presentation buffer."
-  (interactive)
-  (demo-it--setq-restore)
-  (when demo-it--presentation-buffer
-    (switch-to-buffer demo-it--presentation-buffer)
-    (when (fboundp 'org-tree-slide-mode)
-      (org-tree-slide-mode -1))
-    (when (fboundp 'flyspell-mode)
-      (flyspell-mode t))
-    (setq cursor-type t)
-    (demo-it--presentation-display-restore)  ; Restore previous changes
-    (variable-pitch-mode nil)
-    (demo-it-show-mode-line)
-    (text-scale-set 0)))
-
-;; Switch Framesize
+;; ----------------------------------------------------------------------
+;; DEALING WITH FRAME
 ;;
 ;;    During a demonstration, it might be nice to toggle between
 ;;    full screen and "regular window" in a programmatic way:
@@ -668,14 +625,9 @@ The text is inserted as if you were typing it.  Make sure the
 `demo-it-text-entries' hash-table has been initialized with a
 character to be used as a key, and the text to insert."
   (interactive "cInsert text from which key?")
-  (demo-it-insert-typewriter (gethash key demo-it-text-entries)))
+  (demo-it-insert (gethash key demo-it-text-entries)))
 
-(defun demo-it-insert-typewriter (str)
-  "Insert STR into the current buffer as if you were typing it by hand."
-  (interactive "s")
-  (dolist (ch (string-to-list str))
-    (insert ch)
-    (sit-for (/ 1.0 (+ 10 (random 100))) nil)))
+
 
 
 (defun demo-it-message-keybinding (key command)
@@ -683,69 +635,10 @@ character to be used as a key, and the text to insert."
   (interactive)
   (message "Typed: '%s' Command: '%s'" key command))
 
-;; Demo Mode
-;;
-;;   Allows us to advance to the next step by pressing the
-;;   space bar or return. Press the 'q' key to stop the mode.
+;; ----------------------------------------------------------------------
 
-(defun demo-it-disable-mode ()
-  "Called when 'q' pressed to disable the 'demo-it-mode'."
-  (interactive)
-  (demo-it-mode -1)
-  (demo-it-mode-adv -1))
-
-(define-minor-mode demo-it-mode "Pressing 'space' advances demo."
-  :lighter " demo"
-  :require 'demo-it
-  :global t
-  :keymap '((" "               . demo-it-step)
-            (""              . demo-it-step)
-            ("[down]"          . demo-it-step)
-            ("[mouse-1]"       . demo-it-set-mouse-or-advance)
-            ([nil mouse-1]     . demo-it-step)
-            ([nil wheel-up]    . demo-it-ignore-event)
-            ([nil wheel-down]  . demo-it-ignore-event)
-            ([nil wheel-left]  . demo-it-ignore-event)
-            ([nil wheel-right] . demo-it-ignore-event)
-            ("q"               . demo-it-disable-mode)
-            ("Q"               . demo-it-end)))
-
-(define-minor-mode demo-it-mode-adv "Pressing '<f12>' advances demo."
-  :lighter " demo-adv"
-  :require 'demo-it
-  :global  t
-  :keymap  (let ((map (make-sparse-keymap)))
-             (define-key map (kbd   "<f12>") 'demo-it-step)
-             (define-key map (kbd "s-<f12>") 'demo-it-insert-text)
-             (define-key map (kbd "A-<f12>") 'demo-it-insert-text)
-             (define-key map (kbd "M-<f12>") 'demo-it-end)
-             map))
-
-;; New Keybindings
-;;
-;;   I have found the following keybindings quite useful, but your mileage may vary.
-
-(defun demo-it-keybindings ()
-  "Add a few global keybindings if some other packages are installed.
-You probably want to look at the source, and create
-your own version of this, but it does the following:
-
-- C-=  Selects or increases the region using expand-region
-- M-C-=  Highlights the region (dimming the rest) using fancy-narrow
-- M-C-+  Unhighlights buffer (by colorizing entire buffer) using fancy-narrow
-
-This function should never had been written, as it is better to
-just add your own keybindings to the demo-it-mode instead, as in:
-
-   (define-key demo-it-mode-map (kbd \"C-<f12>\") 'demo-it-presentation-advance)"
-  (declare (obsolete "Add keybinds to demo-it-mode directly." "Dec 2015"))
-  (interactive)
-
-  (when (fboundp 'er/expand-region)
-    (global-set-key (kbd "C-=") 'er/expand-region))
-  (when (fboundp 'fancy-widen)
-    (global-set-key (kbd "M-C-=") 'highlight-section)
-    (global-set-key (kbd "M-C-+") 'fancy-widen)))
+(load-file "demo-it-present.el")
+(load-file "demo-it-extras.el")
 
 ;;   As a final harrah, we need to let other files know how to include
 ;;   this bad child.
