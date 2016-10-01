@@ -37,6 +37,9 @@
 (declare-function demo-it--get-section "demo-it")
 (declare-function demo-it-load-file "demo-it")
 
+(declare-function fancy-narrow-to-region "ext:fancy-narrow")
+(declare-function fancy-narrow-to-defun "ext:fancy-narrow")
+
 ;; ----------------------------------------------------------------------
 ;; FANCY HIGHLIGHTING
 ;;
