@@ -1,20 +1,27 @@
-When making demonstrations of new products, technologies and other
-geekery, I love the versatility of using Emacs to demonstrate the
-trifecta of sprint reviews:
+At the end of each sprint, each of us demonstrate accomplishments.
+These reviews often incorporate the following trifecta:
 
   * Presentations explaining the technology and whatnot
-  * Reviewing source code ... correctly highlighted and interactive
-  * Executing the code in Eshell
+  * Source code reviewing... correctly highlighted and interactive
+  * Executing the code in a shell
 
-However, I don't want to fat-finger, mentally burp, or even delay
-gratification for my audience while I laboriously type, so I
-predefine each "step" as an Elisp function, and then have `demo-it`
-execute each function when I hit the /advance/ key.
+During the sprint reviews, I noticed I used my org-mode-formatted
+files, eshell and source code buffers... always in Emacs.
+However, fat-fingering or mentally burping delayed the
+gratification for my audience while I laboriously typed.
+I solved this problem by predefining each "step" as an Emacs Lisp
+function, and then had another function execute each function when I
+hit an /advance/ key (=F12=).
+
+After I had amassed a small army of /helper functions/, I packaged it as
+=demo-it=, because I lack the imagination to come up with anything more
+clever.
 
 See the following videos as examples of what can be done:
 
-  * [[http://www.youtube.com/watch?v=3T00X_sNg4Q][Learn You Some Lisp for Great Good]]
   * [[http://www.youtube.com/watch?v=B6jfrrwR10k][Emacs: An Introduction for the Curious]]
+  * [[https://www.youtube.com/watch?v=dljNabciEGg][Literate DevOps Programming]]
+  * [[http://www.youtube.com/watch?v=3T00X_sNg4Q][Learn You Some Lisp for Great Good]]
 
 Click the following for a quicker example:
 
@@ -28,7 +35,7 @@ Using this project is a four step process:
   3. Order the functions by calling =(demo-it-create)=
   4. Call =demo-it-start= to kick off the fun.
 
-When done, call =demo-it-end=.
+Press the space for each step, or call =demo-it-end= to end earlier.
 
 For instance:
 
@@ -36,7 +43,7 @@ For instance:
   (require 'demo-it)   ;; Load this library of functions
 
   (defun my-demo-step/show-code ()
-    "Helper demo function that displays some sorce code and
+    "Helper demo function that displays some source code and
   advances the presentation at one time."
     (demo-it-load-side-window "example/example.py")
     (demo-it-presentation-advance))
@@ -44,18 +51,24 @@ For instance:
   ;; Order the functions and forms for this presentation:
   (demo-it-create (demo-it-presentation "example/example.org")
                    my-demo-step/show-code
-                  (message "Size: %d" (length demo-it--steps))
-                   demo-it-presentation-return
+                   demo-it-presentation-return ; close file and advance
                   (demo-it-run-in-eshell "python example/example.py"))
 
   (demo-it-start)
 #+END_SRC
 
-Let's see:
-#+BEGIN_SRC elisp
-(functionp (cadr demo-it--steps))
-(eval (caddr demo-it--steps))
-(keywordp :hello)
+Each "step" given to the =demo-it-create= macro can be one of the
+following:
+
+  - an expression typically calling a helper function
+  - a name of a function to call that does multiple actions
+  - a string referring to a key-binding to run
+  - a property that affects demonstration behavior
+
+This package has a collection of helping functions, that can either be
+called directly as part of an expression, or embedded in a
+demonstration function. For a more complete example, see [[file:example/example.el][example.el]].
+
 
 #+END_SRC
 Each "step" is an Elisp functions that does something like load some
