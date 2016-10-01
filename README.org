@@ -104,3 +104,26 @@ I recommend installing these other Emacs packages:
   - :hide-fringe-mode (the default)
   - :use-shell
   - :use-eshell
+* Historical Record
+
+  The initial release, while published on MELPA, was still rather an
+  ad hoc collection of functions and poorly organized and documented.
+
+  *Version 2* of this project attempted to remedy those shortcomings,
+  cleaning and standardizing the /interface/ of functions. Also included
+  is the following features:
+
+  - Simplification of how a demonstration is constructed. Originally
+    each step essentially required a helper function, but now, we can
+    specify full expressions directly in the =demo-it-create=
+
+  - Default behavior is now based on customized preferences instead of
+    hard-coded values. Functions still accept optional values to
+    override those defaults. Also the =demo-it-create= macro accepts
+    demo-level overrides of the customized preferences.
+
+  - Now using the [[https://github.com/10sr/github-elpa][github-elpa project]] to make better releases.
+
+  *Version 3* is a plan to have each step more repeatable. Currently,
+  each step assumes a state built by the previous steps, which makes
+  developing, debugging, and reversing difficult.
