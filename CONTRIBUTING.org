@@ -1,0 +1,54 @@
+#+TITLE:  Contributing to this Project
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2016 Oct 01
+
+I created this project based on my own needs and desires, and I'm
+mildly stunned that others are interested enough in creating
+demonstrations in Emacs, so I definitely want to work with others on
+this.  So... contributions are always welcome, no matter how large or
+small. This file contains the guidelines I ask all contributors to
+follow.
+
+  - For any contributions to my experimental =v2= track, please create a
+    topic branch based off that =v2= branch, push said topic branch onto
+    your fork and submit your pull request from that branch.
+
+  - Wanna contribute a bug fix to my primary =1.x= track, please create
+    a topic branch based off our =master= branch, push said topic branch
+    onto your fork and submit your pull request from that branch.
+
+* Code of Conduct
+
+  I want to keep this project open and inclusive. So I ask that before
+  you contribute, you read and follow our [[file:CODE_OF_CONDUCT.md][Code of Conduct]].
+
+* Found an Issue?
+
+  I definitely want to hear from you!
+
+  If you find a bug in the source code or a mistake in the docs, you
+  can help me by submitting an issue to the [[https://github.com/howardabrams/demo-it/issues][repository]].
+
+  Want to contribute with a fix? Thank you. Please, submit a
+  [[https://github.com/howardabrams/demo-it/pulls][pull request]].
+
+  *Want a Feature?* Similarly to finding an issue, enter details for a
+  [[https://github.com/howardabrams/demo-it/issues][feature request]], but feel free to fork this repository and try to
+  give me more details with [[https://github.com/howardabrams/demo-it/pulls][pull request]].
+
+  *Note:* While the [[file:demo-it-tests.el][unit tests]] are hardly sufficient, please make sure
+  your PR doesn't break any. Better yet, add more to that!
+
+* Developing
+
+  As you can imagine, testing this code is difficult to automate.
+  Some tests for state-less functions can be found in
+  [[file:demo-it-tests.el][demo-it-tests.el]].
+
+  Since the base [[file:demo-it.el][demo-it.el]] code is now broken into multiple subfiles,
+  issuing a =(require)= won't work without the following:
+
+  #+BEGIN_SRC elisp :results silent
+    (add-to-list 'load-path (expand-file-name "."))
+  #+END_SRC

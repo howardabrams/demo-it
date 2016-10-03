@@ -1,4 +1,4 @@
-;;; example --- Demonstrates the demo-it project using demo-it
+;;; EXAMPLE --- Demonstrate a demo-it demonstration
 
 ;;; Commentary:
 
@@ -9,53 +9,37 @@
 
 ;;; Code:
 
-(load-library "demo-it")
+(require 'demo-it)
 
 ;; ----------------------------------------------------------------------
-;;  Create each function that represents a "presentation frame"
-
-(defun dit-show-title ()
-  "Display a title screen to kick off the presentation."
-  (demo-it-frame-fullscreen)
-  (demo-it-title-screen "example-title.org"))
-
-(defun dit-load-presentation ()
-  "Display example.org (an 'org-mode' file) as a presentation."
-  (demo-it-presentation "example.org"))
+;;  Create some demonstration helper functions...
 
 (defun dit-load-source-code ()
   "Load some source code in a side window."
-  (demo-it-load-fancy-file "example.py" 'line 5 12 t)
-  (demo-it-presentation-advance))
+  (demo-it-presentation-advance)
+  (demo-it-load-fancy-file "example.py" :line 5 12 :side))
 
 (defun dit-run-code ()
   "Execute our source code in an Eshell buffer."
-  (demo-it-run-in-eshell "~/Other/demo-it" "python example.py Snoopy")
-  (demo-it-presentation-advance))
+  ;; Close other windows and advance the presentation:
+  (demo-it-presentation-return)
 
-(defun dit-cleanup ()
-  "Cleans up the mess of the presentation."
-  (insert "exit")                     ;; Delete and close the Eshell window
-  (eshell-send-input)
-  (demo-it-end))
+  (ignore-errors
+    (demo-it-start-shell))
+  (demo-it-run-in-shell "python example.py Snoopy"))
 
 ;; ----------------------------------------------------------------------
-;; Demonstration and/or Presentation Order
+;; Demonstration creation and the ordering of steps...
 
-(defun dit-start-presentation ()
-  "Demonstrates the demo-it project using demo-it."
-  (interactive)
-  (demo-it-start (list
-                  'dit-show-title                ;; Frame 1
-                  'dit-load-presentation         ;; Frame 2
-                  'dit-load-source-code          ;; Frame 3
-                  'dit-run-code                  ;; Frame 4
-                  'dit-cleanup                   ;; Done
-                  )))
+(demo-it-create :single-window :insert-fast
+                (demo-it-title-screen "example-title.org")
+                (demo-it-presentation "example.org")
+                dit-load-source-code ;; Step 3
+                dit-run-code)        ;; Step 4
 
 ;; ----------------------------------------------------------------------
 ;; Start the presentation whenever this script is evaluated. Good idea?
 
-(dit-start-presentation)
+(demo-it-start)
 
 ;;; example.el ends here
