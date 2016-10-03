@@ -1,0 +1,27 @@
+#+TITLE:  Shell Demonstration Example
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2016 Oct 01
+
+* Shell Demonstration Example
+
+  Opening up a shell window (or =eshell=) and running commands is easy:
+
+  #+BEGIN_SRC elisp
+    (demo-it-start-shell)
+  #+END_SRC
+
+  Press the ~Space~ to advance to each step which runs various commands
+  at different /speeds/ specified to =demo-it-create=:
+
+    - :insert-quickly
+    - :insert-fast
+    - :insert-medium
+    - :insert-slow
+
+  All demonstrations can behave the same with customization.
+
+* Window Positions
+
+  Depending on your monitor, you can start your shell in other
+  configurations... like :below

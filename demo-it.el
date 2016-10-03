@@ -195,6 +195,11 @@ more interactive demonstrations."
       (demo-it-mode-adv t)
     (demo-it-mode t))
 
+  (if demo-it--start-fullscreen
+      (demo-it-frame-fullscreen))
+  (if demo-it--start-single-window
+      (delete-other-windows))
+
   (demo-it-step))
 
 (defmacro demo-it-create (&rest forms)
@@ -205,6 +210,15 @@ more interactive demonstrations."
 
 (defun demo-it--set-properties (l)
   "Sets a series of single property values from list, L."
+  ;; First, save all the customization properties...
+  (demo-it-setq-save demo-it--keymap-mode-style
+                     demo-it--shell-or-eshell
+                     demo-it--open-windows
+                     demo-it--text-scale
+                     demo-it--start-fullscreen
+                     demo-it--start-single-window
+                     demo-it--insert-text-speed)
+  ;; Second, set all the new customization properties:
   (mapcar 'demo-it--set-property l))
 
 (defun demo-it-end ()
@@ -314,47 +328,78 @@ function can be bound to the mouse click."
 
 
 ;; ----------------------------------------------------------------------
-;; SIDE WINDOWS
+;; SIDE WINDOWS and HELPER FILES
 ;;
 ;;    Typically, we make a side window that is large enough to have some
 ;;    fun in, as the main window would serve as little more than an
-;;    outline.
+;;    outline or displaying a presentation.
+;;
+;;    The `demo-it--make-side-window' function is a helper and
+;;    probably won't be called directly, but instead is called by
+;;    functions that load a file, image or start a shell...
 
-(defun demo-it--make-side-window (&optional side)
-  "Splits window horizontally and selects other window.
+(defun demo-it--make-side-window (&optional side size)
+  "Opens window on the side of the current frame and selects that window.
 
-SIDE is either :below or :side and defaults to the value of
-`demo-it--side-windows'."
-  (if (null side)
-      (setq side demo-it--side-windows))
+SIDE is either `:above', `:below', `:left', `:right' or `:side'
+and defaults to the value of `demo-it--open-windows' (A value of
+`:none' acts as a no-op and doesn't open a window).
 
-  (select-window (if (or (eq side 'below) (eq side :below))
-                     (split-window-vertically)
-                   (split-window-horizontally))))
+SIZE specifies the width of the window if new window is on the
+side, or the height if the window is either `:above' or
+`:below'."
+  ;; Since many functions call this, we need a way to actually /not/
+  ;; split the screen, so passing in a `:none' overrides the default.
+  (when (not (or (eq side 'none) (eq side :none)))
+
+    (select-window (demo-it--new-root-window
+                    (or side demo-it--open-windows)
+                    (or size demo-it--open-windows-size)))))
 
 ;; Since the `make-side-window' shouldn't be called, it has two
 ;; dashes, but to maintain backward compatibility, we make an alias:
 (define-obsolete-function-alias 'demo-it-make-side-window
   'demo-it--make-side-window "2016-Oct")
 
-;; Load a File in the Side Window
-;;
-;;    Splits the window and loads a file on the right side of the screen.
+(defun demo-it--new-root-window (direction size)
+  "Split the main window in the DIRECTION where DIRECTION is a
+symbol with possible values of 'right, 'left, 'above or 'below
+and SIZE is the final size of the windows, if the window is split
+horizontally (i.e. DIRECTION 'below or 'above) SIZE is assumed to
+be the target height otherwise SIZE is assumed to be target
+width."
+  (let* ((dir (pcase direction   ;; Create synonyms!?
+                (:left  'left)
+                (:right 'right)
+                (:side  'right)
+                (:below 'below)
+                (:above 'above)
+                (_      direction)))
+         (new-window (split-window (frame-root-window) nil dir))
+         (horizontal (member dir '(right left))))
+    (save-excursion
+      (select-window new-window)
+      (enlarge-window (- size (if horizontal
+                                  (window-width)
+                                (window-height)))
+                      horizontal))
+    new-window))
 
-(defun demo-it-load-file (file &optional side size)
-  "Splits window and load FILE in other buffer.
+(defun demo-it-load-file (file &optional side size width)
+  "Splits root frame into a window and load FILE into it.
 
-SIDE can be :below (for vertical split) or :side (for
-horizontal), and defaults to the customized value of
-`demo-it--side-windows'.
+SIDE can be `:above' or `:below' (for vertical split) or `:left'
+or `:right' (`:side' is a synomym for `:right'), or `:none' for
+load the file in the current buffer. This defaults to the
+customized value of `demo-it--open-windows'.
 
-SIZE can specify the text font scale, and if `nil', it uses the value of ,
-which defaults to 1 step larger.  This function is called with
-source code since the mode line is still shown."
-  (demo-it-make-side-window side)
+SIZE can specify the text font scale, and if `nil', it uses the
+value of `demo-it--text-scale'.  The WIDTH specifies the size of
+this new window, which is either the width of a side window, or
+the height if the window is `:above' or `:below'."
+  (demo-it--make-side-window side width)
   (find-file file)
-  (if size (text-scale-set size)
-           (text-scale-set demo-it--text-scale)))
+  (text-scale-set (demo-it--get-text-scale size)))
 
 (defun demo-it--get-section (type &optional start end)
   "Return tuple of beginning and end of a section of buffer.
@@ -379,7 +424,7 @@ the point positions as if START and END are line numbers."
       (setq end (point))))
   (cons start end))
 
-(defun demo-it-load-part-file (file type start end &optional side size)
+(defun demo-it-load-part-file (file type start end &optional side size width)
   "Splits window and loads FILE, but narrow to particular region.
 
 If TYPE is set to :line, then START and END refers to the first
@@ -388,16 +433,16 @@ END refer to specific character positions.
 
 See `demo-it-load-file' for an explanation of SIDE and SIZE.
 Also see `demo-it-load-fancy-file' for an alternative version."
-  (demo-it-load-file file side size)
+  (demo-it-load-file file side size width)
   (let ((positions (demo-it--get-section type start end)))
     (narrow-to-region (car positions) (cdr positions))))
 
-(defun demo-it-show-image (file &optional side)
+(defun demo-it-show-image (file &optional side size width)
   "Load FILE as image (or any other special file) in another
 window without a mode line or fringe.  SIDE can be either :side
 or :below, and if `nil', the default is to use the value of
-`demo-it--side-windows'."
-  (demo-it-load-file file side)
+`demo-it--open-windows'."
+  (demo-it-load-file file side size width)
   (fringe-mode '(0 . 0))
   (demo-it-hide-mode-line))
 
@@ -415,7 +460,7 @@ other on the side of the screen, or two windows below (depending
 on the value of SIDE).  The SIZE specifies the text scaling of
 both buffers."
   (if (null side)
-      (setq side demo-it--side-windows))
+      (setq side demo-it--open-windows))
 
   (if (or (eq side 'below) (eq side :below))
       (progn
@@ -431,48 +476,81 @@ both buffers."
 ;;    Kick off a shell in another window, change to a particular
 ;;    directory, and automatically run something.
 
-(defun demo-it-start-shell (&optional directory command name side size)
+(defun demo-it-start-shell (&optional directory command name
+                                      side size width)
   "Start a shell or eshell instance, and change to DIRECTORY to
-execute COMMAND.  NAME optionally labels the buffer.  SIDE can be
-either 'below or to the 'side, and SIZE specifies the text scale,
-which defaults to 1 level larger."
-  (let ((title (demo-it--shell-buffer-name name)))
-    (demo-it-make-side-window side)
+execute COMMAND.  NAME optionally labels the buffer, and defaults
+to `Shell'.
 
-    (if (eq demo-it--shell-or-eshell :shell)
-        (shell title)
+SIDE can be `:above' or `:below' (for vertical split) or `:left'
+or `:right' (`:side' is a synomym for `:right'), or `:none' for
+load the file in the current buffer. This defaults to the
+customized value of `demo-it--open-windows'.
 
-      (eshell "new")
-      (rename-buffer title))
+SIZE can specify the text font scale, and if `nil', it uses the
+value of `demo-it--text-scale'.  The WIDTH specifies the size of
+this new window, which is either the width of a side window, or
+the height if the window is `:above' or `:below'."
+  (let* ((title (demo-it--shell-buffer-name name))
+         (des-buf (get-buffer title)))
 
-    (if size (text-scale-set size)
-      (text-scale-set 1))
+    (demo-it--make-side-window side width)
+    (if des-buf
+        (demo-it--start-shell-reuse title directory)
 
-    (when directory
-      (insert (concat "cd " directory))
-      (eshell-send-input))
-    (erase-buffer)
-    (eshell-send-input)
+      ;; Otherwise, create a new shell buffer...
+      (demo-it--start-shell-new title directory size))
 
     (when command
       (demo-it-insert-shell command))))
 
 (define-obsolete-function-alias 'demo-it-start-eshell 'demo-it-start-shell "2016-Oct")
 
-(defun demo-it--shell-buffer-name (name)
+(defun demo-it--start-shell-new (title directory size)
+  "Attempt to create a new shell/eshell with a buffer named TITLE
+in a particular DIRECTORY."
+  (let ((default-directory (or directory
+                               (file-name-directory (buffer-file-name)))))
+    (if (eq demo-it--shell-or-eshell :shell)
+        (shell title)
+
+      (eshell "new-shell")
+      (rename-buffer title))
+
+    (text-scale-set (demo-it--get-text-scale size))
+
+    (erase-buffer)
+    (demo-it-insert-shell "" :instant)))
+
+(defun demo-it--start-shell-reuse (title directory)
+  "Attempt to re-use existing shell/eshell with a buffer named
+TITLE in a particular DIRECTORY."
+  (switch-to-buffer title)
+  (when directory
+    (goto-char (point-max))
+    (demo-it-insert-shell (format "cd %s" directory) :instant)
+    (erase-buffer)
+    (demo-it-insert-shell "" :instant)))
+
+(defun demo-it--shell-buffer-name (&optional name)
   "Return the buffer NAME for the shell or eshell window."
   (if name
       (concat "Shell: " name)
     "Shell"))
 
-(defun demo-it-insert-shell (command)
-  "Inserts some text in the given shell or eshell."
-  (demo-it-insert command)
-  (eshell-send-input))
+(defun demo-it-insert-shell (command &optional speed)
+  "Inserts some text in the given shell or eshell. The optional
+SPEED overrides the custom, `demo-it--insert-text-speed'."
+  (demo-it-insert command speed)
+  (if (eq demo-it--shell-or-eshell :shell)
+      (comint-send-input)
+    (eshell-send-input)))
 
-(defun demo-it-insert (str)
-  "Insert STR into the current buffer as if you were typing it by hand."
-  (let ((timings (demo-it--get-insert-text-speed)))
+(defun demo-it-insert (str &optional speed)
+  "Insert STR into the current buffer as if you were typing it by hand.
+The SPEED (if non-nil) overrides the default value settings of the
+`demo-it--insert-text-speed' custom variable."
+  (let ((timings (demo-it--get-insert-text-speed speed)))
 
     (if (eq timings :instant)
         (insert str)
@@ -487,19 +565,20 @@ which defaults to 1 level larger."
                         (/ (random top-limit) 1000.0))))
             (sit-for tm)))))))
 
-(defun demo-it-run-in-shell (command &optional name)
+(defun demo-it-run-in-shell (command &optional name speed)
   "Run shell command COMMAND in a previously initialized Eshell.
 If NAME is not specified, it defaults to `Shell'."
-  (switch-to-buffer (demo-it--shell-buffer-name name))
-  (demo-it-insert-shell command))
+  (pop-to-buffer (demo-it--shell-buffer-name name))
+  (goto-char (point-max))
+  (demo-it-insert-shell command speed))
 
 (define-obsolete-function-alias 'demo-it-run-in-eshell 'demo-it-run-in-shell "2016-Oct")
 (define-obsolete-function-alias 'demo-it-type-in-eshell 'demo-it-run-in-shell "2016-Oct")
 
-(defun demo-it-show-shell (&optional name side)
+(defun demo-it-show-shell (&optional name side width)
   "Call if the shell window of a given NAME has been
 hidden. Optionally specify the SIDE (either 'below or 'side)."
-  (demo-it-make-side-window side)
+  (demo-it--make-side-window side width)
   (switch-to-buffer (demo-it--shell-buffer-name name)))
 
 (define-obsolete-function-alias 'demo-it-show-eshell 'demo-it-show-shell "2016-Oct")
@@ -515,7 +594,6 @@ hidden. Optionally specify the SIDE (either 'below or 'side)."
 be displayed with a larger-than-life font without a mode line,
 etc.  SIZE specifies the text scale, which ignores the
 `demo-it--text-scale' customization setting and defaults to 5x."
-  (delete-other-windows)
   (fringe-mode '(0 . 0))
 
   (find-file file)
@@ -525,11 +603,10 @@ etc.  SIZE specifies the text scale, which ignores the
   (if (fboundp 'flyspell-mode)
       (flyspell-mode -1))
   (variable-pitch-mode 1)
-  (if size (text-scale-set size)
-    (text-scale-set 5))
+  (text-scale-set (or size (demo-it--get-text-scale :huge)))
 
   ;; Time to brag a wee bit...
-  (message "%s" "† This presentation is running within Emacs."))
+  (message "† This presentation is running within Emacs."))
 
 
 ;; ----------------------------------------------------------------------
@@ -542,8 +619,8 @@ etc.  SIZE specifies the text scale, which ignores the
   "Toggle the frame between full screen and normal size."
   (interactive)
   (set-frame-parameter
-     nil 'fullscreen
-     (when (not (frame-parameter nil 'fullscreen)) 'fullboth)))
+   nil 'fullscreen
+   (when (not (frame-parameter nil 'fullscreen)) 'fullboth)))
 
 ;; We can force the window to be full screen:
 
@@ -572,6 +649,7 @@ etc.  SIZE specifies the text scale, which ignores the
 (defvar demo-it--setq-tempvars (make-hash-table))
 (defvar demo-it--setq-voidvars nil)
 (defvar demo-it--setq-nilvars nil)
+
 (defun demo-it--setq (l)
   (cl-case (length l)
     (0)
@@ -593,6 +671,14 @@ etc.  SIZE specifies the text scale, which ignores the
   "Like `setq', but the values are restored to original after the demo.
 Actually restored by `demo-it--setq-restore'."
   `(demo-it--setq '(,@list)))
+
+(defmacro demo-it-setq-save (&rest list)
+  "Saves the original value of a LIST of variables.
+
+Call `demo-it--setq-restore' to restore the original values of
+the variables."
+  `(mapcar ,(lambda (v) (puthash v (eval v) demo-it--setq-tempvars))
+           '(,@list)))
 
 (defun demo-it--setq-restore ()
   "Restore values of setting by `demo-it-setq'."

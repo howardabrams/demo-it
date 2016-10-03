@@ -35,7 +35,10 @@
 ;;; Code:
 
 (defgroup demo-it nil
-  "Customizations and behaviors for demonstrations.")
+  "Customizations and behaviors for demonstrations."
+  :prefix "demo-it-"
+  :group 'applications
+  :link '(url-link :tag "Github" "https://github.com/howardabrams/demo-it"))
 
 (defcustom demo-it--keymap-mode-style :simple-mode
   "The keymap-specific minor mode to use when a demonstration
@@ -52,15 +55,41 @@ or :advanced-mode, where <F12> advances."
                  (const :tag "eshell" :eshell))
   :group 'demo-it)
 
-(defcustom demo-it--side-windows :side
-  "When opening side windows, should this be `:below' or `:side'."
-  :type '(choice (const :tag "side"  :side)
-                 (const :tag "below" :below))
+(defcustom demo-it--open-windows :right
+  "When opening side windows, split the frame on a particular
+side, like `:below' or on the `:right'."
+  :type '(choice (const :tag "above" :above)
+                 (const :tag "below" :below)
+                 (const :tag "left"  :left)
+                 (const :tag "right" :right))
   :group 'demo-it)
+
+(defcustom demo-it--open-windows-size 80
+  "The size of the window to open. This is the width if the
+  window is opened on one of the sides (:left or :right), or the
+  height if the window is opened :above or :below."
+  :type '(integer))
 
 (defcustom demo-it--text-scale 2
   "Sets the default text scale when opening files."
-  :type '(integer)
+  :type '(choice integer
+                 (const :tag "small" -1)
+                 (const :tag "normal" 0)
+                 (const :tag "medium" 1)
+                 (const :tag "large" 2)
+                 (const :tag "x-large" 3)
+                 (const :tag "xx-large" 4)
+                 (const :tag "huge" 5))
+  :group 'demo-it)
+
+(defcustom demo-it--start-fullscreen nil
+  "If non-nil, start the demonstration with the frame in fullscreen mode."
+  :type '(boolean)
+  :group 'demo-it)
+
+(defcustom demo-it--start-single-window t
+  "If non-nil, delete other windows to start the demonstration with a single buffer window."
+  :type '(boolean)
   :group 'demo-it)
 
 (defcustom demo-it--insert-text-speed :medium
@@ -76,15 +105,30 @@ number of milliseconds between inserting each character."
                  (const :tag "instant" :instant))
   :group 'demo-it)
 
-(defun demo-it--get-insert-text-speed ()
+(defun demo-it--get-insert-text-speed (&optional speed)
   "The tuple of the lower and upper limits for the insert speed
-based on the symbol stored in `demo-it--insert-text-speed'."
-  (pcase demo-it--insert-text-speed
-    (:fast   '(10 . 100))
-    (:medium '(30 . 500))
-    (:slow   '(200 . 1000))
-    (_       demo-it--insert-text-speed)))
+based on the symbol stored in `demo-it--insert-text-speed'.
+The optional value for SPEED override the default value."
+  (let ((requested-speed (or speed demo-it--insert-text-speed)))
+    (pcase requested-speed
+      ((or :fast   :insert-fast)          '(10 . 100))
+      ((or :medium :insert-medium)        '(30 . 500))
+      ((or :slow   :insert-slow)          '(200 . 1000))
+      (_                                  requested-speed))))
 
+(defun demo-it--get-text-scale (&optional size)
+  "Returns SIZE if SIZE is an integer, otherwise, returns an
+integer matching the symbol specified by SIZE, e.g. `:large'."
+  (let ((requested-size (or size demo-it--text-scale)))
+    (pcase requested-size
+      ((or :small    :text-small)    -1)
+      ((or :normal   :text-normal)    0)
+      ((or :medium   :text-medium)    1)
+      ((or :large    :text-large)     2)
+      ((or :x-large  :text-x-large)   3)
+      ((or :xx-large :text-xx-large)  4)
+      ((or :huge     :text-huge)      5)
+      (_                              requested-size))))
 
 (defun demo-it--set-property (prop)
   "Sets a particular property, specified by keyword, PROP to t."
@@ -96,9 +140,24 @@ based on the symbol stored in `demo-it--insert-text-speed'."
     (:use-eshell       (setq demo-it--shell-or-eshell   :eshell))
     (:use-shell        (setq demo-it--shell-or-eshell   :shell))
 
-    (:windows-to-side  (setq demo-it--side-windows      :side))
-    (:windows-below    (setq demo-it--side-windows      :below))
+    (:windows-on-side  (setq demo-it--open-windows      :right))
+    (:windows-on-right (setq demo-it--open-windows      :right))
+    (:windows-on-left  (setq demo-it--open-windows      :left))
+    (:windows-below    (setq demo-it--open-windows      :below))
+    (:windows-above    (setq demo-it--open-windows      :above))
 
+    (:fullscreen       (setq demo-it--start-fullscreen    t))
+    (:single-window    (setq demo-it--start-single-window t))
+
+    (:text-small       (setq demo-it--text-scale -1))
+    (:text-normal      (setq demo-it--text-scale 0))
+    (:text-medium      (setq demo-it--text-scale 1))
+    (:text-large       (setq demo-it--text-scale 2))
+    (:text-x-large     (setq demo-it--text-scale 3))
+    (:text-xx-large    (setq demo-it--text-scale 4))
+    (:text-huge        (setq demo-it--text-scale 5))
+
+    (:insert-quickly   (setq demo-it--insert-text-speed :instant))
     (:insert-fast      (setq demo-it--insert-text-speed :fast))
     (:insert-medium    (setq demo-it--insert-text-speed :medium))
     (:insert-slow      (setq demo-it--insert-text-speed :slow))))

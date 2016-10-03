@@ -69,54 +69,49 @@ This package has a collection of helping functions, that can either be
 called directly as part of an expression, or embedded in a
 demonstration function. For a more complete example, see [[file:example/example.el][example.el]].
 
+* Keyword Control
 
-#+END_SRC
-Each "step" is an Elisp functions that does something like load some
-source code, or show off an org-mode file as a presentation.  While
-this package has a collection of helping functions, the steps can use
-any Elisp command to show off a feature.
+  While the =demo-it= customization group has a list of [[file:demo-it-custom.el][settings]] that
+  affect the behavior of all demonstrations, a particular
+  demonstration can pass any of the following keywords to the
+  =demo-it-create= macro to affect that demonstration:
 
-For a more complete example, see [example.el][e].
+  - =:simple-mode= :: Use SPACE to advance demo
+  - =:advanced-mode= :: Use F12 to advance the demo
+  - =:use-shell= :: Use a standard =shell= command line interface
+  - =:use-eshell= :: Choose the =eshell= interface instead
+  - =:insert-quickly= :: Shell commands are immediately entered (default)
+  - =:insert-slow= :: Shell commands are slowly entered
+  - =:insert-medium= :: Text and shell commands are entered like a typist
+  - =:insert-fast= :: Text and shell commands are entered like a good typist
+  - =:side-windows= :: Default to open windows on the side
+  - =:lower-windows= :: Default to open windows below the main window
+  - =:fullscreen= :: Start the demonstration in fullscreen mode
+  - =:start-single-window= :: Delete other windows when started
+  - =:text-small= :: Smaller than the default text font size
+  - =:text-normal= :: New buffers that could have a new size, use default
+  - =:text-medium= :: New buffers are created with a slightly larger
+       font (a scale of 1)
+  - =:text-large= :: New buffers have an even larger font (scaled to 2)
+  - =:text-x-large= :: New buffer have a font scaled to 3
+  - =:text-xx-large= :: Font text size scaled to 4
+  - =:text-huge= :: Set to a font scale of 5
 
-I recommend installing these other Emacs packages:
+  The following are property values I would like to add to the
+  presentation features, but I haven't re-factor those yet:
 
-  * [org-tree-slide-mode][1]
-  * [org-bullets][2]
-  * [expand-region][3]
-  * [fancy-narrow][4]
+  - =:show-mode-line= :: Show a presentation display the mode line?
+  - =:hide-mode-line= :: Hide the mode line for presentations (the default)
+  - =:show-org-markers= :: In org-mode files show asterisks, slashes,
+       and other markup characters
+  - =:hide-org-markers= :: Hide the markers, but show the effects (the default)
+  - =:variable-width= :: Use a variable width font for presentations
+  - =:fixed-width= :: Keep to the standard, fixed width font
+  - =:show-block-headers= :: Should the =#+begin= and =#+end= markers be shown
+  - =:hide-block-headers= :: Hide org-mode header entries (the default)
+  - =:show-fringe-mode= :: Should the normal fringe be display for presentations
+  - =:hide-fringe-mode= :: Hide the fringe during presentations (the default)
 
-
-  [yt3]:
-  [e]: example/example.el
-  [1]: https://github.com/takaxp/org-tree-slide
-  [2]: https://github.com/sabof/org-bullets
-  [3]: https://github.com/magnars/expand-region.el
-  [4]: https://github.com/Bruce-Connor/fancy-narrow
-
-* Control by Keywords
-
-  The list of steps can also contain the following keywords.
-
-  - :simple-mode :: Use SPACE to advance demo
-  - :advanced-mode :: Use F12 to advance the demo
-  - :insert-quickly :: Shell commands are immediately entered (default)
-  - :insert-typing :: Shell commands are slowly entered
-  - :fullscreen :: Start the demonstration in fullscreen mode
-  - :start-one-window :: Delete other windows when started
-  - :use-side-windows :: Default to open windows on the side
-  - :use-lower-windows
-  - :show-mode-line
-  - :hide-mode-line (the default)
-  - :show-org-markers :: In org-mode files show
-  - :hide-org-markers (the default)
-  - :variable-width
-  - :fixed-width
-  - :show-block-headers
-  - :hide-block-headers (the default)
-  - :show-fringe-mode
-  - :hide-fringe-mode (the default)
-  - :use-shell
-  - :use-eshell
 * Historical Record
 
   The initial release, while published on MELPA, was still rather an
