@@ -38,35 +38,37 @@
 ;;   each function when I hit either the SPACE key or the F12 key
 ;;   (advanced minor mode).
 ;;
-;;   Using the library is a three step process:
+;;   Using the library is a four step process:
 ;;
 ;;   1. Load the library in your own Elisp source code file
 ;;   2. Create a collection of functions that "do things".
-;;   3. Call the =demo-it-start= function with the ordered list of
-;;      functions.
+;;   3. Create the ordered list of functions/steps with `demo-it-create'
+;;   4. Start the demonstration with `demo-it-start'
 ;;
 ;;   For instance:
 ;;
-;;   (load-library "demo-it")   ;; Load this library of functions
+;;       (require 'demo-it)   ;; Load this library of functions
 ;;
-;;   (defun my-demo/step-1 ()
-;;     (delete-other-windows)
-;;     (demo/org-presentation "~/presentations/my-demo/demo-start.org"))
+;;       (defun dit-load-source-code ()
+;;         "Load some source code in a side window."
+;;         (demo-it-presentation-advance)
+;;         (demo-it-load-fancy-file "example.py" :line 5 12 :side))
 ;;
-;;   (defun my-demo/step-2 ()
-;;     (demo-it-load-file "~/Work/my-proj/src/my-proj.py")
-;;     (demo-it-presentation-return))
+;;       (defun dit-run-code ()
+;;         "Execute our source code in an Eshell buffer."
+;;         ;; Close other windows and advance the presentation:
+;;         (demo-it-presentation-return)
+;;         (demo-it-start-shell)
+;;         (demo-it-run-in-shell "python example.py Snoopy"))
 ;;
-;;   (defun my-demo ()
-;;      "My fabulous demonstration."
-;;      (interactive)
-;;      (demo-it-start (list
-;;                      'my-demo/step-1
-;;                      'my-demo/step-2
-;;                      ;; ...
-;;                    )))
+;;       (demo-it-create :single-window :insert-slow :full-screen
+;;                       (demo-it-title-screen "example-title.org")
+;;                       (demo-it-presentation "example.org")
+;;                        dit-load-source-code
+;;                        dit-run-code
+;;                       (demo-it-run-in-shell "exit" nil :instant))
 ;;
-;;   (my-demo) ;; Optionally start the demo when file is loaded.
+;;       (demo-it-start)
 ;;
 ;;   Each "step" is a series of Elisp functions that "do things".
 ;;   While this package has a collection of helping functions, the steps
@@ -82,7 +84,7 @@
 ;;   See http://github.com/howardabrams/demo-it for more details and
 ;;   better examples.  You will want to walk through the source code
 ;;   for all the utility functions.
-
+;;
 ;;; Code:
 
 (require 'cl-lib)
