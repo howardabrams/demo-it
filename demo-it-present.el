@@ -41,6 +41,11 @@
 ;;    Uses org-tree-slide if available.
 ;;    See https://github.com/takaxp/org-tree-slide
 
+(declare-function org-tree-slide-content "ext:org-tree-slide")
+(declare-function org-tree-slide-move-next-tree "ext:org-tree-slide")
+(defvar org-tree-slide-heading-emphasis)
+(defvar org-hide-emphasis-markers)
+
 (defvar demo-it--presentation-file "")
 (defvar demo-it--presentation-buffer nil)
 (defvar demo-it--presentation-prev-settings (make-hash-table))
@@ -218,6 +223,7 @@ items while executing appropriate code."
     (demo-it-show-mode-line)
     (text-scale-set 0)))
 
+(provide 'demo-it-present)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; demo-it-present.el ends here

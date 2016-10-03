@@ -103,7 +103,7 @@ based on the symbol stored in `demo-it--insert-text-speed'."
     (:insert-medium    (setq demo-it--insert-text-speed :medium))
     (:insert-slow      (setq demo-it--insert-text-speed :slow))))
 
-(provide 'demo-it-customization)
+(provide 'demo-it-custom)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; demo-it-custom.el ends here
