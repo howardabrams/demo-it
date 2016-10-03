@@ -94,24 +94,21 @@
 (defvar org-image-actual-width)
 
 ;; And functions from other projects I like to use...
-(declare-function fancy-narrow-to-region "ext:fancy-narrow")
-(declare-function fancy-narrow-to-defun "ext:fancy-narrow")
 (declare-function eshell-send-input "ext:eshell")
 (declare-function show-all "ext:eshell.c")
-(declare-function org-tree-slide-content "ext:org-tree-slide")
-(declare-function org-tree-slide-move-next-tree "ext:org-tree-slide")
-(defvar org-tree-slide-heading-emphasis)
-(defvar org-hide-emphasis-markers)
 
 ;; Load our 'modules' from other files:
-(load-file "demo-it-custom.el")
+(require 'demo-it-custom)
 
 ;; And specify the customization variables set in that module:
 (defvar demo-it--shell-or-eshell)
 (defvar demo-it--keymap-mode-style)
 (defvar demo-it--insert-text-speed)
-(defvar demo-it--side-windows)
+(defvar demo-it--open-windows)
+(defvar demo-it--open-windows-size)
 (defvar demo-it--text-scale)
+(defvar demo-it--start-fullscreen)
+(defvar demo-it--start-single-window)
 (declare-function demo-it--get-insert-text-speed "demo-it-custom.el")
 (declare-function demo-it--set-property "demo-it-custom.el")
 
@@ -639,8 +636,8 @@ character to be used as a key, and the text to insert."
 
 ;; ----------------------------------------------------------------------
 
-(load-file "demo-it-present.el")
-(load-file "demo-it-extras.el")
+(require 'demo-it-present)
+(require 'demo-it-extras)
 
 ;;   As a final harrah, we need to let other files know how to include
 ;;   this bad child.
