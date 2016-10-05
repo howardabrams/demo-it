@@ -1,0 +1,62 @@
+#+TITLE:  Example Demonstration of Showing Files
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2016 Oct 03
+
+* Display Source Code Inline
+
+  In this demonstration, we show how to display files.
+
+  You can display in-line with =org-mode= code blocks:
+
+  #+BEGIN_SRC emacs-lisp
+    (defun response-for (msg)
+      "Return message based on the input string, MSG.
+    The responses are based on `Bob' Exercism project."
+      (let ((case-fold-search nil) ;; Case matters!
+            ;; Let's operate on a simpler string:
+            (ops-msg (string-trim (replace-regexp-in-string
+                                   "[0-9,.%^@#$*()]" "" msg))))
+        (cond
+         ((string-match "^$"                    msg) "Fine. Be that way!")
+         ((string-match "^[A-Z][A-Z' ?!]+$" ops-msg) "Whoa, chill out!")
+         ((string-match "\\?$"              ops-msg) "Sure.")
+         (t                                          "Whatever."))))
+  #+END_SRC
+
+* Display Source in Separate Window
+
+  You can display source in its own buffer window.
+
+  This shows the complete source code file,
+  but with a sub-section highlighted.
+
+  If you have [[https://github.com/Malabarba/fancy-narrow][fancy-narrow]] package installed,
+  the highlighted code is colored, and the
+  rest of the file is gray.
+
+  If not, we simply narrow to the region.
+
+* Showing Code Comparisons
+
+  To demonstrate the difference between two files,
+  use =demo-it-compare-files= where each file
+  is placed next to each other.
+
+  This function allows the code to be show on
+  the =:side= or =:below=.
+
+* Loading Images
+
+  Since presentations like this one remove
+  Emacs decorations, images can be displayed
+  the same way.
+
+* Better Control
+
+  When creating a demonstration where you
+  plan to show code, choose =:advanced-mode=
+
+  While this means you use =F12= to advance,
+  you can use any other keys to show off
+  your source code.
