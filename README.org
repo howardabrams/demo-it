@@ -96,10 +96,6 @@ demonstration function. For a more complete example, see [[file:example/example.
   - =:text-x-large= :: New buffer have a font scaled to 3
   - =:text-xx-large= :: Font text size scaled to 4
   - =:text-huge= :: Set to a font scale of 5
-
-  The following are property values I would like to add to the
-  presentation features, but I haven't re-factor those yet:
-
   - =:show-mode-line= :: Show a presentation display the mode line?
   - =:hide-mode-line= :: Hide the mode line for presentations (the default)
   - =:show-org-markers= :: In org-mode files show asterisks, slashes,
@@ -108,7 +104,10 @@ demonstration function. For a more complete example, see [[file:example/example.
   - =:variable-width= :: Use a variable width font for presentations
   - =:fixed-width= :: Keep to the standard, fixed width font
   - =:show-block-headers= :: Should the =#+begin= and =#+end= markers be shown
-  - =:hide-block-headers= :: Hide org-mode header entries (the default)
+
+  The following are property values I would like to add to the
+  presentation features, but I haven't re-factor those yet:
+
   - =:show-fringe-mode= :: Should the normal fringe be display for presentations
   - =:hide-fringe-mode= :: Hide the fringe during presentations (the default)
 

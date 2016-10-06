@@ -8,8 +8,17 @@
 ;;
 ;;; Commentary:
 ;;
-;;  Functions for displaying an org-mode file as a presentation using
-;;  the `org-tree-slide' project (see ).
+;;    Since I often have an org-mode file on the side of the screen to
+;;    demonstrate an outline of what I will be demoing, I made it a
+;;    function.
+;;
+;;    The file contains functions for displaying an org-mode file as a
+;;    presentation using the `org-tree-slide' project (see
+;;    https://github.com/takaxp/org-tree-slide).
+;;
+;;    If `org-tree-slide' is not available, it simply shows the
+;;    org-mode file. We really need to look at a way to make the
+;;    display configurable.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -32,30 +41,51 @@
 ;;
 ;;; Code:
 
-;; Starting an ORG Presentation
-;;
-;;    Since I often have an org-mode file on the side of the screen to
-;;    demonstrate an outline of what I will be demoing, I made it a
-;;    function.
-
-;;    Uses org-tree-slide if available.
-;;    See https://github.com/takaxp/org-tree-slide
+(require 'cl)
 
 (declare-function org-tree-slide-content "ext:org-tree-slide")
 (declare-function org-tree-slide-move-next-tree "ext:org-tree-slide")
+(declare-function face-remap-add-relative "face-remap.el")
+(declare-function face-remap-remove-relative "face-remap.el")
+
+(defvar org-image-actual-width)
 (defvar org-tree-slide-heading-emphasis)
 (defvar org-hide-emphasis-markers)
+
+(defvar demo-it--text-scale)
+(defvar demo-it--presentation-hide-mode-line)
+(defvar demo-it--presentation-hide-org-markers)
+(defvar demo-it--presentation-variable-width)
+(defvar demo-it--presentation-hide-org-blocks)
+
+(declare-function demo-it--get-text-scale "demo-it-custom.el")
+(declare-function demo-it--presentation-variable-width-p "demo-it-custom.el")
+(declare-function demo-it--presentation-hide-blocks-p "demo-it-custom.el")
+(declare-function demo-it-hide-mode-line "demo-it.el")
+(declare-function demo-it-show-mode-line "demo-it.el")
+(declare-function demo-it-disable-mode "demo-it.el")
+
+(declare-function demo-it-create "demo-it.el")
+(declare-function demo-it-start "demo-it.el")
+(declare-function demo-it--setq-restore "demo-it.el")
+
+;; ----------------------------------------------------------------------
 
 (defvar demo-it--presentation-file "")
 (defvar demo-it--presentation-buffer nil)
 (defvar demo-it--presentation-prev-settings (make-hash-table))
 
+
 (defun demo-it-presentation (file &optional size style section)
-  "Load FILE (org-mode?) as presentation.  Start org-tree-slide
-if available.  SIZE specifies the text scale, and defaults to 2
-steps larger. STYLE can either be :variable for variable pitch of
-the font, :blocks for diminished headers on org-blocks, or :both
-for both features.
+  "Load FILE (org-mode?) as presentation.  Start `org-tree-slide'
+if available.  SIZE specifies the text scale, and defaults to the
+value set in `demo-it--text-scale'.
+
+ STYLE can either be `:variable' for variable font pitch,
+`:blocks' for diminished headers on org-blocks, or `:both' for
+both features. If nil, defaults to the customize variables,
+`demo-it--presentation-variable-width' and
+`demo-it--presentation-hide-org-blocks'.
 
 The SECTION is the name of an org-mode header to specify as the
 first section to display."
@@ -65,32 +95,30 @@ first section to display."
 
   (when (fboundp 'org-tree-slide-mode)
     (setq org-tree-slide-heading-emphasis t)
-    (org-tree-slide-mode)
-    (when section
-      (demo-it--presentation-section section)))
+    (org-tree-slide-mode))
 
-  (when (fboundp 'flyspell-mode)
-    (flyspell-mode -1))
-  (setq cursor-type nil)
+  (when section
+    (demo-it--presentation-section section))
 
   ;; Style things up correctly...
   (make-local-variable 'demo-it--presentation-prev-settings)
   (puthash :emphasis-markers org-hide-emphasis-markers demo-it--presentation-prev-settings)
-  (setq org-hide-emphasis-markers t)
-
-  (when (or (eq style :variable) (eq style :both))
-    (variable-pitch-mode 1))
+  (setq org-hide-emphasis-markers demo-it--presentation-hide-org-markers)
 
   ;; Make the display of the org-mode file more presentable
-  (when (or (eq style :block) (eq style :both))
+  (when (demo-it--presentation-hide-blocks-p style)
     (demo-it--presentation-display-set))
-
-  (demo-it-hide-mode-line)
-  (if size (text-scale-set size)
-    (text-scale-set 2))
+  (when (demo-it--presentation-variable-width-p style)
+    (variable-pitch-mode 1))
+  (when demo-it--presentation-hide-mode-line
+    (demo-it-hide-mode-line))
+  (text-scale-set (demo-it--get-text-scale size))
 
   (when (fboundp 'org-bullets-mode)
-    (org-bullets-mode 1)))
+    (org-bullets-mode 1))
+  (when (fboundp 'flyspell-mode)
+    (flyspell-mode -1))
+  (setq cursor-type nil))
 
 (defun demo-it--presentation-display-set ()
   "Change some typical `org-mode' display values to make more
@@ -102,9 +130,10 @@ See `demo-it--presentation-display-restore'."
   (setq org-image-actual-width nil)
   (let* ((backgd (face-attribute 'default :background))
          (border (list (list :foreground backgd :background backgd :height 1))))
-    (cl-flet ((set-attr (attr values) (puthash attr
-                                               (face-remap-add-relative attr values)
-                                               demo-it--presentation-prev-settings)))
+    (cl-flet ((set-attr (attr values)
+                        (puthash attr
+                                 (face-remap-add-relative attr values)
+                                 demo-it--presentation-prev-settings)))
       (set-attr 'org-block-begin-line border)
       (set-attr 'org-block-end-line   border)
       (set-attr 'org-meta-line        border)
@@ -133,10 +162,15 @@ See `demo-it--presentation-display-restore'."
   (interactive "s")
   (when demo-it--presentation-buffer
     (switch-to-buffer demo-it--presentation-buffer)
-    (org-tree-slide-content)
+
+    (when (fboundp 'org-tree-slide-mode)
+      (org-tree-slide-content))
+
     (goto-char (point-min))
     (re-search-forward (format "^\*+ +%s" section))
-    (org-tree-slide-move-next-tree)))
+
+    (when (fboundp 'org-tree-slide-mode)
+      (org-tree-slide-move-next-tree))))
 
 ;; Jumping Back to the Presentation
 ;;
@@ -151,20 +185,12 @@ See `demo-it--presentation-display-restore'."
   (delete-other-windows))
 
 (defun demo-it-presentation-return ()
-  "Return to the presentation buffer, delete other windows, and advance to the next 'org-mode' section."
+  "Return to the presentation buffer, delete other windows, and
+advance to the next 'org-mode' section."
   (when demo-it--presentation-buffer
     (demo-it-presentation-return-noadvance)
     (when (fboundp 'org-tree-slide-move-next-tree)
       (org-tree-slide-move-next-tree))))
-
-(defun demo-it-single-presentation (file &optional size style section)
-  "Demonstration that presents on `org-mode' FILE as a full-screen presentation."
-  (interactive "fPresentation File: ")
-  (cl-flet ((present-it ()
-                        (demo-it-frame-fullscreen)
-                        (delete-other-windows)
-                        (demo-it-presentation file size style section)))
-    (demo-it-start (list #'present-it) t)))
 
 ;; Advance Presentation without Changing Focus
 ;;
@@ -173,7 +199,9 @@ See `demo-it--presentation-display-restore'."
 ;;    initially.
 
 (defun demo-it-presentation-advance ()
-  "Advance the presentation to the next frame (if the buffer is an 'org-mode' and 'org-tree-slide' is available), but doesn't change focus or other windows.  Only useful if using the org-tree-slide mode for the presentation buffer."
+  "Advance the presentation to the next frame (if the buffer is
+an `org-mode' and `org-tree-slide' is available), but doesn't
+change focus to the window."
   (interactive)
   (when demo-it--presentation-buffer
     (let ((orig-window (current-buffer)))
@@ -219,9 +247,32 @@ items while executing appropriate code."
       (flyspell-mode t))
     (setq cursor-type t)
     (demo-it--presentation-display-restore)  ; Restore previous changes
-    (variable-pitch-mode nil)
+    (variable-pitch-mode 0)
     (demo-it-show-mode-line)
     (text-scale-set 0)))
+
+;; ----------------------------------------------------------------------
+
+;;;###autoload
+(defun demo-it-single-presentation (file &optional size style section)
+  "Demonstration that presents an `org-mode' FILE as a
+full-screen presentation. SIZE is the text scaling size, and STYLE is the presentation "
+  (interactive "fPresentation File: ")
+  (demo-it-create (demo-it-presentation file size style section))
+  (demo-it-start)
+
+  ;; Now that the presentation is going, let's change the mode:
+  (demo-it-disable-mode)
+  (demo-it-mode-pres t))
+
+(define-minor-mode demo-it-mode-pres "Pressing 'space' advances demo."
+  :lighter " demo-p"
+  :require 'demo-it
+  :global t
+  :keymap '((" "               . demo-it-presentation-advance)
+            (""              . demo-it-presentation-advance)
+            ("q"               . demo-it-disable-mode)
+            ("Q"               . demo-it-end)))
 
 (provide 'demo-it-present)
 

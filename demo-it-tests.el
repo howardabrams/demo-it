@@ -52,6 +52,7 @@
 (declare-function demo-it--set-property "demo-it-custom")
 (declare-function demo-it--get-section "demo-it-custom")
 (declare-function demo-it--get-insert-text-speed "demo-it-custom")
+(declare-function demo-it--get-text-scale "demo-it-custom")
 
 
 (defvar demo-it-tests--state 0)
