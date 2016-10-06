@@ -92,6 +92,50 @@ side, like `:below' or on the `:right'."
   :type '(boolean)
   :group 'demo-it)
 
+(defcustom demo-it--presentation-hide-mode-line t
+  "If non-nil, shows the mode-line during a presentation,
+otherwise the mode-line is hidden from view."
+  :type '(boolean))
+
+(defcustom demo-it--presentation-hide-org-markers t
+  "If non-nil, shows the surrounding asterisks, underlines and
+slashes that define an `org-mode' textual formats, otherwise
+these characters hidden, even though the effects of bolding and
+italics are shown."
+  :type '(boolean))
+
+(defcustom demo-it--presentation-variable-width nil
+  "If non-nil, uses a variable-width font for `org-mode' presentation files,
+otherwise the continues to use the standard fixed-width font."
+  :type '(boolean))
+
+(defcustom demo-it--presentation-hide-org-blocks t
+  "If non-nil, shows the `#+BEGIN_SRC' and `#+END_SRC' code
+blocks in an `org-mode' presentation file, otherwise these lines
+are hidden, but the contents within the blocks are still shown."
+  :type '(boolean))
+
+(defun demo-it--presentation-variable-width-p (&optional style)
+  "Predicate return `t' if STYLE is either `:variable' or `:both'
+or the customization setting,
+`demo-it--presentation-variable-width' is true. Otherwise, STYLE
+can be `:fixed'."
+  (if (eq style :fixed)
+      nil
+    (when (or (eq style :variable)
+              (eq style :both)
+              demo-it--presentation-variable-width)
+      t)))
+
+(defun demo-it--presentation-hide-blocks-p (&optional style)
+  "Predicate return `t' if STYLE is either `:block' or `:both'
+or the customization setting, `demo-it--presentation-hide-org-blocks'
+is non-nil."
+  (when (or (eq style :block) (eq style :blocks)
+            (eq style :both)
+            demo-it--presentation-hide-org-blocks)
+    t))
+
 (defcustom demo-it--insert-text-speed :medium
   "The speed at which some functions insert text into the shell
 and other place. This can be :instant for instantaneous,
@@ -160,7 +204,16 @@ integer matching the symbol specified by SIZE, e.g. `:large'."
     (:insert-quickly   (setq demo-it--insert-text-speed :instant))
     (:insert-fast      (setq demo-it--insert-text-speed :fast))
     (:insert-medium    (setq demo-it--insert-text-speed :medium))
-    (:insert-slow      (setq demo-it--insert-text-speed :slow))))
+    (:insert-slow      (setq demo-it--insert-text-speed :slow))
+
+    (:show-mode-line   (setq demo-it--presentation-hide-mode-line nil))
+    (:hide-mode-line   (setq demo-it--presentation-hide-mode-line t))
+    (:show-org-markers (setq demo-it--presentation-hide-org-markers nil))
+    (:hide-org-markers (setq demo-it--presentation-hide-org-markers t))
+    (:variable-width   (setq demo-it--presentation-variable-width t))
+    (:fixed-width      (setq demo-it--presentation-variable-width nil))
+    (:show-block-headers (setq demo-it--presentation-hide-org-blocks nil))
+    (:hide-block-headers (setq demo-it--presentation-hide-org-blocks t))))
 
 (provide 'demo-it-custom)
 

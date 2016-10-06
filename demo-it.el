@@ -90,7 +90,6 @@
 (require 'cl-lib)
 
 ;; Predefined necessary external functions:
-(declare-function face-remap-remove-relative "face-remap.el")
 (defvar org-image-actual-width)
 
 ;; And functions from other projects I like to use...
@@ -110,6 +109,7 @@
 (defvar demo-it--start-fullscreen)
 (defvar demo-it--start-single-window)
 (declare-function demo-it--get-insert-text-speed "demo-it-custom.el")
+(declare-function demo-it--get-text-scale "demo-it-custom.el")
 (declare-function demo-it--set-property "demo-it-custom.el")
 
 
@@ -203,7 +203,9 @@ more interactive demonstrations."
   (demo-it-step))
 
 (defmacro demo-it-create (&rest forms)
-  "Create and store an ordered list of steps and configuration values. The FORMS can be either function names, expressions or keywords, like :advanced-mode and :variable-width."
+  "Create and store an ordered list of steps and configuration
+values. The FORMS can be either function names, expressions or
+keywords, like `:advanced-mode' and `:variable-width'."
   `(progn
      (demo-it--set-properties (cl-remove-if-not 'keywordp '(,@forms)))
      (setq demo-it--steps     (cl-remove-if     'keywordp '(,@forms)))))
