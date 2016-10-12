@@ -191,6 +191,7 @@ integer matching the symbol specified by SIZE, e.g. `:large'."
     (:windows-above    (setq demo-it--open-windows      :above))
 
     (:fullscreen       (setq demo-it--start-fullscreen    t))
+    (:full-screen      (setq demo-it--start-fullscreen    t))
     (:single-window    (setq demo-it--start-single-window t))
 
     (:text-small       (setq demo-it--text-scale -1))
