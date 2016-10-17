@@ -23,9 +23,7 @@
   "Execute our source code in an Eshell buffer."
   ;; Close other windows and advance the presentation:
   (demo-it-presentation-return)
-
-  (ignore-errors
-    (demo-it-start-shell))
+  (demo-it-start-shell)
   (demo-it-run-in-shell "python example.py Snoopy"))
 
 ;; ----------------------------------------------------------------------
