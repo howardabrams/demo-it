@@ -210,7 +210,7 @@ change focus to the window."
         (org-tree-slide-move-next-tree))
       (switch-to-buffer orig-window))))
 
-(defun demo-it--presentation-highlight-phrase (phrase &optional color)
+(defun demo-it-presentation-highlight-phrase (phrase &optional color)
   "Highlight a PHRASE (based on a regular expression) in the
 presentation buffer. This is useful to highlight bullet point
 items while executing appropriate code."
@@ -222,12 +222,20 @@ items while executing appropriate code."
       (hi-lock-face-phrase-buffer phrase hilite-color)
       (switch-to-buffer orig-window))))
 
-(defun demo-it--presentation-unhighlight-all ()
+(define-obsolete-function-alias 'demo-it--presentation-highlight-phrase
+  'demo-it-presentation-highlight-phrase "2016-Oct")
+
+(defun demo-it-presentation-unhighlight-all ()
+  "Remove all highlighted values in a presentation previously set
+by a call to `demo-it-presentation-highlight-phrase'."
   (when demo-it--presentation-buffer
     (let ((orig-window (current-buffer)))
       (switch-to-buffer demo-it--presentation-buffer)
       (hi-lock-unface-buffer t)
       (switch-to-buffer orig-window))))
+
+(define-obsolete-function-alias 'demo-it--presentation-unhighlight-all
+  'demo-it-presentation-unhighlight-all "2016-Oct")
 
 ;; Clean up the Presentation
 ;;
