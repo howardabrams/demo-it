@@ -1,0 +1,894 @@
+#+TITLE:  Demo It
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2016 Oct 06
+#+DESCRIPTION: This file is used as the basis for the Info documentation
+#+OPTIONS: ':t toc:t author:t email:t
+#+LANGUAGE: en
+#+MACRO: version 2.0
+#+MACRO: updated last updated 24 October 2016
+#+TEXINFO_DIR_TITLE: demo-it: (demo-it)
+
+* Basics
+
+  At the end of each sprint, each of us demonstrate our accomplishments.
+  These reviews often incorporate the following trifecta:
+
+  * Presentations explaining the technology and whatnot
+  * Source code reviews...correctly highlighted and interactive
+  * Executing the code in a shell
+
+  During my sprint reviews, I noticed I used my org-mode-formatted
+  files, eshell and source code buffers... In other words, I was
+  always in Emacs.  However, fat-fingering or mentally burping delayed
+  the gratification for my audience while I laboriously typed.  I
+  originally solved this problem by predefining each "step" as an
+  Emacs Lisp function, and then had another function execute each
+  function when I hit an /advance/ key (=F12=).
+
+  After I had amassed a small army of /helper functions/, I packaged it as
+  =demo-it=, because I lack the imagination to come up with anything more
+  clever.
+
+  See the following videos as examples of what can be done:
+
+  * [[http://www.youtube.com/watch?v=B6jfrrwR10k][Emacs: An Introduction for the Curious]]
+  * [[https://www.youtube.com/watch?v=dljNabciEGg][Literate DevOps Programming]]
+  * [[http://www.youtube.com/watch?v=3T00X_sNg4Q][Learn You Some Lisp for Great Good]]
+
+** Simple Example
+
+   Using this project is a four step process:
+
+   1. Load the library in your own Elisp source code file
+   2. Create zero or more helper functions that "do things", or use the
+      functions provided by this project.
+   3. Order the functions by calling =(demo-it-create)=
+   4. Call =demo-it-start= to begin the fun.
+
+   Press the space for each step, or call =demo-it-end= to end early.
+
+   For instance:
+
+   #+BEGIN_SRC elisp
+     (require 'demo-it)
+
+     (defun my-demo-step/show-code ()
+       "Helper demo function that displays some source code and
+     advances the presentation at the same time."
+       (demo-it-load-side-window "example/example.py")
+       (demo-it-presentation-advance))
+
+     ;; Order the functions and forms for this presentation:
+     (demo-it-create (demo-it-presentation "example/example.org")
+                      my-demo-step/show-code
+                      demo-it-presentation-return ; close file and advance
+                     (demo-it-run-in-eshell "python example/example.py"))
+
+     (demo-it-start)
+   #+END_SRC
+
+** Step Types
+  #+PINDEX: demo-it-create
+  #+CINDEX: @command{demo-it-create}
+
+  The `demo-it-create' is a macro that stores a single demonstration.
+  Calling it a second time replaces any previously created demonstrations.
+
+   Each "step" given to the =demo-it-create= macro can be one of the
+   following:
+
+   - Expression typically calling a helper function, for instance:
+     #+BEGIN_SRC elisp
+     (demo-it-presentation "example/example.org")
+     #+END_SRC
+
+   - Name of a function to call that does multiple actions, for instance:
+     #+BEGIN_SRC elisp
+     demo-it-presentation-return
+     #+END_SRC
+
+   - a string referring to a key-binding to run, for instance:
+     #+BEGIN_SRC elisp
+     "C-x C-f example.el "
+     #+END_SRC
+
+   - a property that affects demonstration behavior, see the
+     [[Demonstration Options]] or [[Customization]]
+
+   Note: Any Emacs function can be called, either by name or as part
+   of an expression.  These functions can be standard functions,
+   supplied by this =demo-it= package, or even ones you write. ;-)
+
+** Demonstration Options
+
+   The following list of keywords can be passed to =demo-it-create= to
+   override various [[Customization]] settings:
+
+   - =:simple-mode= turn on mode where space advances demonstration
+   - =:advance-mode= turn on mode where ~F12~ advances demonstration
+   - =:use-eshell=
+   - =:use-shell=
+   - =:eshell=
+   - =:shell=
+   - =:windows-on-side=
+   - =:windows-on-right=
+   - =:windows-on-left=
+   - =:windows-below=
+   - =:windows-above=
+   - =:fullscreen=
+   - =:single-window=
+   - =:text-small=
+   - =:text-normal=
+   - =:text-medium=
+   - =:text-large=
+   - =:text-x-large=
+   - =:text-xx-large=
+   - =:text-huge=
+   - =:insert-quickly=
+   - =:insert-fast=
+   - =:insert-medium=
+   - =:insert-slow=
+   - =:show-mode-line=
+   - =:hide-mode-line=
+   - =:show-org-markers=
+   - =:hide-org-markers=
+   - =:variable-width=
+   - =:fixed-width=
+   - =:show-block-headers=
+   - =:hide-block-headers=
+
+** Running the Demo
+  #+PINDEX: demo-it-start
+  #+CINDEX: demo-it-start
+
+  Once the demonstration has been created using ~demo-it-create~,
+  start it by calling =demo-it-start=, as this will invoke the
+  first step.
+
+  Typically, pressing the =SPACE= or =RETURN= key will advance to the
+  next step, but this depends on which of the [[Demo Modes]] was chosen.
+
+  A deprecated version of =demo-it-start= allows you to pass in a list
+  of the steps, but creating this list can be problematic, so you'll
+  get more mileage from the =demo-it-create= macro.
+
+** Demo Modes
+
+   Some demonstrations are so complete that pressing the space bar to
+   advance to each step is sufficient. However, this project can be
+   used as a /helper/ where each step merely sets up an environment
+   where some Emacs feature or source code can be elaborated with
+   personal prestidigitation. In this case, using the space and return
+   to advance the demonstration would limit what can be demonstrated manually.
+
+   So =demo-it= contains two minor modes, and starting a
+   demonstration, one of the following minor mode is chosen.
+
+   The choice is either made by setting the global customization
+   value, , or by passing the following keyword to =demo-it-create=.
+   - =:simple-mode=
+   - =:advance-mode=
+
+*** demo-it-mode
+    #+PINDEX: demo-it-mode
+    #+CINDEX: demo-it-mode
+
+    The standard minor mode for demonstrations, has the following key
+    features:
+    - ~Space~ or ~Return~ advances to the next demonstration step
+    - ~q~ turns off this mode, allowing you to type normally.
+      Call =demo-it-mode= to resume this mode
+    - ~Q~ ends the demonstration
+
+    Note: In this mode, clicking the mouse on the right-side of the
+    screen will advance the demonstration, while clicking elsewhere,
+    repositions the cursor.
+
+*** demo-it-mode-adv
+    #+PINDEX: demo-it-mode-adv
+    #+CINDEX: demo-it-mode-adv
+
+    The advanced mode is used when the =demo-it= project simply sets
+    up an environment, where you want most keys available to enter
+    commands manually. This mode has the following key features:
+
+    - ~F12~ advances to the next step in the demonstration
+    - ~M-F12~ ends the demonstration
+
+    Why yes, while called /advanced/ is certainly has limited features.
+
+* Showing Presentations
+
+  This project relies on other projects to do most of the heavy
+  lifting for using ~org-mode~ files as the basis of a presentation,
+  especially the [[http://asdfasdf][org-tree-slide]] project, which displays each section
+  under a header as the sole contents of a buffer.
+
+  The following functions can be added to your demonstration to
+  control the display of the presentation.
+
+** demo-it-presentation
+   #+PINDEX: demo-it-presentation
+   #+CINDEX: demo-it-presentation
+
+   (file &optional size style section)
+
+   Loads the given ~org-mode~ file as a presentation.  This
+   automatically calls ~org-tree-slide~ if available.
+
+   This function takes an optional ~size~ parameter to specifies the
+   text scale. If ~nil~, this defaults to the value set in
+   [[demo-it--text-scale]] customization variable.
+
+   The optional ~style~ parameter can be set to either :variable for
+   variable font pitch, :blocks for diminished headers on org-blocks,
+   or :both to enable both features. This is a deprecated, legacy
+   feature, since it is easier and clearer to either use the
+   customization variables:
+   - [[demo-it--presentation-variable-width]]
+   - [[demo-it--presentation-hide-org-blocks]]
+
+   The final parameter, ~section~, is a string containing the name of
+   an ~org-mode~ header to specify as the first section to display.
+
+** demo-it-presentation-quit
+   #+PINDEX: demo-it-presentation-quit
+   #+CINDEX: demo-it-presentation-quit
+
+   Undoes the display settings made to the presentation buffer.
+
+** demo-it-presentation-return
+   #+PINDEX: demo-it-presentation-return
+   #+CINDEX: demo-it-presentation-return
+
+   Makes the last running presentation the current buffer, deletes
+   other windows, and advances to the next ~org-mode~ section.
+
+** demo-it-presentation-return-noadvance
+   #+PINDEX: demo-it-presentation-return-noadvance
+   #+CINDEX: demo-it-presentation-return-noadvance
+
+   Similar to calling [[demo-it-presentation-return]] in that the latest
+   specified presentation becomes the current buffer and all other
+   windows are deleted.
+
+   However, the presentation is not advanced to the next section.
+
+** demo-it-presentation-highlight-phrase
+   #+PINDEX: demo-it-presentation-highlight-phrase
+   #+CINDEX: demo-it-presentation-highlight-phrase
+
+   Given a string parameter, ~phrase~, as a regular expression, this
+   function highlights a /phrase/ in the presentation buffer without
+   changing the current buffer. This is
+   useful to highlight bullet point items while executing appropriate
+   code.
+
+   The ~color~ parameter is a face from the ~hi-lock~ project,
+   e.g. :hi-yellow.
+
+   Note: This unhighlights previous highlighted phrases.
+   Call ~demo-it-presentation-unhighlight-all~ if you just want to
+   remove the highlighting.
+
+** demo-it-single-presentation
+   #+PINDEX: demo-it-single-presentation
+   #+CINDEX: demo-it-single-presentation
+
+   Demonstration similar to calling [[demo-it-presentation]], in that it
+   presents an ~org-mode~ file as a full-screen presentation. In this
+   form, the demonstration doesn't do anything more than advance
+   through the presentation, and calling either ~demo-it-create~ or
+   ~demo-it-start~ is not needed.
+
+   This function begins a minor-mode where the space or return key
+   advances the presentation to the next section. In this mode, the
+   ~q~ disables this mode, and ~Q~ quits the demonstration and
+   presentation.
+
+   While the standard customization variables configure the
+   presentation display style, this function accepts a ~size~
+   parameter to set the text scaling size.
+
+   The optional ~style~ parameter can be set to either :variable for
+   variable font pitch, :blocks for diminished headers on org-blocks,
+   or :both to enable both features.
+
+* Showing Files
+
+  While a simple call to =find-file= is often sufficient to display a
+  file in Emacs, the following functions can be helpful for showing
+  files and source code during a demonstration.
+
+  These functions often take the following optional parameters, and in
+  the spirit of DRY, we will specify them here:
+
+  The optional ~side~ parameter specifies the side of the frame to
+   display the new window. Acceptable values can one of the following
+   keywords:
+   - =:above=
+   - =:below=
+   - =:left=
+   - =:right=
+   - =:side= is a synomym for =:right=
+   - =:none= loads the file in the current buffer.
+
+   If ~nil~, defaults is to use the customized value of
+   [[demo-it--open-windows]].
+
+   The optional ~size~ parameter takes an integer and specifies the
+   text scale. If ~nil~, this defaults to the value set in
+   [[demo-it--text-scale]] customization variable.
+
+   The ~width~ parameter specifies the size of
+   the new window, which is either the width of a side window, or
+   the height if the window is =:above= or =:below=.
+
+** demo-it-load-file
+   #+PINDEX: demo-it-load-file
+   #+CINDEX: demo-it-load-file
+
+   Calling this function with a file, first splits the root frame into
+   a side window and loads the file into that window.
+
+   Keep in mind, that calling it a second time will result in further
+   splitting of the root window. Call =delete-window= or
+   [[demo-it-presentation-return-noadvance]], or close the window
+   while also updating the presentation with [[demo-it-presentation-return]].
+
+   The optional parameters this function takes are [[Showing Files][described above]].
+
+** demo-it-load-part-file
+   #+PINDEX: demo-it-load-part-file
+   #+CINDEX: demo-it-load-part-file
+
+   Splits window and loads a file, but also narrows to particular region.
+
+   If the ~type~ parameter is set to =:line=, then the ~start~ and
+   ~end~ parameters specify the first and last lines of the region to
+   narrow. If ~type~ is set to =:char=, then ~start~ and ~end~ refer
+   to specific character positions.
+
+   The other optional parameters this function takes are [[Showing Files][described above]].
+
+   See [[demo-it-load-fancy-file]] for an alternative version.
+
+** demo-it-load-fancy-file
+   #+CINDEX: demo-it-load-fancy-file
+   #+PINDEX: demo-it-load-fancy-file
+
+   Splits the root frame and loads a ~file~ specified by the first
+   parameter in that window (see [[demo-it-load-file]]), however, this
+   function can use the
+   [[https://github.com/Malabarba/fancy-narrow][fancy narrow]] to
+   highlight part of the buffer (if it has been loaded), otherwise, it
+   behaves like [[demo-it-load-part-file]] and narrows to the area specified.
+
+   If the second parameter, ~type~ is a string that specifies a
+   function name (available via ~imenu~), then it highlights
+   that function.
+
+   If ~type~ is a =:line=, then the next two parameters, ~start~ and ~end~
+   specifies the beginning or ending lines.
+
+   If ~type~ is =:char=, then ~start~ and ~end~ are exact buffer
+   positions, which you can determine by evaluating (~M-;~) the
+   following expression:
+   #+BEGIN_SRC elisp
+     (kill-new (int-to-string (point)))
+   #+END_SRC
+
+   The optional parameters ~side~ and ~size~ are
+   [[Showing Files][described above]].
+
+   Note: This function simply detects if the ~fancy-narrow~ package
+   has been loaded. The demonstration will need to issue a ~require~.
+
+** demo-it-show-image
+   #+PINDEX: demo-it-load-file
+   #+CINDEX: demo-it-load-file
+
+   Loads a file as an image (or any other special file) in another
+   window without a mode line or fringe.
+
+   The optional parameters this function takes are [[Showing Files][described above]].
+
+** demo-it-compare-files
+   #+PINDEX: demo-it-load-file
+   #+CINDEX: demo-it-load-file
+
+   Loads two files in either two windows on top of each other on the
+   right side of the screen, or two windows below (depending on the
+   value of the ~side~, which should either be =:below= or =:side=.
+
+   The other optional parameter, ~size~ is [[Showing Files][described above]].
+
+* Running Commands
+
+  What Emacs-sponsored demonstration would be complete without being
+  able to run the application you created. While your demonstration
+  could easily call ~shell-command~, starting a shell, and having
+  Emacs /type/ the commands makes a demonstration appear more real and
+  interactive.
+
+  The /typing/ abilities when inserting text are not very realistic,
+  as it simply picks a random delay between each letter. What is
+  lacking, however, it clacking should of the switches going off while
+  the letter appears (PRs are acceptable).
+
+  The following functions can be added to your demonstration to enter
+  commands in a shell (both your default shell, as well as the Eshell
+  is supported by setting the [[demo-it--shell-or-eshell]] variable or
+  giving =demo-it-create= one of the following keyword configurations:
+
+  - =:use-shell=
+  - =:use-eshell=
+
+** demo-it-start-shell
+   #+PINDEX: demo-it-start-shell
+   #+CINDEX: demo-it-start-shell
+
+   Starts a shell or eshell instance, in a particular directory and
+   executes the given command. The command can be entered into the
+   shell with a slight random delay intended to mimic a person typing.
+   This speed of this is specified by [[demo-it--insert-text-speed]].
+
+   The optional ~name~ parameter labels the buffer, and defaults to
+   ~Shell~.
+
+   The other optional parameters this function takes are
+   [[Showing Files][described above]].
+
+** demo-it-run-in-shell
+   #+PINDEX: demo-it-run-in-shell
+   #+CINDEX: demo-it-run-in-shell
+
+   Run shell command in a shell previously started with [[demo-it-start-shell]].
+   If a ~name~ is not specified, it defaults to ~Shell~.
+
+   The optional ~speed~ parameter overrides the customization value
+   set by [[demo-it--insert-text-speed]], or the text-speed related
+   keyword given to =demo-it-create=.
+
+** demo-it-show-shell
+   #+PINDEX: demo-it-show-shell
+   #+CINDEX: demo-it-show-shell
+
+   Call to display the shell buffer if the shell window of a given
+   ~name~ has been hidden. If ~name~ is not specified, it defaults to
+   ~Shell~.
+
+   The other optional parameters this function takes are
+   [[Showing Files][described above]].
+
+* Inserting Text
+   #+PINDEX: demo-it-insert
+   #+CINDEX: demo-it-insert
+
+  Perhaps you want to regale your audience with your programmatic
+  prowess, but don't dare attempt to do live-coding in front of live
+  individuals? Yes, even creating a series of yasnippets can result in
+  some serious embarrassment (and compiler errors) if you fat-finger
+  any of the fields.
+
+  Have no fear, just create a series of entries that contains calls to
+  ~demo-it-insert~, as this function inserts a string into the current
+  buffer as if you were typing it by hand (this is called by
+  [[demo-it-run-in-shell]]).
+
+  The following =demo-it= example uses this function as well as
+  the =def= yasnippet for Ruby and particular keystrokes to move from
+  field to field:
+
+  #+BEGIN_SRC elisp :results silent
+    (demo-it-create (find-file "foobar.rb")
+                    (demo-it-insert "def")
+                    (yas-expand)
+                    (demo-it-insert "hello")
+                    "TAB TAB"
+                    (demo-it-insert "name")
+                    "TAB"
+                    (demo-it-insert "\"Hello, #{name}\"" :fast))
+  #+END_SRC
+
+   The optional ~speed~ parameter is [[Showing Files][described above]].
+
+   Note: The previous version of =demo-it= offered specialized
+   feature for inserting text where each string to entered was put in
+   a hashmap, ~demo-it-text-entries~, and the entries were inserted
+   with calls to a dedicated function, ~demo-it-insert-text~. However,
+   the above seems to work just as well without a special function, so
+   it has been deprecated and removed.
+
+* Extra Functions
+
+  The following are useful functions that don't fit in the previous
+  sections, so consider this the /miscellaeous/ section.
+
+** demo-it-end
+   #+PINDEX: demo-it-end
+   #+CINDEX: demo-it-end
+
+   Calling this command ends the current demonstration by disabling
+   the mode (see [[Demo Modes]]), resetting the values inflicted on the presentation buffer
+   as well as restoring the window arrangement to their original glory
+   before =demo-it-start= was called.
+
+** demo-it-step
+   #+PINDEX: demo-it-step
+   #+CINDEX: demo-it-step
+
+   This function is typically called by one of the [[Demo Modes]]
+   to execute the next step in the current demonstration.
+
+   However, this function can be called to jump to a particular STEP
+   by specifying a step number to the optional parameter, ~step~. This
+   can also be done with a prefix, e.g. C-6 <F12> to run the 6th step.
+
+   Keep in mind that normally step functions expect a particular state
+   to be established, so calling this function to jump to a particular
+   step may not work as intended.
+
+   Why yes, we do want to figure out a good mechanism for establishing
+   a state for each called step, but that be a wee-bit challenging.
+
+** demo-it-restep
+   #+PINDEX: demo-it-restep
+   #+CINDEX: demo-it-restep
+
+   Re-executes the previous step in the current demonstration.
+
+   Note, this doesn't handle the concept of the state of the Emacs
+   system, so calling this function interactively does not rewind and
+   re-executes, it just re-executes given the current Emacs state.
+
+** demo-it-show-step
+   #+PINDEX: demo-it-show-step
+   #+CINDEX: demo-it-show-step
+
+   Displays a message about the expected function (that is, the
+   function that /will be run/) during the next step. This can be
+   useful when you've lost your way, and ask yourself, How did I
+   get here?
+
+   Of course, you may ask yourself, How do I work this? \\
+   And you may ask yourself, Where is that large automobile? \\
+   And you may tell yourself, This is not my beautiful house! \\
+   And you may tell yourself, This is not my beautiful wife!
+
+** demo-it-hide-mode-line
+   #+PINDEX: demo-it-hide-mode-line
+   #+CINDEX: demo-it-hide-mode-line
+
+   Hides the mode line for a current buffer. This is done by setting
+   the ~mode-line-format~ to ~nil~, but also saves off the value so
+   that it can be restored by calling [[demo-it-show-mode-line]].
+
+** demo-it-show-mode-line
+   #+PINDEX: demo-it-how-mode-line
+   #+CINDEX: demo-it-show-mode-line
+
+   Shows the mode line of the current buffer, if it was previously
+   hidden with a call to [[demo-it-hide-mode-line]].
+
+** demo-it-title-screen
+   #+PINDEX: demo-it-title-screen
+   #+CINDEX: demo-it-title-screen
+
+   Displays a file as the demonstration's title, e.g.
+   displayed with a larger-than-life font without a mode line,
+   etc. Typically, a specially-formatted org-mode file would do the
+   job, but any file, including an image will work.
+
+   The ~size~ parameter specifies the text scale, which ignores the
+   [[demo-it--text-scale]] customization setting and defaults to :huge
+   (or 5x your normal text font size).
+
+** demo-it-message-keybinding
+   #+PINDEX: demo-it-message-keybinding
+   #+CINDEX: demo-it-message-keybinding
+
+   When demonstrating Emacs features, you may want to display the
+   keystroke you type. Yes, you could (and probably should) use a
+   package like [[http://www.foldr.org/~michaelw/emacs/mwe-log-commands.el][mwe-log-commands]] by Michael Weber, but you can't
+   really use that sort of feature with =demo-it=, as you'd just log a
+   bunch of spacebars bound to [[demo-it-step]].
+
+   What you really want is to display the key you /wanted/ to type.
+   For that, you'll want to end your /step function/ with a call to
+   ~demo-it-message-keybinding~, as it will take two strings, where
+   the first one is the "key" and the other is a function or command
+   that it normally calls.
+
+   For instance:
+   #+BEGIN_SRC elisp
+     (defun my-demo/dired-a-directory ()
+       "Opens a `dired' buffer on a particular directory.
+     This is a step function that I add to demo-it-create."
+       (dired (expand-file-name "~/work"))
+       (demo-it-message-keybinding "C-x d" "dired"))
+   #+END_SRC
+
+   This sort of /step function/ would be added to =demo-it-create= as
+   a simple symbol, like:
+   #+BEGIN_SRC elisp
+   (demo-it-create ;; :keybindings
+                   ;; other functions and expressions
+                   my-demo/dired-a-directory
+                   ;; other functions and expressions
+                   )
+   #+END_SRC
+
+** demo-it-highlight-dwim
+   #+CINDEX: demo-it-highlight-dwim
+   #+PINDEX: demo-it-highlight-dwim
+
+   Can use the [[https://github.com/Malabarba/fancy-narrow][fancy-narrow]]
+   package to highlight a particular /section/. If the package is not
+   available, it simply /narrows/ to that area. If called
+   interactively, this highlights the region (if active) or the
+   current function.
+
+   If the first parameter, ~type-or-fn~ is a string, this specifies
+   the name of a function to highlight.
+
+   If it is a =:line=, then the next two parameters, ~start~ and ~end~
+   specifies the beginning or ending lines.
+
+   If it is =:char=, then ~start~ and ~end~ are exact buffer
+   positions, which you can determine by evaluating (~M-;~) the
+   following expression:
+   #+BEGIN_SRC elisp
+     (kill-new (int-to-string (point)))
+   #+END_SRC
+
+   If ~type-or-fn~ is ~nil~ and the region is active, highlight the
+   region.
+
+   If none of the following match, simply select the function the
+   point is currently in.
+
+   Note: While this function checks to see if the package is
+   available and loaded, it does not actually do the loading (or the
+   installing of the package), for that, you will need to do something
+   like:
+
+   #+BEGIN_SRC elisp
+     (require 'fancy-narrow)
+   #+END_SRC
+
+* Customization
+  :PROPERTIES:
+  :APPENDIX: t
+  :END:
+
+  The following is a list of custom variables that can be set through
+  the standard Emacs customization feature (under the =demo-it= group).
+  Note, each custom value may be overridden with a magic symbol to the
+  [[Step Types][demo-it-create]] macro or with a parameter to many functions.
+
+** demo-it--keymap-mode-style
+  #+PINDEX: demo-it--keymap-mode-style
+  #+CINDEX: demo-it--keymap-mode-style
+
+  The keymap-specific minor mode to use when a demonstration
+  starts. Should either be set to the symbol, =:simple-mode= for using
+  the space to advance to next step and ~q~ to exit the demonstration,
+  or =:advanced-mode=, where ~F12~ advances.
+
+  Defaults to =:simple-mode=
+
+  This setting can be overridden by a keyword to =demo-it-create=:
+  - =:simple-mode=
+  - =:advanced-mode=
+
+** demo-it--shell-or-eshell
+   #+PINDEX: demo-it--shell-or-eshell
+   #+CINDEX: demo-it--shell-or-eshell
+
+   When opening up a shell, this customization value specifies whether
+   it should run the =shell= or =eshell= command.
+
+   Should be set to one of the following keywords:
+   - =:shell=
+   - =:eshell=
+
+   Defaults to =:eshell=
+
+   This setting can be overridden by the following keywords to
+   =demo-it-create= macro:
+   - =:use-eshell=
+   - =:use-shell=
+
+** demo-it--open-windows
+  #+PINDEX: demo-it--open-windows
+  #+CINDEX: demo-it--open-windows
+
+  When opening side windows, split the frame on a particular side.
+  Should be set to one of the following keywords:
+
+  - =:above=
+  - =:below=
+  - =:left=
+  - =:right=
+
+  The keyword, =:side= is a synonym for =:right=.
+
+  Defaults to =:right=
+
+  This setting can be overridden by one of the following keywords
+  passed to =demo-it-create=:
+  - =:windows-on-side=
+  - =:windows-on-right=
+  - =:windows-on-left=
+  - =:windows-below=
+  - =:windows-above=
+
+** demo-it--open-windows-size
+   #+PINDEX: demo-it--open-windows-size
+   #+CINDEX: demo-it--open-windows-size
+
+   The size of side windows to open. This is the width if the window
+   is opened on one of the sides (=:left= or =:right=), or the height
+   if the window is opened =:above= or =:below=.
+
+   Defaults to =80=
+
+** demo-it--text-scale
+   #+PINDEX: demo-it--text-scale
+   #+CINDEX: demo-it--text-scale
+
+   Sets the default text scale when opening files in side windows (see
+   [[demo-it--open-windows]]).  While this can be set to an integer, it
+   can also be set to one of the following keywords:
+   - =:small=, set to a text scale of -1
+   - =:normal=, set to a text scale of 0
+   - =:medium=, set to a text scale of 1
+   - =:large=, set to a text scale of 2
+   - =:x-large=, set to a text scale of 3
+   - =:xx-large=, set to a text scale of 4
+   - =:huge=, set to a text scale of 5
+
+   It defaults to =:large= (a =text-scale-set= value of =2=).
+
+   This customization value can be overridden with one of the
+   following keywords passed to =demo-it-create=:
+   - =:text-small=
+   - =:text-normal=
+   - =:text-medium=
+   - =:text-large=
+   - =:text-x-large=
+   - =:text-xx-large=
+   - =:text-huge=
+
+** demo-it--start-fullscreen
+   #+PINDEX: demo-it--start-fullscreen
+   #+CINDEX: demo-it--start-fullscreen
+
+   A boolean setting that if set to a non-nil value, demonstrations
+   start with the current frame in fullscreen mode. Defaults to
+   =false=.
+
+   This customization value can be overridden with =:fullscreen=
+   keyword passed to =demo-it-create=.
+
+** demo-it--start-single-window
+   #+PINDEX: demo-it--start-single-window
+   #+CINDEX: demo-it--start-single-window
+
+   A boolean setting that if non-nil, deletes other windows to start
+   the demonstration with a current buffer window being the only
+   displayed window. Defaults to =t=.
+
+   This customization value can be overridden with =:single-window=
+   keyword passed to =demo-it-create=.
+
+** demo-it--presentation-hide-mode-line
+   #+PINDEX: demo-it--presentation-hide-mode-line
+   #+CINDEX: demo-it--presentation-hide-mode-line
+
+   If set to a nil value (/false/), the mode-line is hidden for any
+   presentation files (this doesn't affect other files opened with the
+   [[demo-it-load-file]]).   Defaults to =t=.
+
+   This customization value can be overridden with either of the
+   following keywords passed to =demo-it-create=:
+   - =:show-mode-line=
+   - =:hide-mode-line=
+
+** demo-it--presentation-hide-org-markers
+   #+PINDEX: demo-it--presentation-hide-org-markers
+   #+CINDEX: demo-it--presentation-hide-org-markers
+
+   If set to a non-nil value, surrounding asterisks, underlines and
+   slashes that define an ~org-mode~ textual formats in a presentation
+   are displayed. Otherwise those characters hidden, even though the
+   effects of bolding and italics are still shown.  Defaults to =t=.
+
+   This customization value can be overridden with either of the
+   following keywords passed to =demo-it-create=:
+   - =:show-org-markers=
+   - =:hide-org-markers=
+
+** demo-it--presentation-variable-width
+   #+PINDEX: demo-it--presentation-variable-width
+   #+CINDEX: demo-it--presentation-variable-width
+
+   If set to a non-nil value, a /variable-width/ font is used when
+   displaying ~org-mode~ presentation files, otherwise the standard
+   fixed-width font is used. Defaults to =nil=.
+
+   This customization value can be overridden with either of the
+   following keywords passed to =demo-it-create=:
+   - =:variable-width=
+   - =:fixed-width=
+
+** demo-it--presentation-hide-org-blocks
+   #+PINDEX: demo-it--presentation-hide-org-blocks
+   #+CINDEX: demo-it--presentation-hide-org-blocks
+
+   If set to a non-nil value, the start and ending lines of ~org-mode~
+   blocks are shown during a presentation, otherwise these lines are
+   hidden, but the contents within the blocks are still shown.
+
+   This currently only hides these lines:
+   #+BEGIN_EXAMPLE
+     ,#+BEGIN_SRC
+        ...
+     ,#+END_SRC
+   #+END_EXAMPLE
+
+   Other surrounding header values, like =#+HEADERS:= may still be seen.
+
+   This defaults to =t=, however, this customization value can be
+   overridden with either of the following keywords passed to
+   =demo-it-create=:
+   - =:show-block-headers=
+   - =:hide-block-headers=
+
+** demo-it--insert-text-speed
+   #+PINDEX: demo-it--insert-text-speed
+   #+CINDEX: demo-it--insert-text-speed
+
+   The functions, [[demo-it-run-in-shell]], [[demo-it-start-shell]],
+   and [[Inserting Text][demo-it-insert]], enters the text into the shell as if a human
+   were typing it. This value specifies the speed at which that text
+   is inserted into the shell.
+
+   This can set to one of the following keywords:
+   - =:instant= to insert text with no delay
+   - =:slow=
+   - =:medium=
+   - =:fast=
+
+   Defaults to =:medium=.
+
+   This can also specify a tuple of two integer values for the random
+   number of milliseconds between those two values to delay before
+   inserting each character, for instance, the =:medium= delay has a
+   lower value of 30 milliseconds, and an upper delay of 500.
+
+* Copying
+  :PROPERTIES:
+  :COPYING:  t
+  :END:
+
+  This manual is for =demo-it= (version {{{version}}},
+  {{{updated}}}), a project for running demonstrations within Emacs.
+
+  Copyright @@texinfo:@copyright{}@@ 2016, Howard Abrams
+
+  #+BEGIN_QUOTE
+  Permission is granted to copy, distribute and/or modify this
+  document under the terms of the GNU Free Documentation License,
+  Version 1.3 or any later version published by the Free Software
+  Foundation; with no Invariant Sections, with no Front-Cover Texts,
+  and with no Back-Cover Texts.  A copy of the license is included in
+  the section entitled "GNU Free Documentation License".
+  #+END_QUOTE
+
+* Index
+  :PROPERTIES:
+  :INDEX:    cp
+  :END:
