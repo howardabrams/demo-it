@@ -183,6 +183,7 @@ If nil, the STEPS must be specified by a call to `demo-it-create'.
 The optional ADVANCED-MODE turns on keybindings where <F12>
 advances the steps instead of Space.  This mode is better for
 more interactive demonstrations."
+  (interactive)
   (when (or demo-it-mode demo-it-mode-adv)
     (error "Do not start new demonstrations DURING demonstration"))
 
@@ -221,7 +222,7 @@ keywords, like `:advanced-mode' and `:variable-width'."
                      demo-it--start-single-window
                      demo-it--insert-text-speed)
   ;; Second, set all the new customization properties:
-  (mapcar 'demo-it--set-property l))
+  (mapc 'demo-it--set-property l))
 
 (defun demo-it-end ()
   "End the current demonstration by resetting the values
@@ -300,7 +301,8 @@ function can be bound to the mouse click."
     (message "Step: %d - Going to run: %s" demo-it--step func)))
 
 (defun demo-it-ignore-event (evt)
-  "Empty function that absorbs the EVT parameter to keep demonstration from flpping out."
+  "Empty function that absorbs the EVT parameter to keep
+demonstration from flipping out."
   (interactive "P")
   (message ""))
 
@@ -578,8 +580,10 @@ If NAME is not specified, it defaults to `Shell'."
 (define-obsolete-function-alias 'demo-it-type-in-eshell 'demo-it-run-in-shell "2016-Oct")
 
 (defun demo-it-show-shell (&optional name side width)
-  "Call if the shell window of a given NAME has been
-hidden. Optionally specify the SIDE (either 'below or 'side)."
+  "Show the shell buffer of a given NAME whose buffer may have
+been buried and not in visible. Optionally specify the
+SIDE (either 'below or 'side) of the screen where the shell
+should be shown."
   (demo-it--make-side-window side width)
   (switch-to-buffer (demo-it--shell-buffer-name name)))
 
@@ -618,7 +622,10 @@ etc.  SIZE specifies the text scale, which ignores the
 ;;    full screen and "regular window" in a programmatic way:
 
 (defun demo-it-toggle-fullscreen ()
-  "Toggle the frame between full screen and normal size."
+  "Toggle the frame between full screen and normal size. Only
+useful for old versions of Emacs, but this code probably won't
+work on them anyway."
+  (declare (obsolete toggle-frame-fullscreen "2016-Oct"))
   (interactive)
   (set-frame-parameter
    nil 'fullscreen
@@ -634,7 +641,10 @@ etc.  SIZE specifies the text scale, which ignores the
 ;; Let's make a right-side frame window:
 
 (defun demo-it-frame-leftside ()
-  "Set the window frame to be exactly half the physical display screen, and place it on the left side of the screen.  This can be helpful when showing off some other application."
+  "Set the window frame to be exactly half the physical display
+screen, and place it on the left side of the screen.  This can be
+helpful when showing off some other application."
+  (declare (obsolete "Really!? You think this is useful?" "2016-Oct"))
   (interactive)
   (let* ((full-pixels (- (x-display-pixel-width) 16))
          (full-width  (/ full-pixels (frame-char-width)))
@@ -693,29 +703,6 @@ the variables."
         demo-it--setq-voidvars nil))
 
 ;; Helper Functions
-
-(defvar demo-it-text-entries (make-hash-table)
-  "Collection of insertable text and keys for `demo-it-insert-text'.
-Strings to insert Assign a collection of characters as keys and
-strings, and call the `C-c i` to insert the text string as if you
-were typing it.
-
-For instance:
-   (setq demo-it-text-entries #s(hash-table data
-                         (?1 \"How about that?\"
-                          ?2 \"Nah, this really ain't it.\")))")
-
-(defun demo-it-insert-text (key)
-  "Insert text into the current buffer based on a single character KEY.
-
-The text is inserted as if you were typing it.  Make sure the
-`demo-it-text-entries' hash-table has been initialized with a
-character to be used as a key, and the text to insert."
-  (interactive "cInsert text from which key?")
-  (demo-it-insert (gethash key demo-it-text-entries)))
-
-
-
 
 (defun demo-it-message-keybinding (key command)
   "Display message showing the KEY keybinding and its COMMAND."
