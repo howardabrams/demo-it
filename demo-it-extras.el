@@ -34,6 +34,8 @@
 ;;
 ;;; Code:
 
+(require 'cl)
+
 (declare-function demo-it--get-section "demo-it")
 (declare-function demo-it-load-file "demo-it")
 
@@ -59,7 +61,8 @@ If TYPE-OR-FN is `nil' and region is active, use, the region,
 otherwise, select the function the point is currently in.
 
 If the `fancy-narrow' package is installed, we'll call
-`fancy-narrow-to-region' or `fancy-narrow-to-defun', otherwise, we narrow to it."
+`fancy-narrow-to-region' or `fancy-narrow-to-defun', otherwise,
+we narrow to it."
   (interactive)
 
   (cl-flet ((hi-defun ()   ;; Highlight the current function
@@ -98,7 +101,7 @@ If TYPE is a string that specifies a function name (available via
 the `imenu' call), then it highlights that function.
 
 If TYPE is :char or 'char, START and END refers to specific
-character positions, but if TYPE is :line or 'line, this returns
+character positions, but if TYPE is :line or 'line, this selects
 the point positions as if START and END are line numbers.
 
 If `fancy-narrow' is not installed, then simply narrows to the area."
