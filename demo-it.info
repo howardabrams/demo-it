@@ -1,0 +1,1280 @@
+This is demo-it.info, produced by makeinfo version 5.2 from
+demo-it.texi.
+
+This manual is for demo-it (version 2.0, last updated 24 October 2016),
+a project for running demonstrations within Emacs.
+
+   Copyright © 2016, Howard Abrams
+
+     Permission is granted to copy, distribute and/or modify this
+     document under the terms of the GNU Free Documentation License,
+     Version 1.3 or any later version published by the Free Software
+     Foundation; with no Invariant Sections, with no Front-Cover Texts,
+     and with no Back-Cover Texts.  A copy of the license is included in
+     the section entitled “GNU Free Documentation License”.
+
+
+File: demo-it.info,  Node: Top,  Next: Basics,  Up: (dir)
+
+Demo It
+*******
+
+This manual is for demo-it (version 2.0, last updated 24 October 2016),
+a project for running demonstrations within Emacs.
+
+   Copyright © 2016, Howard Abrams
+
+     Permission is granted to copy, distribute and/or modify this
+     document under the terms of the GNU Free Documentation License,
+     Version 1.3 or any later version published by the Free Software
+     Foundation; with no Invariant Sections, with no Front-Cover Texts,
+     and with no Back-Cover Texts.  A copy of the license is included in
+     the section entitled “GNU Free Documentation License”.
+
+* Menu:
+
+* Basics::
+* Showing Presentations::
+* Showing Files::
+* Running Commands::
+* Inserting Text::
+* Extra Functions::
+* Customization::
+* Index::
+
+— The Detailed Node Listing —
+
+Basics
+
+* Simple Example::
+* Step Types::
+* Demonstration Options::
+* Running the Demo::
+* Demo Modes::
+
+
+
+
+
+Demo Modes
+
+* demo-it-mode::
+* demo-it-mode-adv::
+
+Showing Presentations
+
+* demo-it-presentation::
+* demo-it-presentation-quit::
+* demo-it-presentation-return::
+* demo-it-presentation-return-noadvance::
+* demo-it-presentation-highlight-phrase::
+* demo-it-single-presentation::
+
+
+
+Showing Files
+
+* demo-it-load-file::
+* demo-it-load-part-file::
+* demo-it-load-fancy-file::
+* demo-it-show-image::
+* demo-it-compare-files::
+
+
+
+Running Commands
+
+* demo-it-start-shell::
+* demo-it-run-in-shell::
+* demo-it-show-shell::
+
+
+
+
+Extra Functions
+
+* demo-it-end::
+* demo-it-step::
+* demo-it-restep::
+* demo-it-show-step::
+* demo-it-hide-mode-line::
+* demo-it-show-mode-line::
+* demo-it-title-screen::
+* demo-it-message-keybinding::
+* demo-it-highlight-dwim::
+
+
+
+Customization
+
+* demo-it--keymap-mode-style::
+* demo-it--shell-or-eshell::
+* demo-it--open-windows::
+* demo-it--open-windows-size::
+* demo-it--text-scale::
+* demo-it--start-fullscreen::
+* demo-it--start-single-window::
+* demo-it--presentation-hide-mode-line::
+* demo-it--presentation-hide-org-markers::
+* demo-it--presentation-variable-width::
+* demo-it--presentation-hide-org-blocks::
+* demo-it--insert-text-speed::
+
+
+File: demo-it.info,  Node: Basics,  Next: Showing Presentations,  Prev: Top,  Up: Top
+
+Basics
+******
+
+At the end of each sprint, each of us demonstrate our accomplishments.
+These reviews often incorporate the following trifecta:
+
+   • Presentations explaining the technology and whatnot
+   • Source code reviews…correctly highlighted and interactive
+   • Executing the code in a shell
+
+   During my sprint reviews, I noticed I used my org-mode-formatted
+files, eshell and source code buffers… In other words, I was always in
+Emacs.  However, fat-fingering or mentally burping delayed the
+gratification for my audience while I laboriously typed.  I originally
+solved this problem by predefining each “step” as an Emacs Lisp
+function, and then had another function execute each function when I hit
+an _advance_ key (F12).
+
+   After I had amassed a small army of _helper functions_, I packaged it
+as demo-it, because I lack the imagination to come up with anything more
+clever.
+
+   See the following videos as examples of what can be done:
+
+   • Emacs: An Introduction for the Curious
+     (http://www.youtube.com/watch?v=B6jfrrwR10k)
+   • Literate DevOps Programming
+     (https://www.youtube.com/watch?v=dljNabciEGg)
+   • Learn You Some Lisp for Great Good
+     (http://www.youtube.com/watch?v=3T00X_sNg4Q)
+
+* Menu:
+
+* Simple Example::
+* Step Types::
+* Demonstration Options::
+* Running the Demo::
+* Demo Modes::
+
+
+File: demo-it.info,  Node: Simple Example,  Next: Step Types,  Up: Basics
+
+Simple Example
+==============
+
+Using this project is a four step process:
+
+  1. Load the library in your own Elisp source code file
+  2. Create zero or more helper functions that “do things”, or use the
+     functions provided by this project.
+  3. Order the functions by calling (demo-it-create)
+  4. Call demo-it-start to begin the fun.
+
+   Press the space for each step, or call demo-it-end to end early.
+
+   For instance:
+
+     (require 'demo-it)
+
+     (defun my-demo-step/show-code ()
+       "Helper demo function that displays some source code and
+     advances the presentation at the same time."
+       (demo-it-load-side-window "example/example.py")
+       (demo-it-presentation-advance))
+
+     ;; Order the functions and forms for this presentation:
+     (demo-it-create (demo-it-presentation "example/example.org")
+                      my-demo-step/show-code
+                      demo-it-presentation-return ; close file and advance
+                     (demo-it-run-in-eshell "python example/example.py"))
+
+     (demo-it-start)
+
+
+File: demo-it.info,  Node: Step Types,  Next: Demonstration Options,  Prev: Simple Example,  Up: Basics
+
+Step Types
+==========
+
+The ‘demo-it-create’ is a macro that stores a single demonstration.
+Calling it a second time replaces any previously created demonstrations.
+
+   Each “step” given to the demo-it-create macro can be one of the
+following:
+
+   • Expression typically calling a helper function, for instance:
+          (demo-it-presentation "example/example.org")
+
+   • Name of a function to call that does multiple actions, for
+     instance:
+          demo-it-presentation-return
+
+   • a string referring to a key-binding to run, for instance:
+          "C-x C-f example.el "
+
+   • a property that affects demonstration behavior, see the *note
+     Demonstration Options: Demonstration Options. or *note
+     Customization: Customization.
+
+   Note: Any Emacs function can be called, either by name or as part of
+an expression.  These functions can be standard functions, supplied by
+this demo-it package, or even ones you write.  ;-)
+
+
+File: demo-it.info,  Node: Demonstration Options,  Next: Running the Demo,  Prev: Step Types,  Up: Basics
+
+Demonstration Options
+=====================
+
+The following list of keywords can be passed to demo-it-create to
+override various *note Customization: Customization. settings:
+
+   • :simple-mode turn on mode where space advances demonstration
+   • :advance-mode turn on mode where ‘F12’ advances demonstration
+   • :use-eshell
+   • :use-shell
+   • :eshell
+   • :shell
+   • :windows-on-side
+   • :windows-on-right
+   • :windows-on-left
+   • :windows-below
+   • :windows-above
+   • :fullscreen
+   • :single-window
+   • :text-small
+   • :text-normal
+   • :text-medium
+   • :text-large
+   • :text-x-large
+   • :text-xx-large
+   • :text-huge
+   • :insert-quickly
+   • :insert-fast
+   • :insert-medium
+   • :insert-slow
+   • :show-mode-line
+   • :hide-mode-line
+   • :show-org-markers
+   • :hide-org-markers
+   • :variable-width
+   • :fixed-width
+   • :show-block-headers
+   • :hide-block-headers
+
+
+File: demo-it.info,  Node: Running the Demo,  Next: Demo Modes,  Prev: Demonstration Options,  Up: Basics
+
+Running the Demo
+================
+
+Once the demonstration has been created using ‘demo-it-create’, start it
+by calling demo-it-start, as this will invoke the first step.
+
+   Typically, pressing the SPACE or RETURN key will advance to the next
+step, but this depends on which of the *note Demo Modes: Demo Modes. was
+chosen.
+
+   A deprecated version of demo-it-start allows you to pass in a list of
+the steps, but creating this list can be problematic, so you’ll get more
+mileage from the demo-it-create macro.
+
+
+File: demo-it.info,  Node: Demo Modes,  Prev: Running the Demo,  Up: Basics
+
+Demo Modes
+==========
+
+Some demonstrations are so complete that pressing the space bar to
+advance to each step is sufficient.  However, this project can be used
+as a _helper_ where each step merely sets up an environment where some
+Emacs feature or source code can be elaborated with personal
+prestidigitation.  In this case, using the space and return to advance
+the demonstration would limit what can be demonstrated manually.
+
+   So demo-it contains two minor modes, and starting a demonstration,
+one of the following minor mode is chosen.
+
+   The choice is either made by setting the global customization value,
+, or by passing the following keyword to demo-it-create.
+   • :simple-mode
+   • :advance-mode
+
+* Menu:
+
+* demo-it-mode::
+* demo-it-mode-adv::
+
+
+File: demo-it.info,  Node: demo-it-mode,  Next: demo-it-mode-adv,  Up: Demo Modes
+
+demo-it-mode
+------------
+
+The standard minor mode for demonstrations, has the following key
+features:
+   • ‘Space’ or ‘Return’ advances to the next demonstration step
+   • ‘q’ turns off this mode, allowing you to type normally.  Call
+     demo-it-mode to resume this mode
+   • ‘Q’ ends the demonstration
+
+   Note: In this mode, clicking the mouse on the right-side of the
+screen will advance the demonstration, while clicking elsewhere,
+repositions the cursor.
+
+
+File: demo-it.info,  Node: demo-it-mode-adv,  Prev: demo-it-mode,  Up: Demo Modes
+
+demo-it-mode-adv
+----------------
+
+The advanced mode is used when the demo-it project simply sets up an
+environment, where you want most keys available to enter commands
+manually.  This mode has the following key features:
+
+   • ‘F12’ advances to the next step in the demonstration
+   • ‘M-F12’ ends the demonstration
+
+   Why yes, while called _advanced_ is certainly has limited features.
+
+
+File: demo-it.info,  Node: Showing Presentations,  Next: Showing Files,  Prev: Basics,  Up: Top
+
+Showing Presentations
+*********************
+
+This project relies on other projects to do most of the heavy lifting
+for using ‘org-mode’ files as the basis of a presentation, especially
+the org-tree-slide (http://asdfasdf) project, which displays each
+section under a header as the sole contents of a buffer.
+
+   The following functions can be added to your demonstration to control
+the display of the presentation.
+
+* Menu:
+
+* demo-it-presentation::
+* demo-it-presentation-quit::
+* demo-it-presentation-return::
+* demo-it-presentation-return-noadvance::
+* demo-it-presentation-highlight-phrase::
+* demo-it-single-presentation::
+
+
+File: demo-it.info,  Node: demo-it-presentation,  Next: demo-it-presentation-quit,  Up: Showing Presentations
+
+demo-it-presentation
+====================
+
+(file &optional size style section)
+
+   Loads the given ‘org-mode’ file as a presentation.  This
+automatically calls ‘org-tree-slide’ if available.
+
+   This function takes an optional ‘size’ parameter to specifies the
+text scale.  If ‘nil’, this defaults to the value set in *note
+demo-it–text-scale: demo-it--text-scale. customization variable.
+
+   The optional ‘style’ parameter can be set to either :variable for
+variable font pitch, :blocks for diminished headers on org-blocks, or
+:both to enable both features.  This is a deprecated, legacy feature,
+since it is easier and clearer to either use the customization
+variables:
+   • *note demo-it–presentation-variable-width:
+     demo-it--presentation-variable-width.
+   • *note demo-it–presentation-hide-org-blocks:
+     demo-it--presentation-hide-org-blocks.
+
+   The final parameter, ‘section’, is a string containing the name of an
+‘org-mode’ header to specify as the first section to display.
+
+
+File: demo-it.info,  Node: demo-it-presentation-quit,  Next: demo-it-presentation-return,  Prev: demo-it-presentation,  Up: Showing Presentations
+
+demo-it-presentation-quit
+=========================
+
+Undoes the display settings made to the presentation buffer.
+
+
+File: demo-it.info,  Node: demo-it-presentation-return,  Next: demo-it-presentation-return-noadvance,  Prev: demo-it-presentation-quit,  Up: Showing Presentations
+
+demo-it-presentation-return
+===========================
+
+Makes the last running presentation the current buffer, deletes other
+windows, and advances to the next ‘org-mode’ section.
+
+
+File: demo-it.info,  Node: demo-it-presentation-return-noadvance,  Next: demo-it-presentation-highlight-phrase,  Prev: demo-it-presentation-return,  Up: Showing Presentations
+
+demo-it-presentation-return-noadvance
+=====================================
+
+Similar to calling *note demo-it-presentation-return:
+demo-it-presentation-return. in that the latest specified presentation
+becomes the current buffer and all other windows are deleted.
+
+   However, the presentation is not advanced to the next section.
+
+
+File: demo-it.info,  Node: demo-it-presentation-highlight-phrase,  Next: demo-it-single-presentation,  Prev: demo-it-presentation-return-noadvance,  Up: Showing Presentations
+
+demo-it-presentation-highlight-phrase
+=====================================
+
+Given a string parameter, ‘phrase’, as a regular expression, this
+function highlights a _phrase_ in the presentation buffer without
+changing the current buffer.  This is useful to highlight bullet point
+items while executing appropriate code.
+
+   The ‘color’ parameter is a face from the ‘hi-lock’ project, e.g.
+:hi-yellow.
+
+   Note: This unhighlights previous highlighted phrases.  Call
+‘demo-it-presentation-unhighlight-all’ if you just want to remove the
+highlighting.
+
+
+File: demo-it.info,  Node: demo-it-single-presentation,  Prev: demo-it-presentation-highlight-phrase,  Up: Showing Presentations
+
+demo-it-single-presentation
+===========================
+
+Demonstration similar to calling *note demo-it-presentation:
+demo-it-presentation, in that it presents an ‘org-mode’ file as a
+full-screen presentation.  In this form, the demonstration doesn’t do
+anything more than advance through the presentation, and calling either
+‘demo-it-create’ or ‘demo-it-start’ is not needed.
+
+   This function begins a minor-mode where the space or return key
+advances the presentation to the next section.  In this mode, the ‘q’
+disables this mode, and ‘Q’ quits the demonstration and presentation.
+
+   While the standard customization variables configure the presentation
+display style, this function accepts a ‘size’ parameter to set the text
+scaling size.
+
+   The optional ‘style’ parameter can be set to either :variable for
+variable font pitch, :blocks for diminished headers on org-blocks, or
+:both to enable both features.
+
+
+File: demo-it.info,  Node: Showing Files,  Next: Running Commands,  Prev: Showing Presentations,  Up: Top
+
+Showing Files
+*************
+
+While a simple call to find-file is often sufficient to display a file
+in Emacs, the following functions can be helpful for showing files and
+source code during a demonstration.
+
+   These functions often take the following optional parameters, and in
+the spirit of DRY, we will specify them here:
+
+   The optional ‘side’ parameter specifies the side of the frame to
+display the new window.  Acceptable values can one of the following
+keywords:
+   • :above
+   • :below
+   • :left
+   • :right
+   • :side is a synomym for :right
+   • :none loads the file in the current buffer.
+
+   If ‘nil’, defaults is to use the customized value of *note
+demo-it–open-windows: demo-it--open-windows.
+
+   The optional ‘size’ parameter takes an integer and specifies the text
+scale.  If ‘nil’, this defaults to the value set in *note
+demo-it–text-scale: demo-it--text-scale. customization variable.
+
+   The ‘width’ parameter specifies the size of the new window, which is
+either the width of a side window, or the height if the window is :above
+or :below.
+
+* Menu:
+
+* demo-it-load-file::
+* demo-it-load-part-file::
+* demo-it-load-fancy-file::
+* demo-it-show-image::
+* demo-it-compare-files::
+
+
+File: demo-it.info,  Node: demo-it-load-file,  Next: demo-it-load-part-file,  Up: Showing Files
+
+demo-it-load-file
+=================
+
+Calling this function with a file, first splits the root frame into a
+side window and loads the file into that window.
+
+   Keep in mind, that calling it a second time will result in further
+splitting of the root window.  Call delete-window or *note
+demo-it-presentation-return-noadvance:
+demo-it-presentation-return-noadvance, or close the window while also
+updating the presentation with *note demo-it-presentation-return:
+demo-it-presentation-return.
+
+   The optional parameters this function takes are *note described
+above: Showing Files.
+
+
+File: demo-it.info,  Node: demo-it-load-part-file,  Next: demo-it-load-fancy-file,  Prev: demo-it-load-file,  Up: Showing Files
+
+demo-it-load-part-file
+======================
+
+Splits window and loads a file, but also narrows to particular region.
+
+   If the ‘type’ parameter is set to :line, then the ‘start’ and ‘end’
+parameters specify the first and last lines of the region to narrow.  If
+‘type’ is set to :char, then ‘start’ and ‘end’ refer to specific
+character positions.
+
+   The other optional parameters this function takes are *note described
+above: Showing Files.
+
+   See *note demo-it-load-fancy-file: demo-it-load-fancy-file. for an
+alternative version.
+
+
+File: demo-it.info,  Node: demo-it-load-fancy-file,  Next: demo-it-show-image,  Prev: demo-it-load-part-file,  Up: Showing Files
+
+demo-it-load-fancy-file
+=======================
+
+Splits the root frame and loads a ‘file’ specified by the first
+parameter in that window (see *note demo-it-load-file:
+demo-it-load-file.), however, this function can use the fancy narrow
+(https://github.com/Malabarba/fancy-narrow) to highlight part of the
+buffer (if it has been loaded), otherwise, it behaves like *note
+demo-it-load-part-file: demo-it-load-part-file. and narrows to the area
+specified.
+
+   If the second parameter, ‘type’ is a string that specifies a function
+name (available via ‘imenu’), then it highlights that function.
+
+   If ‘type’ is a :line, then the next two parameters, ‘start’ and ‘end’
+specifies the beginning or ending lines.
+
+   If ‘type’ is :char, then ‘start’ and ‘end’ are exact buffer
+positions, which you can determine by evaluating (‘M-;’) the following
+expression:
+     (kill-new (int-to-string (point)))
+
+   The optional parameters ‘side’ and ‘size’ are *note described above:
+Showing Files.
+
+   Note: This function simply detects if the ‘fancy-narrow’ package has
+been loaded.  The demonstration will need to issue a ‘require’.
+
+
+File: demo-it.info,  Node: demo-it-show-image,  Next: demo-it-compare-files,  Prev: demo-it-load-fancy-file,  Up: Showing Files
+
+demo-it-show-image
+==================
+
+Loads a file as an image (or any other special file) in another window
+without a mode line or fringe.
+
+   The optional parameters this function takes are *note described
+above: Showing Files.
+
+
+File: demo-it.info,  Node: demo-it-compare-files,  Prev: demo-it-show-image,  Up: Showing Files
+
+demo-it-compare-files
+=====================
+
+Loads two files in either two windows on top of each other on the right
+side of the screen, or two windows below (depending on the value of the
+‘side’, which should either be :below or :side.
+
+   The other optional parameter, ‘size’ is *note described above:
+Showing Files.
+
+
+File: demo-it.info,  Node: Running Commands,  Next: Inserting Text,  Prev: Showing Files,  Up: Top
+
+Running Commands
+****************
+
+What Emacs-sponsored demonstration would be complete without being able
+to run the application you created.  While your demonstration could
+easily call ‘shell-command’, starting a shell, and having Emacs _type_
+the commands makes a demonstration appear more real and interactive.
+
+   The _typing_ abilities when inserting text are not very realistic, as
+it simply picks a random delay between each letter.  What is lacking,
+however, it clacking should of the switches going off while the letter
+appears (PRs are acceptable).
+
+   The following functions can be added to your demonstration to enter
+commands in a shell (both your default shell, as well as the Eshell is
+supported by setting the *note demo-it–shell-or-eshell:
+demo-it--shell-or-eshell. variable or giving demo-it-create one of the
+following keyword configurations:
+
+   • :use-shell
+   • :use-eshell
+
+* Menu:
+
+* demo-it-start-shell::
+* demo-it-run-in-shell::
+* demo-it-show-shell::
+
+
+File: demo-it.info,  Node: demo-it-start-shell,  Next: demo-it-run-in-shell,  Up: Running Commands
+
+demo-it-start-shell
+===================
+
+Starts a shell or eshell instance, in a particular directory and
+executes the given command.  The command can be entered into the shell
+with a slight random delay intended to mimic a person typing.  This
+speed of this is specified by *note demo-it–insert-text-speed:
+demo-it--insert-text-speed.
+
+   The optional ‘name’ parameter labels the buffer, and defaults to
+‘Shell’.
+
+   The other optional parameters this function takes are *note described
+above: Showing Files.
+
+
+File: demo-it.info,  Node: demo-it-run-in-shell,  Next: demo-it-show-shell,  Prev: demo-it-start-shell,  Up: Running Commands
+
+demo-it-run-in-shell
+====================
+
+Run shell command in a shell previously started with *note
+demo-it-start-shell: demo-it-start-shell.  If a ‘name’ is not specified,
+it defaults to ‘Shell’.
+
+   The optional ‘speed’ parameter overrides the customization value set
+by *note demo-it–insert-text-speed: demo-it--insert-text-speed, or the
+text-speed related keyword given to demo-it-create.
+
+
+File: demo-it.info,  Node: demo-it-show-shell,  Prev: demo-it-run-in-shell,  Up: Running Commands
+
+demo-it-show-shell
+==================
+
+Call to display the shell buffer if the shell window of a given ‘name’
+has been hidden.  If ‘name’ is not specified, it defaults to ‘Shell’.
+
+   The other optional parameters this function takes are *note described
+above: Showing Files.
+
+
+File: demo-it.info,  Node: Inserting Text,  Next: Extra Functions,  Prev: Running Commands,  Up: Top
+
+Inserting Text
+**************
+
+Perhaps you want to regale your audience with your programmatic prowess,
+but don’t dare attempt to do live-coding in front of live individuals?
+Yes, even creating a series of yasnippets can result in some serious
+embarrassment (and compiler errors) if you fat-finger any of the fields.
+
+   Have no fear, just create a series of entries that contains calls to
+‘demo-it-insert’, as this function inserts a string into the current
+buffer as if you were typing it by hand (this is called by *note
+demo-it-run-in-shell: demo-it-run-in-shell.).
+
+   The following demo-it example uses this function as well as the def
+yasnippet for Ruby and particular keystrokes to move from field to
+field:
+
+     (demo-it-create (find-file "foobar.rb")
+                     (demo-it-insert "def")
+                     (yas-expand)
+                     (demo-it-insert "hello")
+                     "TAB TAB"
+                     (demo-it-insert "name")
+                     "TAB"
+                     (demo-it-insert "\"Hello, #{name}\"" :fast))
+
+   The optional ‘speed’ parameter is *note described above: Showing
+Files.
+
+   Note: The previous version of demo-it offered specialized feature for
+inserting text where each string to entered was put in a hashmap,
+‘demo-it-text-entries’, and the entries were inserted with calls to a
+dedicated function, ‘demo-it-insert-text’.  However, the above seems to
+work just as well without a special function, so it has been deprecated
+and removed.
+
+
+File: demo-it.info,  Node: Extra Functions,  Next: Customization,  Prev: Inserting Text,  Up: Top
+
+Extra Functions
+***************
+
+The following are useful functions that don’t fit in the previous
+sections, so consider this the _miscellaeous_ section.
+
+* Menu:
+
+* demo-it-end::
+* demo-it-step::
+* demo-it-restep::
+* demo-it-show-step::
+* demo-it-hide-mode-line::
+* demo-it-show-mode-line::
+* demo-it-title-screen::
+* demo-it-message-keybinding::
+* demo-it-highlight-dwim::
+
+
+File: demo-it.info,  Node: demo-it-end,  Next: demo-it-step,  Up: Extra Functions
+
+demo-it-end
+===========
+
+Calling this command ends the current demonstration by disabling the
+mode (see *note Demo Modes: Demo Modes.), resetting the values inflicted
+on the presentation buffer as well as restoring the window arrangement
+to their original glory before demo-it-start was called.
+
+
+File: demo-it.info,  Node: demo-it-step,  Next: demo-it-restep,  Prev: demo-it-end,  Up: Extra Functions
+
+demo-it-step
+============
+
+This function is typically called by one of the *note Demo Modes: Demo
+Modes. to execute the next step in the current demonstration.
+
+   However, this function can be called to jump to a particular STEP by
+specifying a step number to the optional parameter, ‘step’.  This can
+also be done with a prefix, e.g.  C-6 <F12> to run the 6th step.
+
+   Keep in mind that normally step functions expect a particular state
+to be established, so calling this function to jump to a particular step
+may not work as intended.
+
+   Why yes, we do want to figure out a good mechanism for establishing a
+state for each called step, but that be a wee-bit challenging.
+
+
+File: demo-it.info,  Node: demo-it-restep,  Next: demo-it-show-step,  Prev: demo-it-step,  Up: Extra Functions
+
+demo-it-restep
+==============
+
+Re-executes the previous step in the current demonstration.
+
+   Note, this doesn’t handle the concept of the state of the Emacs
+system, so calling this function interactively does not rewind and
+re-executes, it just re-executes given the current Emacs state.
+
+
+File: demo-it.info,  Node: demo-it-show-step,  Next: demo-it-hide-mode-line,  Prev: demo-it-restep,  Up: Extra Functions
+
+demo-it-show-step
+=================
+
+Displays a message about the expected function (that is, the function
+that _will be run_) during the next step.  This can be useful when
+you’ve lost your way, and ask yourself, How did I get here?
+
+   Of course, you may ask yourself, How do I work this?
+And you may ask yourself, Where is that large automobile?
+And you may tell yourself, This is not my beautiful house!
+And you may tell yourself, This is not my beautiful wife!
+
+
+File: demo-it.info,  Node: demo-it-hide-mode-line,  Next: demo-it-show-mode-line,  Prev: demo-it-show-step,  Up: Extra Functions
+
+demo-it-hide-mode-line
+======================
+
+Hides the mode line for a current buffer.  This is done by setting the
+‘mode-line-format’ to ‘nil’, but also saves off the value so that it can
+be restored by calling *note demo-it-show-mode-line:
+demo-it-show-mode-line.
+
+
+File: demo-it.info,  Node: demo-it-show-mode-line,  Next: demo-it-title-screen,  Prev: demo-it-hide-mode-line,  Up: Extra Functions
+
+demo-it-show-mode-line
+======================
+
+Shows the mode line of the current buffer, if it was previously hidden
+with a call to *note demo-it-hide-mode-line: demo-it-hide-mode-line.
+
+
+File: demo-it.info,  Node: demo-it-title-screen,  Next: demo-it-message-keybinding,  Prev: demo-it-show-mode-line,  Up: Extra Functions
+
+demo-it-title-screen
+====================
+
+Displays a file as the demonstration’s title, e.g.  displayed with a
+larger-than-life font without a mode line, etc.  Typically, a
+specially-formatted org-mode file would do the job, but any file,
+including an image will work.
+
+   The ‘size’ parameter specifies the text scale, which ignores the
+*note demo-it–text-scale: demo-it--text-scale. customization setting and
+defaults to :huge (or 5x your normal text font size).
+
+
+File: demo-it.info,  Node: demo-it-message-keybinding,  Next: demo-it-highlight-dwim,  Prev: demo-it-title-screen,  Up: Extra Functions
+
+demo-it-message-keybinding
+==========================
+
+When demonstrating Emacs features, you may want to display the keystroke
+you type.  Yes, you could (and probably should) use a package like
+mwe-log-commands
+(http://www.foldr.org/~michaelw/emacs/mwe-log-commands.el) by Michael
+Weber, but you can’t really use that sort of feature with demo-it, as
+you’d just log a bunch of spacebars bound to *note demo-it-step:
+demo-it-step.
+
+   What you really want is to display the key you _wanted_ to type.  For
+that, you’ll want to end your _step function_ with a call to
+‘demo-it-message-keybinding’, as it will take two strings, where the
+first one is the “key” and the other is a function or command that it
+normally calls.
+
+   For instance:
+     (defun my-demo/dired-a-directory ()
+       "Opens a `dired' buffer on a particular directory.
+     This is a step function that I add to demo-it-create."
+       (dired (expand-file-name "~/work"))
+       (demo-it-message-keybinding "C-x d" "dired"))
+
+   This sort of _step function_ would be added to demo-it-create as a
+simple symbol, like:
+     (demo-it-create ;; :keybindings
+                     ;; other functions and expressions
+                     my-demo/dired-a-directory
+                     ;; other functions and expressions
+                     )
+
+
+File: demo-it.info,  Node: demo-it-highlight-dwim,  Prev: demo-it-message-keybinding,  Up: Extra Functions
+
+demo-it-highlight-dwim
+======================
+
+Can use the fancy-narrow (https://github.com/Malabarba/fancy-narrow)
+package to highlight a particular _section_.  If the package is not
+available, it simply _narrows_ to that area.  If called interactively,
+this highlights the region (if active) or the current function.
+
+   If the first parameter, ‘type-or-fn’ is a string, this specifies the
+name of a function to highlight.
+
+   If it is a :line, then the next two parameters, ‘start’ and ‘end’
+specifies the beginning or ending lines.
+
+   If it is :char, then ‘start’ and ‘end’ are exact buffer positions,
+which you can determine by evaluating (‘M-;’) the following expression:
+     (kill-new (int-to-string (point)))
+
+   If ‘type-or-fn’ is ‘nil’ and the region is active, highlight the
+region.
+
+   If none of the following match, simply select the function the point
+is currently in.
+
+   Note: While this function checks to see if the package is available
+and loaded, it does not actually do the loading (or the installing of
+the package), for that, you will need to do something like:
+
+     (require 'fancy-narrow)
+
+
+File: demo-it.info,  Node: Customization,  Next: Index,  Prev: Extra Functions,  Up: Top
+
+Appendix A Customization
+************************
+
+The following is a list of custom variables that can be set through the
+standard Emacs customization feature (under the demo-it group).  Note,
+each custom value may be overridden with a magic symbol to the *note
+demo-it-create: Step Types. macro or with a parameter to many functions.
+
+* Menu:
+
+* demo-it--keymap-mode-style::
+* demo-it--shell-or-eshell::
+* demo-it--open-windows::
+* demo-it--open-windows-size::
+* demo-it--text-scale::
+* demo-it--start-fullscreen::
+* demo-it--start-single-window::
+* demo-it--presentation-hide-mode-line::
+* demo-it--presentation-hide-org-markers::
+* demo-it--presentation-variable-width::
+* demo-it--presentation-hide-org-blocks::
+* demo-it--insert-text-speed::
+
+
+File: demo-it.info,  Node: demo-it--keymap-mode-style,  Next: demo-it--shell-or-eshell,  Up: Customization
+
+demo-it–keymap-mode-style
+=========================
+
+The keymap-specific minor mode to use when a demonstration starts.
+Should either be set to the symbol, :simple-mode for using the space to
+advance to next step and ‘q’ to exit the demonstration, or
+:advanced-mode, where ‘F12’ advances.
+
+   Defaults to :simple-mode
+
+   This setting can be overridden by a keyword to demo-it-create:
+   • :simple-mode
+   • :advanced-mode
+
+
+File: demo-it.info,  Node: demo-it--shell-or-eshell,  Next: demo-it--open-windows,  Prev: demo-it--keymap-mode-style,  Up: Customization
+
+demo-it–shell-or-eshell
+=======================
+
+When opening up a shell, this customization value specifies whether it
+should run the shell or eshell command.
+
+   Should be set to one of the following keywords:
+   • :shell
+   • :eshell
+
+   Defaults to :eshell
+
+   This setting can be overridden by the following keywords to
+demo-it-create macro:
+   • :use-eshell
+   • :use-shell
+
+
+File: demo-it.info,  Node: demo-it--open-windows,  Next: demo-it--open-windows-size,  Prev: demo-it--shell-or-eshell,  Up: Customization
+
+demo-it–open-windows
+====================
+
+When opening side windows, split the frame on a particular side.  Should
+be set to one of the following keywords:
+
+   • :above
+   • :below
+   • :left
+   • :right
+
+   The keyword, :side is a synonym for :right.
+
+   Defaults to :right
+
+   This setting can be overridden by one of the following keywords
+passed to demo-it-create:
+   • :windows-on-side
+   • :windows-on-right
+   • :windows-on-left
+   • :windows-below
+   • :windows-above
+
+
+File: demo-it.info,  Node: demo-it--open-windows-size,  Next: demo-it--text-scale,  Prev: demo-it--open-windows,  Up: Customization
+
+demo-it–open-windows-size
+=========================
+
+The size of side windows to open.  This is the width if the window is
+opened on one of the sides (:left or :right), or the height if the
+window is opened :above or :below.
+
+   Defaults to 80
+
+
+File: demo-it.info,  Node: demo-it--text-scale,  Next: demo-it--start-fullscreen,  Prev: demo-it--open-windows-size,  Up: Customization
+
+demo-it–text-scale
+==================
+
+Sets the default text scale when opening files in side windows (see
+*note demo-it–open-windows: demo-it--open-windows.).  While this can be
+set to an integer, it can also be set to one of the following keywords:
+   • :small, set to a text scale of -1
+   • :normal, set to a text scale of 0
+   • :medium, set to a text scale of 1
+   • :large, set to a text scale of 2
+   • :x-large, set to a text scale of 3
+   • :xx-large, set to a text scale of 4
+   • :huge, set to a text scale of 5
+
+   It defaults to :large (a text-scale-set value of 2).
+
+   This customization value can be overridden with one of the following
+keywords passed to demo-it-create:
+   • :text-small
+   • :text-normal
+   • :text-medium
+   • :text-large
+   • :text-x-large
+   • :text-xx-large
+   • :text-huge
+
+
+File: demo-it.info,  Node: demo-it--start-fullscreen,  Next: demo-it--start-single-window,  Prev: demo-it--text-scale,  Up: Customization
+
+demo-it–start-fullscreen
+========================
+
+A boolean setting that if set to a non-nil value, demonstrations start
+with the current frame in fullscreen mode.  Defaults to false.
+
+   This customization value can be overridden with :fullscreen keyword
+passed to demo-it-create.
+
+
+File: demo-it.info,  Node: demo-it--start-single-window,  Next: demo-it--presentation-hide-mode-line,  Prev: demo-it--start-fullscreen,  Up: Customization
+
+demo-it–start-single-window
+===========================
+
+A boolean setting that if non-nil, deletes other windows to start the
+demonstration with a current buffer window being the only displayed
+window.  Defaults to t.
+
+   This customization value can be overridden with :single-window
+keyword passed to demo-it-create.
+
+
+File: demo-it.info,  Node: demo-it--presentation-hide-mode-line,  Next: demo-it--presentation-hide-org-markers,  Prev: demo-it--start-single-window,  Up: Customization
+
+demo-it–presentation-hide-mode-line
+===================================
+
+If set to a nil value (_false_), the mode-line is hidden for any
+presentation files (this doesn’t affect other files opened with the
+*note demo-it-load-file: demo-it-load-file.).  Defaults to t.
+
+   This customization value can be overridden with either of the
+following keywords passed to demo-it-create:
+   • :show-mode-line
+   • :hide-mode-line
+
+
+File: demo-it.info,  Node: demo-it--presentation-hide-org-markers,  Next: demo-it--presentation-variable-width,  Prev: demo-it--presentation-hide-mode-line,  Up: Customization
+
+demo-it–presentation-hide-org-markers
+=====================================
+
+If set to a non-nil value, surrounding asterisks, underlines and slashes
+that define an ‘org-mode’ textual formats in a presentation are
+displayed.  Otherwise those characters hidden, even though the effects
+of bolding and italics are still shown.  Defaults to t.
+
+   This customization value can be overridden with either of the
+following keywords passed to demo-it-create:
+   • :show-org-markers
+   • :hide-org-markers
+
+
+File: demo-it.info,  Node: demo-it--presentation-variable-width,  Next: demo-it--presentation-hide-org-blocks,  Prev: demo-it--presentation-hide-org-markers,  Up: Customization
+
+demo-it–presentation-variable-width
+===================================
+
+If set to a non-nil value, a _variable-width_ font is used when
+displaying ‘org-mode’ presentation files, otherwise the standard
+fixed-width font is used.  Defaults to nil.
+
+   This customization value can be overridden with either of the
+following keywords passed to demo-it-create:
+   • :variable-width
+   • :fixed-width
+
+
+File: demo-it.info,  Node: demo-it--presentation-hide-org-blocks,  Next: demo-it--insert-text-speed,  Prev: demo-it--presentation-variable-width,  Up: Customization
+
+demo-it–presentation-hide-org-blocks
+====================================
+
+If set to a non-nil value, the start and ending lines of ‘org-mode’
+blocks are shown during a presentation, otherwise these lines are
+hidden, but the contents within the blocks are still shown.
+
+   This currently only hides these lines:
+#+BEGIN_SRC
+   ...
+#+END_SRC
+
+   Other surrounding header values, like #+HEADERS: may still be seen.
+
+   This defaults to t, however, this customization value can be
+overridden with either of the following keywords passed to
+demo-it-create:
+   • :show-block-headers
+   • :hide-block-headers
+
+
+File: demo-it.info,  Node: demo-it--insert-text-speed,  Prev: demo-it--presentation-hide-org-blocks,  Up: Customization
+
+demo-it–insert-text-speed
+=========================
+
+The functions, *note demo-it-run-in-shell: demo-it-run-in-shell, *note
+demo-it-start-shell: demo-it-start-shell, and *note demo-it-insert:
+Inserting Text, enters the text into the shell as if a human were typing
+it.  This value specifies the speed at which that text is inserted into
+the shell.
+
+   This can set to one of the following keywords:
+   • :instant to insert text with no delay
+   • :slow
+   • :medium
+   • :fast
+
+   Defaults to :medium.
+
+   This can also specify a tuple of two integer values for the random
+number of milliseconds between those two values to delay before
+inserting each character, for instance, the :medium delay has a lower
+value of 30 milliseconds, and an upper delay of 500.
+
+
+File: demo-it.info,  Node: Index,  Prev: Customization,  Up: Top
+
+Index
+*****
+
+ [index ]
+* Menu:
+
+* ‘demo-it-create’:                      Step Types.            (line 6)
+* demo-it-end:                           demo-it-end.           (line 6)
+* demo-it-hide-mode-line:                demo-it-hide-mode-line.
+                                                                (line 6)
+* demo-it-highlight-dwim:                demo-it-highlight-dwim.
+                                                                (line 6)
+* demo-it-insert:                        Inserting Text.        (line 6)
+* demo-it–insert-text-speed:             demo-it--insert-text-speed.
+                                                                (line 6)
+* demo-it–keymap-mode-style:             demo-it--keymap-mode-style.
+                                                                (line 6)
+* demo-it-load-fancy-file:               demo-it-load-fancy-file.
+                                                                (line 6)
+* demo-it-load-file:                     demo-it-load-file.     (line 6)
+* demo-it-load-file <1>:                 demo-it-show-image.    (line 6)
+* demo-it-load-file <2>:                 demo-it-compare-files. (line 6)
+* demo-it-load-part-file:                demo-it-load-part-file.
+                                                                (line 6)
+* demo-it-message-keybinding:            demo-it-message-keybinding.
+                                                                (line 6)
+* demo-it-mode:                          demo-it-mode.          (line 6)
+* demo-it-mode-adv:                      demo-it-mode-adv.      (line 6)
+* demo-it–open-windows:                  demo-it--open-windows. (line 6)
+* demo-it–open-windows-size:             demo-it--open-windows-size.
+                                                                (line 6)
+* demo-it-presentation:                  demo-it-presentation.  (line 6)
+* demo-it–presentation-hide-mode-line:   demo-it--presentation-hide-mode-line.
+                                                                (line 6)
+* demo-it–presentation-hide-org-blocks:  demo-it--presentation-hide-org-blocks.
+                                                                (line 6)
+* demo-it–presentation-hide-org-markers: demo-it--presentation-hide-org-markers.
+                                                                (line 6)
+* demo-it-presentation-highlight-phrase: demo-it-presentation-highlight-phrase.
+                                                                (line 6)
+* demo-it-presentation-quit:             demo-it-presentation-quit.
+                                                                (line 6)
+* demo-it-presentation-return:           demo-it-presentation-return.
+                                                                (line 6)
+* demo-it-presentation-return-noadvance: demo-it-presentation-return-noadvance.
+                                                                (line 6)
+* demo-it–presentation-variable-width:   demo-it--presentation-variable-width.
+                                                                (line 6)
+* demo-it-restep:                        demo-it-restep.        (line 6)
+* demo-it-run-in-shell:                  demo-it-run-in-shell.  (line 6)
+* demo-it–shell-or-eshell:               demo-it--shell-or-eshell.
+                                                                (line 6)
+* demo-it-show-mode-line:                demo-it-show-mode-line.
+                                                                (line 6)
+* demo-it-show-shell:                    demo-it-show-shell.    (line 6)
+* demo-it-show-step:                     demo-it-show-step.     (line 6)
+* demo-it-single-presentation:           demo-it-single-presentation.
+                                                                (line 6)
+* demo-it-start:                         Running the Demo.      (line 6)
+* demo-it–start-fullscreen:              demo-it--start-fullscreen.
+                                                                (line 6)
+* demo-it-start-shell:                   demo-it-start-shell.   (line 6)
+* demo-it–start-single-window:           demo-it--start-single-window.
+                                                                (line 6)
+* demo-it-step:                          demo-it-step.          (line 6)
+* demo-it–text-scale:                    demo-it--text-scale.   (line 6)
+* demo-it-title-screen:                  demo-it-title-screen.  (line 6)
+
+
+
+Tag Table:
+Node: Top650
+Node: Basics2767
+Node: Simple Example4202
+Node: Step Types5326
+Node: Demonstration Options6388
+Node: Running the Demo7455
+Node: Demo Modes8081
+Node: demo-it-mode8923
+Node: demo-it-mode-adv9493
+Node: Showing Presentations9981
+Node: demo-it-presentation10713
+Node: demo-it-presentation-quit11858
+Node: demo-it-presentation-return12122
+Node: demo-it-presentation-return-noadvance12474
+Node: demo-it-presentation-highlight-phrase12984
+Node: demo-it-single-presentation13728
+Node: Showing Files14807
+Node: demo-it-load-file16155
+Node: demo-it-load-part-file16835
+Node: demo-it-load-fancy-file17528
+Node: demo-it-show-image18836
+Node: demo-it-compare-files19199
+Node: Running Commands19626
+Node: demo-it-start-shell20719
+Node: demo-it-run-in-shell21342
+Node: demo-it-show-shell21881
+Node: Inserting Text22271
+Node: Extra Functions23892
+Node: demo-it-end24371
+Node: demo-it-step24752
+Node: demo-it-restep25541
+Node: demo-it-show-step25948
+Node: demo-it-hide-mode-line26541
+Node: demo-it-show-mode-line26950
+Node: demo-it-title-screen27273
+Node: demo-it-message-keybinding27887
+Node: demo-it-highlight-dwim29346
+Node: Customization30607
+Node: demo-it--keymap-mode-style31448
+Node: demo-it--shell-or-eshell31996
+Node: demo-it--open-windows32527
+Node: demo-it--open-windows-size33165
+Node: demo-it--text-scale33547
+Node: demo-it--start-fullscreen34533
+Node: demo-it--start-single-window34960
+Node: demo-it--presentation-hide-mode-line35441
+Node: demo-it--presentation-hide-org-markers36042
+Node: demo-it--presentation-variable-width36730
+Node: demo-it--presentation-hide-org-blocks37317
+Node: demo-it--insert-text-speed38099
+Node: Index38993
+
+End Tag Table
+
+
+Local Variables:
+coding: utf-8
+End:
