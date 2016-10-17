@@ -183,6 +183,8 @@ integer matching the symbol specified by SIZE, e.g. `:large'."
 
     (:use-eshell       (setq demo-it--shell-or-eshell   :eshell))
     (:use-shell        (setq demo-it--shell-or-eshell   :shell))
+    (:eshell           (setq demo-it--shell-or-eshell   :eshell))
+    (:shell            (setq demo-it--shell-or-eshell   :shell))
 
     (:windows-on-side  (setq demo-it--open-windows      :right))
     (:windows-on-right (setq demo-it--open-windows      :right))
