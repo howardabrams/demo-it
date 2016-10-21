@@ -1189,9 +1189,16 @@ File: demo-it.info,  Node: Index,  Prev: Customization,  Up: Top
 Index
 *****
 
+For those of you trying to read this online, this index is generated and
+only available within Emacs.  If you are reading this from within Emacs,
+well-done.
+
  [index ]
 * Menu:
 
+* Basic exmaple:                         Simple Example.        (line 6)
+* Defaults for advancing demo:           demo-it--keymap-mode-style.
+                                                                (line 6)
 * demo-it--insert-text-speed:            demo-it--insert-text-speed.
                                                                 (line 6)
 * demo-it--keymap-mode-style:            demo-it--keymap-mode-style.
@@ -1215,105 +1222,77 @@ Index
                                                                 (line 6)
 * demo-it--text-scale:                   demo-it--text-scale.   (line 6)
 * demo-it-compare-files:                 demo-it-compare-files. (line 6)
-* demo-it-compare-files <1>:             demo-it-compare-files. (line 6)
 * demo-it-create:                        Step Types.            (line 6)
-* demo-it-create <1>:                    Step Types.            (line 6)
 * demo-it-end:                           demo-it-end.           (line 6)
-* demo-it-end <1>:                       demo-it-end.           (line 6)
 * demo-it-hide-mode-line:                demo-it-hide-mode-line.
                                                                 (line 6)
-* demo-it-hide-mode-line <1>:            demo-it-hide-mode-line.
-                                                                (line 6)
 * demo-it-highlight-dwim:                demo-it-highlight-dwim.
-                                                                (line 6)
-* demo-it-highlight-dwim <1>:            demo-it-highlight-dwim.
                                                                 (line 6)
 * demo-it-how-mode-line:                 demo-it-show-mode-line.
                                                                 (line 6)
 * demo-it-insert:                        Inserting Text.        (line 6)
-* demo-it-insert <1>:                    Inserting Text.        (line 6)
-* demo-it–insert-text-speed:             demo-it--insert-text-speed.
-                                                                (line 6)
-* demo-it–keymap-mode-style:             demo-it--keymap-mode-style.
-                                                                (line 6)
 * demo-it-load-fancy-file:               demo-it-load-fancy-file.
                                                                 (line 6)
-* demo-it-load-fancy-file <1>:           demo-it-load-fancy-file.
-                                                                (line 6)
 * demo-it-load-file:                     demo-it-load-file.     (line 6)
-* demo-it-load-file <1>:                 demo-it-load-file.     (line 6)
 * demo-it-load-part-file:                demo-it-load-part-file.
-                                                                (line 6)
-* demo-it-load-part-file <1>:            demo-it-load-part-file.
                                                                 (line 6)
 * demo-it-message-keybinding:            demo-it-message-keybinding.
                                                                 (line 6)
-* demo-it-message-keybinding <1>:        demo-it-message-keybinding.
-                                                                (line 6)
 * demo-it-mode:                          demo-it-mode.          (line 6)
-* demo-it-mode <1>:                      demo-it-mode.          (line 6)
 * demo-it-mode-adv:                      demo-it-mode-adv.      (line 6)
-* demo-it-mode-adv <1>:                  demo-it-mode-adv.      (line 6)
-* demo-it–open-windows:                  demo-it--open-windows. (line 6)
-* demo-it–open-windows-size:             demo-it--open-windows-size.
-                                                                (line 6)
 * demo-it-presentation:                  demo-it-presentation.  (line 6)
-* demo-it-presentation <1>:              demo-it-presentation.  (line 6)
-* demo-it–presentation-hide-mode-line:   demo-it--presentation-hide-mode-line.
-                                                                (line 6)
-* demo-it–presentation-hide-org-blocks:  demo-it--presentation-hide-org-blocks.
-                                                                (line 6)
-* demo-it–presentation-hide-org-markers: demo-it--presentation-hide-org-markers.
-                                                                (line 6)
 * demo-it-presentation-highlight-phrase: demo-it-presentation-highlight-phrase.
-                                                                (line 6)
-* demo-it-presentation-highlight-phrase <1>: demo-it-presentation-highlight-phrase.
                                                                 (line 6)
 * demo-it-presentation-quit:             demo-it-presentation-quit.
                                                                 (line 6)
-* demo-it-presentation-quit <1>:         demo-it-presentation-quit.
-                                                                (line 6)
 * demo-it-presentation-return:           demo-it-presentation-return.
-                                                                (line 6)
-* demo-it-presentation-return <1>:       demo-it-presentation-return.
                                                                 (line 6)
 * demo-it-presentation-return-noadvance: demo-it-presentation-return-noadvance.
                                                                 (line 6)
-* demo-it-presentation-return-noadvance <1>: demo-it-presentation-return-noadvance.
-                                                                (line 6)
-* demo-it–presentation-variable-width:   demo-it--presentation-variable-width.
-                                                                (line 6)
 * demo-it-restep:                        demo-it-restep.        (line 6)
-* demo-it-restep <1>:                    demo-it-restep.        (line 6)
 * demo-it-run-in-shell:                  demo-it-run-in-shell.  (line 6)
-* demo-it-run-in-shell <1>:              demo-it-run-in-shell.  (line 6)
-* demo-it–shell-or-eshell:               demo-it--shell-or-eshell.
-                                                                (line 6)
 * demo-it-show-image:                    demo-it-show-image.    (line 6)
-* demo-it-show-image <1>:                demo-it-show-image.    (line 6)
-* demo-it-show-mode-line:                demo-it-show-mode-line.
-                                                                (line 6)
 * demo-it-show-shell:                    demo-it-show-shell.    (line 6)
-* demo-it-show-shell <1>:                demo-it-show-shell.    (line 6)
 * demo-it-show-step:                     demo-it-show-step.     (line 6)
-* demo-it-show-step <1>:                 demo-it-show-step.     (line 6)
 * demo-it-single-presentation:           demo-it-single-presentation.
                                                                 (line 6)
-* demo-it-single-presentation <1>:       demo-it-single-presentation.
-                                                                (line 6)
 * demo-it-start:                         Running the Demo.      (line 6)
-* demo-it-start <1>:                     Running the Demo.      (line 6)
-* demo-it–start-fullscreen:              demo-it--start-fullscreen.
-                                                                (line 6)
 * demo-it-start-shell:                   demo-it-start-shell.   (line 6)
-* demo-it-start-shell <1>:               demo-it-start-shell.   (line 6)
-* demo-it–start-single-window:           demo-it--start-single-window.
-                                                                (line 6)
 * demo-it-step:                          demo-it-step.          (line 6)
-* demo-it-step <1>:                      demo-it-step.          (line 6)
-* demo-it–text-scale:                    demo-it--text-scale.   (line 6)
 * demo-it-title-screen:                  demo-it-title-screen.  (line 6)
-* demo-it-title-screen <1>:              demo-it-title-screen.  (line 6)
+* Demonstration Begins:                  demo-it-title-screen.  (line 6)
+* Demonstration Behavior options:        Demonstration Options. (line 6)
+* Demonstration Customizations:          Customization.         (line 6)
+* Demonstration with Only Presentation:  demo-it-single-presentation.
+                                                                (line 6)
+* Ending Demonstration:                  demo-it-end.           (line 6)
+* Highlighting while showing side file:  demo-it-load-fancy-file.
+                                                                (line 6)
+* Loading side files:                    demo-it-load-file.     (line 6)
+* Minor modes:                           Demo Modes.            (line 6)
+* Open Source License:                   Top.                   (line 6)
+* Options for side files:                Showing Files.         (line 6)
+* org-mode Presentations:                Showing Presentations. (line 6)
+* Parameters for demo-it-create:         Step Types.            (line 6)
+* Presentations:                         demo-it-presentation.  (line 6)
+* Redoing Demo Step:                     demo-it-restep.        (line 6)
+* Shell Commands:                        Running Commands.      (line 6)
+* Show part of a file:                   demo-it-load-part-file.
+                                                                (line 6)
+* Showing Side Files:                    Showing Files.         (line 6)
+* Showing Two Files:                     demo-it-compare-files. (line 6)
+* Showing what you type:                 demo-it-message-keybinding.
+                                                                (line 6)
+* Side Windows:                          demo-it--open-windows. (line 6)
+* Side Windows Font Size:                demo-it--text-scale.   (line 6)
+* Side Windows Size:                     demo-it--open-windows-size.
+                                                                (line 6)
+* Starting Demonstration:                Running the Demo.      (line 6)
+* Text highlighting:                     demo-it-highlight-dwim.
+                                                                (line 6)
+* Typing in Shell:                       demo-it-run-in-shell.  (line 6)
+* Typing Text into Buffer:               Inserting Text.        (line 6)
+* What step am I on?:                    demo-it-show-step.     (line 6)
 
 
 

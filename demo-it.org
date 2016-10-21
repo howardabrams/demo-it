@@ -10,6 +10,7 @@
 
 #+TEXINFO_FILENAME: demo-it.info
 #+TEXINFO_HEADER: @syncodeindex pg cp
+#+TEXINFO_HEADER: @syncodeindex vr cp
 
 * Basics
 
@@ -39,6 +40,7 @@
   * [[http://www.youtube.com/watch?v=3T00X_sNg4Q][Learn You Some Lisp for Great Good]]
 
 ** Simple Example
+   #+CINDEX: Basic exmaple
 
    Using this project is a four step process:
 
@@ -72,7 +74,7 @@
 
 ** Step Types
   #+PINDEX: demo-it-create
-  #+CINDEX: demo-it-create
+  #+CINDEX: Parameters for demo-it-create
 
   The `demo-it-create' is a macro that stores a single demonstration.
   Calling it a second time replaces any previously created demonstrations.
@@ -103,6 +105,7 @@
    supplied by this =demo-it= package, or even ones you write. ;-)
 
 ** Demonstration Options
+  #+CINDEX: Demonstration Behavior options
 
    The following list of keywords can be passed to =demo-it-create= to
    override various [[Customization]] settings:
@@ -171,7 +174,7 @@
 
 ** Running the Demo
   #+PINDEX: demo-it-start
-  #+CINDEX: demo-it-start
+  #+CINDEX: Starting Demonstration
 
   Once the demonstration has been created using ~demo-it-create~,
   start it by calling =demo-it-start=, as this will invoke the
@@ -185,6 +188,7 @@
   get more mileage from the =demo-it-create= macro.
 
 ** Demo Modes
+   #+CINDEX: Minor modes
 
    Some demonstrations are so complete that pressing the space bar to
    advance to each step is sufficient. However, this project can be
@@ -203,7 +207,6 @@
 
 *** demo-it-mode
     #+PINDEX: demo-it-mode
-    #+CINDEX: demo-it-mode
 
     The standard minor mode for demonstrations, has the following key
     features:
@@ -218,7 +221,6 @@
 
 *** demo-it-mode-adv
     #+PINDEX: demo-it-mode-adv
-    #+CINDEX: demo-it-mode-adv
 
     The advanced mode is used when the =demo-it= project simply sets
     up an environment, where you want most keys available to enter
@@ -230,6 +232,7 @@
     Why yes, while called /advanced/ is certainly has limited features.
 
 * Showing Presentations
+  #+CINDEX: org-mode Presentations
 
   This project relies on other projects to do most of the heavy
   lifting for using ~org-mode~ files as the basis of a presentation,
@@ -241,7 +244,7 @@
 
 ** demo-it-presentation
    #+PINDEX: demo-it-presentation
-   #+CINDEX: demo-it-presentation
+   #+CINDEX: Presentations
 
    (file &optional size style section)
 
@@ -265,20 +268,17 @@
 
 ** demo-it-presentation-quit
    #+PINDEX: demo-it-presentation-quit
-   #+CINDEX: demo-it-presentation-quit
 
    Undoes the display settings made to the presentation buffer.
 
 ** demo-it-presentation-return
    #+PINDEX: demo-it-presentation-return
-   #+CINDEX: demo-it-presentation-return
 
    Makes the last running presentation the current buffer, deletes
    other windows, and advances to the next ~org-mode~ section.
 
 ** demo-it-presentation-return-noadvance
    #+PINDEX: demo-it-presentation-return-noadvance
-   #+CINDEX: demo-it-presentation-return-noadvance
 
    Similar to calling [[demo-it-presentation-return]] in that the latest
    specified presentation becomes the current buffer and all other
@@ -288,7 +288,6 @@
 
 ** demo-it-presentation-highlight-phrase
    #+PINDEX: demo-it-presentation-highlight-phrase
-   #+CINDEX: demo-it-presentation-highlight-phrase
 
    Given a string parameter, ~phrase~, as a regular expression, this
    function highlights a /phrase/ in the presentation buffer without
@@ -305,7 +304,7 @@
 
 ** demo-it-single-presentation
    #+PINDEX: demo-it-single-presentation
-   #+CINDEX: demo-it-single-presentation
+   #+CINDEX: Demonstration with Only Presentation
 
    Demonstration similar to calling [[demo-it-presentation]], in that it
    presents an ~org-mode~ file as a full-screen presentation. In this
@@ -327,6 +326,8 @@
    or :both to enable both features.
 
 * Showing Files
+  #+CINDEX: Showing Side Files
+  #+CINDEX: Options for side files
 
   While a simple call to =find-file= is often sufficient to display a
   file in Emacs, the following functions can be helpful for showing
@@ -358,8 +359,7 @@
 
 ** demo-it-load-file
    #+PINDEX: demo-it-load-file
-   #+CINDEX: demo-it-load-file
-
+   #+CINDEX: Loading side files
    Calling this function with a file, first splits the root frame into
    a side window and loads the file into that window.
 
@@ -372,7 +372,7 @@
 
 ** demo-it-load-part-file
    #+PINDEX: demo-it-load-part-file
-   #+CINDEX: demo-it-load-part-file
+   #+CINDEX: Show part of a file
 
    Splits window and loads a file, but also narrows to particular region.
 
@@ -387,7 +387,7 @@
 
 ** demo-it-load-fancy-file
    #+CINDEX: demo-it-load-fancy-file
-   #+PINDEX: demo-it-load-fancy-file
+   #+PINDEX: Highlighting while showing side file
 
    Splits the root frame and loads a ~file~ specified by the first
    parameter in that window (see [[demo-it-load-file]]), however, this
@@ -418,7 +418,6 @@
 
 ** demo-it-show-image
    #+PINDEX: demo-it-show-image
-   #+CINDEX: demo-it-show-image
 
    Loads a file as an image (or any other special file) in another
    window without a mode line or fringe.
@@ -427,7 +426,7 @@
 
 ** demo-it-compare-files
    #+PINDEX: demo-it-compare-files
-   #+CINDEX: demo-it-compare-files
+   #+CINDEX: Showing Two Files
 
    Loads two files in either two windows on top of each other on the
    right side of the screen, or two windows below (depending on the
@@ -436,6 +435,7 @@
    The other optional parameter, ~size~ is [[Showing Files][described above]].
 
 * Running Commands
+  #+CINDEX: Shell Commands
 
   What Emacs-sponsored demonstration would be complete without being
   able to run the application you created. While your demonstration
@@ -458,7 +458,6 @@
 
 ** demo-it-start-shell
    #+PINDEX: demo-it-start-shell
-   #+CINDEX: demo-it-start-shell
 
    Starts a shell or eshell instance, in a particular directory and
    executes the given command. The command can be entered into the
@@ -473,7 +472,7 @@
 
 ** demo-it-run-in-shell
    #+PINDEX: demo-it-run-in-shell
-   #+CINDEX: demo-it-run-in-shell
+   #+CINDEX: Typing in Shell
 
    Run shell command in a shell previously started with [[demo-it-start-shell]].
    If a ~name~ is not specified, it defaults to ~Shell~.
@@ -484,7 +483,6 @@
 
 ** demo-it-show-shell
    #+PINDEX: demo-it-show-shell
-   #+CINDEX: demo-it-show-shell
 
    Call to display the shell buffer if the shell window of a given
    ~name~ has been hidden. If ~name~ is not specified, it defaults to
@@ -495,7 +493,7 @@
 
 * Inserting Text
    #+PINDEX: demo-it-insert
-   #+CINDEX: demo-it-insert
+   #+CINDEX: Typing Text into Buffer
 
   Perhaps you want to regale your audience with your programmatic
   prowess, but don't dare attempt to do live-coding in front of live
@@ -539,7 +537,7 @@
 
 ** demo-it-end
    #+PINDEX: demo-it-end
-   #+CINDEX: demo-it-end
+   #+CINDEX: Ending Demonstration
 
    Calling this command ends the current demonstration by disabling
    the mode (see [[Demo Modes]]), resetting the values inflicted on the presentation buffer
@@ -548,7 +546,6 @@
 
 ** demo-it-step
    #+PINDEX: demo-it-step
-   #+CINDEX: demo-it-step
 
    This function is typically called by one of the [[Demo Modes]]
    to execute the next step in the current demonstration.
@@ -566,7 +563,7 @@
 
 ** demo-it-restep
    #+PINDEX: demo-it-restep
-   #+CINDEX: demo-it-restep
+   #+CINDEX: Redoing Demo Step
 
    Re-executes the previous step in the current demonstration.
 
@@ -576,7 +573,7 @@
 
 ** demo-it-show-step
    #+PINDEX: demo-it-show-step
-   #+CINDEX: demo-it-show-step
+   #+CINDEX: What step am I on?
 
    Displays a message about the expected function (that is, the
    function that /will be run/) during the next step. This can be
@@ -590,7 +587,6 @@
 
 ** demo-it-hide-mode-line
    #+PINDEX: demo-it-hide-mode-line
-   #+CINDEX: demo-it-hide-mode-line
 
    Hides the mode line for a current buffer. This is done by setting
    the ~mode-line-format~ to ~nil~, but also saves off the value so
@@ -598,14 +594,13 @@
 
 ** demo-it-show-mode-line
    #+PINDEX: demo-it-how-mode-line
-   #+CINDEX: demo-it-show-mode-line
 
    Shows the mode line of the current buffer, if it was previously
    hidden with a call to [[demo-it-hide-mode-line]].
 
 ** demo-it-title-screen
    #+PINDEX: demo-it-title-screen
-   #+CINDEX: demo-it-title-screen
+   #+CINDEX: Demonstration Begins
 
    Displays a file as the demonstration's title, e.g.
    displayed with a larger-than-life font without a mode line,
@@ -618,7 +613,7 @@
 
 ** demo-it-message-keybinding
    #+PINDEX: demo-it-message-keybinding
-   #+CINDEX: demo-it-message-keybinding
+   #+CINDEX: Showing what you type
 
    When demonstrating Emacs features, you may want to display the
    keystroke you type. Yes, you could (and probably should) use a
@@ -653,7 +648,7 @@
 
 ** demo-it-highlight-dwim
    #+CINDEX: demo-it-highlight-dwim
-   #+PINDEX: demo-it-highlight-dwim
+   #+PINDEX: Text highlighting
 
    Can use the [[https://github.com/Malabarba/fancy-narrow][fancy-narrow]]
    package to highlight a particular /section/. If the package is not
@@ -693,6 +688,7 @@
   :PROPERTIES:
   :APPENDIX: t
   :END:
+  #+CINDEX: Demonstration Customizations
 
   The following is a list of custom variables that can be set through
   the standard Emacs customization feature (under the =demo-it= group).
@@ -701,7 +697,7 @@
 
 ** demo-it--keymap-mode-style
   #+PINDEX: demo-it--keymap-mode-style
-  #+CINDEX: demo-it--keymap-mode-style
+  #+CINDEX: Defaults for advancing demo
 
   The keymap-specific minor mode to use when a demonstration
   starts. Should either be set to the symbol, =:simple-mode= for using
@@ -716,7 +712,6 @@
 
 ** demo-it--shell-or-eshell
    #+PINDEX: demo-it--shell-or-eshell
-   #+CINDEX: demo-it--shell-or-eshell
 
    When opening up a shell, this customization value specifies whether
    it should run the =shell= or =eshell= command.
@@ -734,7 +729,7 @@
 
 ** demo-it--open-windows
   #+PINDEX: demo-it--open-windows
-  #+CINDEX: demo-it--open-windows
+  #+CINDEX: Side Windows
 
   When opening side windows, split the frame on a particular side.
   Should be set to one of the following keywords:
@@ -758,7 +753,7 @@
 
 ** demo-it--open-windows-size
    #+PINDEX: demo-it--open-windows-size
-   #+CINDEX: demo-it--open-windows-size
+   #+CINDEX: Side Windows Size
 
    The size of side windows to open. This is the width if the window
    is opened on one of the sides (=:left= or =:right=), or the height
@@ -768,7 +763,7 @@
 
 ** demo-it--text-scale
    #+PINDEX: demo-it--text-scale
-   #+CINDEX: demo-it--text-scale
+   #+CINDEX: Side Windows Font Size
 
    Sets the default text scale when opening files in side windows (see
    [[demo-it--open-windows]]).  While this can be set to an integer, it
@@ -795,7 +790,6 @@
 
 ** demo-it--start-fullscreen
    #+PINDEX: demo-it--start-fullscreen
-   #+CINDEX: demo-it--start-fullscreen
 
    A boolean setting that if set to a non-nil value, demonstrations
    start with the current frame in fullscreen mode. Defaults to
@@ -806,7 +800,6 @@
 
 ** demo-it--start-single-window
    #+PINDEX: demo-it--start-single-window
-   #+CINDEX: demo-it--start-single-window
 
    A boolean setting that if non-nil, deletes other windows to start
    the demonstration with a current buffer window being the only
@@ -817,7 +810,6 @@
 
 ** demo-it--presentation-hide-mode-line
    #+PINDEX: demo-it--presentation-hide-mode-line
-   #+CINDEX: demo-it--presentation-hide-mode-line
 
    If set to a nil value (/false/), the mode-line is hidden for any
    presentation files (this doesn't affect other files opened with the
@@ -830,7 +822,6 @@
 
 ** demo-it--presentation-hide-org-markers
    #+PINDEX: demo-it--presentation-hide-org-markers
-   #+CINDEX: demo-it--presentation-hide-org-markers
 
    If set to a non-nil value, surrounding asterisks, underlines and
    slashes that define an ~org-mode~ textual formats in a presentation
@@ -844,7 +835,6 @@
 
 ** demo-it--presentation-variable-width
    #+PINDEX: demo-it--presentation-variable-width
-   #+CINDEX: demo-it--presentation-variable-width
 
    If set to a non-nil value, a /variable-width/ font is used when
    displaying ~org-mode~ presentation files, otherwise the standard
@@ -857,7 +847,6 @@
 
 ** demo-it--presentation-hide-org-blocks
    #+PINDEX: demo-it--presentation-hide-org-blocks
-   #+CINDEX: demo-it--presentation-hide-org-blocks
 
    If set to a non-nil value, the start and ending lines of ~org-mode~
    blocks are shown during a presentation, otherwise these lines are
@@ -880,7 +869,6 @@
 
 ** demo-it--insert-text-speed
    #+PINDEX: demo-it--insert-text-speed
-   #+CINDEX: demo-it--insert-text-speed
 
    The functions, [[demo-it-run-in-shell]], [[demo-it-start-shell]],
    and [[Inserting Text][demo-it-insert]], enters the text into the shell as if a human
@@ -904,6 +892,7 @@
   :PROPERTIES:
   :COPYING:  t
   :END:
+  #+CINDEX: Open Source License
 
   This manual is for =demo-it= (version {{{version}}},
   {{{updated}}}), a project for running demonstrations within Emacs.
@@ -927,3 +916,7 @@
   :PROPERTIES:
   :INDEX:    cp
   :END:
+
+  For those of you trying to read this online, this index is generated
+  and only available within Emacs. If you are reading this from within
+  Emacs, well-done.

@@ -5,9 +5,12 @@
 @documentencoding UTF-8
 @documentlanguage en
 @syncodeindex pg cp
+@syncodeindex vr cp
 @c %**end of header
 
 @copying
+@cindex Open Source License
+
 This manual is for @verb{~demo-it~} (version 2.0,
 last updated 24 October 2016), a project for running demonstrations within Emacs.
 
@@ -187,6 +190,8 @@ See the following videos as examples of what can be done:
 @node Simple Example
 @unnumberedsec Simple Example
 
+@cindex Basic exmaple
+
 Using this project is a four step process:
 
 @enumerate
@@ -227,7 +232,7 @@ advances the presentation at the same time."
 @unnumberedsec Step Types
 
 @pindex demo-it-create
-@cindex demo-it-create
+@cindex Parameters for demo-it-create
 
 The `demo-it-create' is a macro that stores a single demonstration.
 Calling it a second time replaces any previously created demonstrations.
@@ -265,6 +270,8 @@ supplied by this @verb{~demo-it~} package, or even ones you write. ;-)
 
 @node Demonstration Options
 @unnumberedsec Demonstration Options
+
+@cindex Demonstration Behavior options
 
 The following list of keywords can be passed to @verb{~demo-it-create~} to
 override various @ref{Customization,Customization} settings:
@@ -369,7 +376,7 @@ surrounding @verb{~#+HEADER~} entries, so beware.
 @unnumberedsec Running the Demo
 
 @pindex demo-it-start
-@cindex demo-it-start
+@cindex Starting Demonstration
 
 Once the demonstration has been created using @code{demo-it-create},
 start it by calling @verb{~demo-it-start~}, as this will invoke the
@@ -384,6 +391,8 @@ get more mileage from the @verb{~demo-it-create~} macro.
 
 @node Demo Modes
 @unnumberedsec Demo Modes
+
+@cindex Minor modes
 
 Some demonstrations are so complete that pressing the space bar to
 advance to each step is sufficient. However, this project can be
@@ -413,7 +422,6 @@ value, , or by passing the following keyword to @verb{~demo-it-create~}.
 @unnumberedsubsec demo-it-mode
 
 @pindex demo-it-mode
-@cindex demo-it-mode
 
 The standard minor mode for demonstrations, has the following key
 features:
@@ -435,7 +443,6 @@ repositions the cursor.
 @unnumberedsubsec demo-it-mode-adv
 
 @pindex demo-it-mode-adv
-@cindex demo-it-mode-adv
 
 The advanced mode is used when the @verb{~demo-it~} project simply sets
 up an environment, where you want most keys available to enter
@@ -452,6 +459,8 @@ Why yes, while called @emph{advanced} is certainly has limited features.
 
 @node Showing Presentations
 @unnumbered Showing Presentations
+
+@cindex org-mode Presentations
 
 This project relies on other projects to do most of the heavy
 lifting for using @code{org-mode} files as the basis of a presentation,
@@ -474,7 +483,7 @@ control the display of the presentation.
 @unnumberedsec demo-it-presentation
 
 @pindex demo-it-presentation
-@cindex demo-it-presentation
+@cindex Presentations
 
 (file &optional size style section)
 
@@ -504,7 +513,6 @@ an @code{org-mode} header to specify as the first section to display.
 @unnumberedsec demo-it-presentation-quit
 
 @pindex demo-it-presentation-quit
-@cindex demo-it-presentation-quit
 
 Undoes the display settings made to the presentation buffer.
 
@@ -512,7 +520,6 @@ Undoes the display settings made to the presentation buffer.
 @unnumberedsec demo-it-presentation-return
 
 @pindex demo-it-presentation-return
-@cindex demo-it-presentation-return
 
 Makes the last running presentation the current buffer, deletes
 other windows, and advances to the next @code{org-mode} section.
@@ -521,7 +528,6 @@ other windows, and advances to the next @code{org-mode} section.
 @unnumberedsec demo-it-presentation-return-noadvance
 
 @pindex demo-it-presentation-return-noadvance
-@cindex demo-it-presentation-return-noadvance
 
 Similar to calling @ref{demo-it-presentation-return,demo-it-presentation-return} in that the latest
 specified presentation becomes the current buffer and all other
@@ -533,7 +539,6 @@ However, the presentation is not advanced to the next section.
 @unnumberedsec demo-it-presentation-highlight-phrase
 
 @pindex demo-it-presentation-highlight-phrase
-@cindex demo-it-presentation-highlight-phrase
 
 Given a string parameter, @code{phrase}, as a regular expression, this
 function highlights a @emph{phrase} in the presentation buffer without
@@ -552,7 +557,7 @@ remove the highlighting.
 @unnumberedsec demo-it-single-presentation
 
 @pindex demo-it-single-presentation
-@cindex demo-it-single-presentation
+@cindex Demonstration with Only Presentation
 
 Demonstration similar to calling @ref{demo-it-presentation,demo-it-presentation}, in that it
 presents an @code{org-mode} file as a full-screen presentation. In this
@@ -575,6 +580,9 @@ or :both to enable both features.
 
 @node Showing Files
 @unnumbered Showing Files
+
+@cindex Showing Side Files
+@cindex Options for side files
 
 While a simple call to @verb{~find-file~} is often sufficient to display a
 file in Emacs, the following functions can be helpful for showing
@@ -624,8 +632,7 @@ the height if the window is @verb{~:above~} or @verb{~:below~}.
 @unnumberedsec demo-it-load-file
 
 @pindex demo-it-load-file
-@cindex demo-it-load-file
-
+@cindex Loading side files
 Calling this function with a file, first splits the root frame into
 a side window and loads the file into that window.
 
@@ -640,7 +647,7 @@ The optional parameters this function takes are @ref{Showing Files,described abo
 @unnumberedsec demo-it-load-part-file
 
 @pindex demo-it-load-part-file
-@cindex demo-it-load-part-file
+@cindex Show part of a file
 
 Splits window and loads a file, but also narrows to particular region.
 
@@ -657,7 +664,7 @@ See @ref{demo-it-load-fancy-file,demo-it-load-fancy-file} for an alternative ver
 @unnumberedsec demo-it-load-fancy-file
 
 @cindex demo-it-load-fancy-file
-@pindex demo-it-load-fancy-file
+@pindex Highlighting while showing side file
 
 Splits the root frame and loads a @code{file} specified by the first
 parameter in that window (see @ref{demo-it-load-file,demo-it-load-file}), however, this
@@ -690,7 +697,6 @@ has been loaded. The demonstration will need to issue a @code{require}.
 @unnumberedsec demo-it-show-image
 
 @pindex demo-it-show-image
-@cindex demo-it-show-image
 
 Loads a file as an image (or any other special file) in another
 window without a mode line or fringe.
@@ -701,7 +707,7 @@ The optional parameters this function takes are @ref{Showing Files,described abo
 @unnumberedsec demo-it-compare-files
 
 @pindex demo-it-compare-files
-@cindex demo-it-compare-files
+@cindex Showing Two Files
 
 Loads two files in either two windows on top of each other on the
 right side of the screen, or two windows below (depending on the
@@ -711,6 +717,8 @@ The other optional parameter, @code{size} is @ref{Showing Files,described above}
 
 @node Running Commands
 @unnumbered Running Commands
+
+@cindex Shell Commands
 
 What Emacs-sponsored demonstration would be complete without being
 able to run the application you created. While your demonstration
@@ -745,7 +753,6 @@ giving @verb{~demo-it-create~} one of the following keyword configurations:
 @unnumberedsec demo-it-start-shell
 
 @pindex demo-it-start-shell
-@cindex demo-it-start-shell
 
 Starts a shell or eshell instance, in a particular directory and
 executes the given command. The command can be entered into the
@@ -762,7 +769,7 @@ The other optional parameters this function takes are
 @unnumberedsec demo-it-run-in-shell
 
 @pindex demo-it-run-in-shell
-@cindex demo-it-run-in-shell
+@cindex Typing in Shell
 
 Run shell command in a shell previously started with @ref{demo-it-start-shell,demo-it-start-shell}.
 If a @code{name} is not specified, it defaults to @code{Shell}.
@@ -775,7 +782,6 @@ keyword given to @verb{~demo-it-create~}.
 @unnumberedsec demo-it-show-shell
 
 @pindex demo-it-show-shell
-@cindex demo-it-show-shell
 
 Call to display the shell buffer if the shell window of a given
 @code{name} has been hidden. If @code{name} is not specified, it defaults to
@@ -788,7 +794,7 @@ The other optional parameters this function takes are
 @unnumbered Inserting Text
 
 @pindex demo-it-insert
-@cindex demo-it-insert
+@cindex Typing Text into Buffer
 
 Perhaps you want to regale your audience with your programmatic
 prowess, but don't dare attempt to do live-coding in front of live
@@ -847,7 +853,7 @@ sections, so consider this the @emph{miscellaeous} section.
 @unnumberedsec demo-it-end
 
 @pindex demo-it-end
-@cindex demo-it-end
+@cindex Ending Demonstration
 
 Calling this command ends the current demonstration by disabling
 the mode (see @ref{Demo Modes,Demo Modes}), resetting the values inflicted on the presentation buffer
@@ -858,7 +864,6 @@ before @verb{~demo-it-start~} was called.
 @unnumberedsec demo-it-step
 
 @pindex demo-it-step
-@cindex demo-it-step
 
 This function is typically called by one of the @ref{Demo Modes,Demo Modes}
 to execute the next step in the current demonstration.
@@ -878,7 +883,7 @@ a state for each called step, but that be a wee-bit challenging.
 @unnumberedsec demo-it-restep
 
 @pindex demo-it-restep
-@cindex demo-it-restep
+@cindex Redoing Demo Step
 
 Re-executes the previous step in the current demonstration.
 
@@ -890,7 +895,7 @@ re-executes, it just re-executes given the current Emacs state.
 @unnumberedsec demo-it-show-step
 
 @pindex demo-it-show-step
-@cindex demo-it-show-step
+@cindex What step am I on?
 
 Displays a message about the expected function (that is, the
 function that @emph{will be run}) during the next step. This can be
@@ -906,7 +911,6 @@ And you may tell yourself, This is not my beautiful wife!
 @unnumberedsec demo-it-hide-mode-line
 
 @pindex demo-it-hide-mode-line
-@cindex demo-it-hide-mode-line
 
 Hides the mode line for a current buffer. This is done by setting
 the @code{mode-line-format} to @code{nil}, but also saves off the value so
@@ -916,7 +920,6 @@ that it can be restored by calling @ref{demo-it-show-mode-line,demo-it-show-mode
 @unnumberedsec demo-it-show-mode-line
 
 @pindex demo-it-how-mode-line
-@cindex demo-it-show-mode-line
 
 Shows the mode line of the current buffer, if it was previously
 hidden with a call to @ref{demo-it-hide-mode-line,demo-it-hide-mode-line}.
@@ -925,7 +928,7 @@ hidden with a call to @ref{demo-it-hide-mode-line,demo-it-hide-mode-line}.
 @unnumberedsec demo-it-title-screen
 
 @pindex demo-it-title-screen
-@cindex demo-it-title-screen
+@cindex Demonstration Begins
 
 Displays a file as the demonstration's title, e.g.
 displayed with a larger-than-life font without a mode line,
@@ -940,7 +943,7 @@ The @code{size} parameter specifies the text scale, which ignores the
 @unnumberedsec demo-it-message-keybinding
 
 @pindex demo-it-message-keybinding
-@cindex demo-it-message-keybinding
+@cindex Showing what you type
 
 When demonstrating Emacs features, you may want to display the
 keystroke you type. Yes, you could (and probably should) use a
@@ -977,7 +980,7 @@ a simple symbol, like:
 @unnumberedsec demo-it-highlight-dwim
 
 @cindex demo-it-highlight-dwim
-@pindex demo-it-highlight-dwim
+@pindex Text highlighting
 
 Can use the @uref{https://github.com/Malabarba/fancy-narrow,fancy-narrow}
 package to highlight a particular @emph{section}. If the package is not
@@ -1016,6 +1019,8 @@ like:
 @node Customization
 @appendix Customization
 
+@cindex Demonstration Customizations
+
 The following is a list of custom variables that can be set through
 the standard Emacs customization feature (under the @verb{~demo-it~} group).
 Note, each custom value may be overridden with a magic symbol to the
@@ -1040,7 +1045,7 @@ Note, each custom value may be overridden with a magic symbol to the
 @unnumberedsec demo-it--keymap-mode-style
 
 @pindex demo-it--keymap-mode-style
-@cindex demo-it--keymap-mode-style
+@cindex Defaults for advancing demo
 
 The keymap-specific minor mode to use when a demonstration
 starts. Should either be set to the symbol, @verb{~:simple-mode~} for using
@@ -1061,7 +1066,6 @@ This setting can be overridden by a keyword to @verb{~demo-it-create~}:
 @unnumberedsec demo-it--shell-or-eshell
 
 @pindex demo-it--shell-or-eshell
-@cindex demo-it--shell-or-eshell
 
 When opening up a shell, this customization value specifies whether
 it should run the @verb{~shell~} or @verb{~eshell~} command.
@@ -1089,7 +1093,7 @@ This setting can be overridden by the following keywords to
 @unnumberedsec demo-it--open-windows
 
 @pindex demo-it--open-windows
-@cindex demo-it--open-windows
+@cindex Side Windows
 
 When opening side windows, split the frame on a particular side.
 Should be set to one of the following keywords:
@@ -1128,7 +1132,7 @@ passed to @verb{~demo-it-create~}:
 @unnumberedsec demo-it--open-windows-size
 
 @pindex demo-it--open-windows-size
-@cindex demo-it--open-windows-size
+@cindex Side Windows Size
 
 The size of side windows to open. This is the width if the window
 is opened on one of the sides (@verb{~:left~} or @verb{~:right~}), or the height
@@ -1140,7 +1144,7 @@ Defaults to @verb{~80~}
 @unnumberedsec demo-it--text-scale
 
 @pindex demo-it--text-scale
-@cindex demo-it--text-scale
+@cindex Side Windows Font Size
 
 Sets the default text scale when opening files in side windows (see
 @ref{demo-it--open-windows,demo-it--open-windows}).  While this can be set to an integer, it
@@ -1187,7 +1191,6 @@ following keywords passed to @verb{~demo-it-create~}:
 @unnumberedsec demo-it--start-fullscreen
 
 @pindex demo-it--start-fullscreen
-@cindex demo-it--start-fullscreen
 
 A boolean setting that if set to a non-nil value, demonstrations
 start with the current frame in fullscreen mode. Defaults to
@@ -1200,7 +1203,6 @@ keyword passed to @verb{~demo-it-create~}.
 @unnumberedsec demo-it--start-single-window
 
 @pindex demo-it--start-single-window
-@cindex demo-it--start-single-window
 
 A boolean setting that if non-nil, deletes other windows to start
 the demonstration with a current buffer window being the only
@@ -1213,7 +1215,6 @@ keyword passed to @verb{~demo-it-create~}.
 @unnumberedsec demo-it--presentation-hide-mode-line
 
 @pindex demo-it--presentation-hide-mode-line
-@cindex demo-it--presentation-hide-mode-line
 
 If set to a nil value (@emph{false}), the mode-line is hidden for any
 presentation files (this doesn't affect other files opened with the
@@ -1232,7 +1233,6 @@ following keywords passed to @verb{~demo-it-create~}:
 @unnumberedsec demo-it--presentation-hide-org-markers
 
 @pindex demo-it--presentation-hide-org-markers
-@cindex demo-it--presentation-hide-org-markers
 
 If set to a non-nil value, surrounding asterisks, underlines and
 slashes that define an @code{org-mode} textual formats in a presentation
@@ -1252,7 +1252,6 @@ following keywords passed to @verb{~demo-it-create~}:
 @unnumberedsec demo-it--presentation-variable-width
 
 @pindex demo-it--presentation-variable-width
-@cindex demo-it--presentation-variable-width
 
 If set to a non-nil value, a @emph{variable-width} font is used when
 displaying @code{org-mode} presentation files, otherwise the standard
@@ -1271,7 +1270,6 @@ following keywords passed to @verb{~demo-it-create~}:
 @unnumberedsec demo-it--presentation-hide-org-blocks
 
 @pindex demo-it--presentation-hide-org-blocks
-@cindex demo-it--presentation-hide-org-blocks
 
 If set to a non-nil value, the start and ending lines of @code{org-mode}
 blocks are shown during a presentation, otherwise these lines are
@@ -1300,7 +1298,6 @@ overridden with either of the following keywords passed to
 @unnumberedsec demo-it--insert-text-speed
 
 @pindex demo-it--insert-text-speed
-@cindex demo-it--insert-text-speed
 
 The functions, @ref{demo-it-run-in-shell,demo-it-run-in-shell}, @ref{demo-it-start-shell,demo-it-start-shell},
 and @ref{Inserting Text,demo-it-insert}, enters the text into the shell as if a human
@@ -1328,6 +1325,10 @@ lower value of 30 milliseconds, and an upper delay of 500.
 
 @node Index
 @unnumbered Index
+
+For those of you trying to read this online, this index is generated
+and only available within Emacs. If you are reading this from within
+Emacs, well-done.
 
 @printindex cp
 
