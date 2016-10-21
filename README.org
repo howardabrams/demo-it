@@ -1,16 +1,16 @@
 At the end of each sprint, each of us demonstrate accomplishments.
 These reviews often incorporate the following trifecta:
 
-  * Presentations explaining the technology and whatnot
-  * Source code reviewing... correctly highlighted and interactive
-  * Executing the code in a shell
+  * Presentations explaining the technology and other frobnications
+  * Source code, correctly highlighted and perhaps interactive
+  * Executing the code, preferably in a shell to maintain nerd cred
 
-During the sprint reviews, I noticed I used my org-mode-formatted
+During my sprint reviews, I noticed I used my org-mode-formatted
 files, eshell and source code buffers... always in Emacs.
 However, fat-fingering or mentally burping delayed the
 gratification for my audience while I laboriously typed.
 I solved this problem by predefining each "step" as an Emacs Lisp
-function, and then had another function execute each function when I
+function, and had another function execute each /step function/ when I
 hit an /advance/ key (=F12=).
 
 After I had amassed a small army of /helper functions/, I packaged it as
@@ -23,7 +23,7 @@ See the following videos as examples of what can be done:
   * [[https://www.youtube.com/watch?v=dljNabciEGg][Literate DevOps Programming]]
   * [[http://www.youtube.com/watch?v=3T00X_sNg4Q][Learn You Some Lisp for Great Good]]
 
-Click the following for a quicker example:
+Click the following image for a quicker example:
 
 #+HTML: <a href="http://www.youtube.com/watch?v=TSprQzowhAQ"><img src="http://img.youtube.com/vi/TSprQzowhAQ/0.jpg" alt="Example and Demonstration"/></a>
 
@@ -32,10 +32,10 @@ Using this project is a four step process:
   1. Load the library in your own Elisp source code file
   2. Create zero or more helper functions that "do things", or use the
      functions provided by this project.
-  3. Order the functions by calling =(demo-it-create)=
+  3. Order the functions by calling =(demo-it-create step-1 step-2 ...)=
   4. Call =demo-it-start= to kick off the fun.
 
-Press the space for each step, or call =demo-it-end= to end earlier.
+Press space for each step, or call =demo-it-end= to end earlier.
 
 For instance:
 
@@ -57,8 +57,7 @@ For instance:
   (demo-it-start)
 #+END_SRC
 
-Each "step" given to the =demo-it-create= macro can be one of the
-following:
+Each "step" given to =demo-it-create= can be one of the following:
 
   - an expression typically calling a helper function
   - a name of a function to call that does multiple actions
@@ -67,69 +66,33 @@ following:
 
 This package has a collection of helping functions, that can either be
 called directly as part of an expression, or embedded in a
-demonstration function. For a more complete example, see [[file:example/example.el][example.el]].
+demonstration /step function/. For a more complete example, see
+[[file:example/example.el][example.el]] or the other examples in the [[file:example][example directory]].
 
-* Keyword Control
-
-  While the =demo-it= customization group has a list of [[file:demo-it-custom.el][settings]] that
-  affect the behavior of all demonstrations, a particular
-  demonstration can pass any of the following keywords to the
-  =demo-it-create= macro to affect that demonstration:
-
-  - =:simple-mode= :: Use SPACE to advance demo
-  - =:advanced-mode= :: Use F12 to advance the demo
-  - =:use-shell= :: Use a standard =shell= command line interface
-  - =:use-eshell= :: Choose the =eshell= interface instead
-  - =:insert-quickly= :: Shell commands are immediately entered (default)
-  - =:insert-slow= :: Shell commands are slowly entered
-  - =:insert-medium= :: Text and shell commands are entered like a typist
-  - =:insert-fast= :: Text and shell commands are entered like a good typist
-  - =:side-windows= :: Default to open windows on the side
-  - =:lower-windows= :: Default to open windows below the main window
-  - =:fullscreen= :: Start the demonstration in fullscreen mode
-  - =:start-single-window= :: Delete other windows when started
-  - =:text-small= :: Smaller than the default text font size
-  - =:text-normal= :: New buffers that could have a new size, use default
-  - =:text-medium= :: New buffers are created with a slightly larger
-       font (a scale of 1)
-  - =:text-large= :: New buffers have an even larger font (scaled to 2)
-  - =:text-x-large= :: New buffer have a font scaled to 3
-  - =:text-xx-large= :: Font text size scaled to 4
-  - =:text-huge= :: Set to a font scale of 5
-  - =:show-mode-line= :: Show a presentation display the mode line?
-  - =:hide-mode-line= :: Hide the mode line for presentations (the default)
-  - =:show-org-markers= :: In org-mode files show asterisks, slashes,
-       and other markup characters
-  - =:hide-org-markers= :: Hide the markers, but show the effects (the default)
-  - =:variable-width= :: Use a variable width font for presentations
-  - =:fixed-width= :: Keep to the standard, fixed width font
-  - =:show-block-headers= :: Should the =#+begin= and =#+end= markers be shown
-
-  The following are property values I would like to add to the
-  presentation features, but I haven't re-factor those yet:
-
-  - =:show-fringe-mode= :: Should the normal fringe be display for presentations
-  - =:hide-fringe-mode= :: Hide the fringe during presentations (the default)
+Finally, read the [[file:demo-it.org][documentation]] (which is available as an Info manual).
 
 * Historical Record
 
-  The initial release, while published on MELPA, was still rather an
-  ad hoc collection of functions and poorly organized and documented.
+  The initial release, while published on MELPA, was rather an ad hoc
+  collection of functions, poorly organized and barely documented.
+  Sorry about that. I really didn't think any one would care enough to
+  use it.
 
   *Version 2* of this project attempted to remedy those shortcomings,
   cleaning and standardizing the /interface/ of functions. Also included
   is the following features:
 
-  - Simplification of how a demonstration is constructed. Originally
+  - Simplification of a demonstration's construction. Originally
     each step essentially required a helper function, but now, we can
-    specify full expressions directly in the =demo-it-create=
+    specify full expressions directly into =demo-it-create=.
 
   - Default behavior is now based on customized preferences instead of
     hard-coded values. Functions still accept optional values to
     override those defaults. Also the =demo-it-create= macro accepts
     demo-level overrides of the customized preferences.
 
-  - Now using the [[https://github.com/10sr/github-elpa][github-elpa project]] to make better releases.
+  - Described every function [[file:demo-it.org][both online]] and as an Info manual, with
+    lots of examples for the step functions.
 
   *Version 3* is a plan to have each step more repeatable. Currently,
   each step assumes a state built by the previous steps, which makes

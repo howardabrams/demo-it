@@ -3,6 +3,7 @@
 ;; Author: Howard Abrams <howard.abrams@gmail.com>
 ;; Copyright (C) 2014  Howard Abrams
 ;; Keywords: demonstration presentation test
+;; Version: 2.0.0
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -203,6 +204,7 @@ more interactive demonstrations."
 
   (demo-it-step))
 
+;;;###autoload
 (defmacro demo-it-create (&rest forms)
   "Create and store an ordered list of steps and configuration
 values. The FORMS can be either function names, expressions or
