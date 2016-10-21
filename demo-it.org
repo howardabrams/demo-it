@@ -7,7 +7,9 @@
 #+LANGUAGE: en
 #+MACRO: version 2.0
 #+MACRO: updated last updated 24 October 2016
-#+TEXINFO_DIR_TITLE: demo-it: (demo-it)
+
+#+TEXINFO_FILENAME: demo-it.info
+#+TEXINFO_HEADER: @syncodeindex pg cp
 
 * Basics
 
@@ -70,7 +72,7 @@
 
 ** Step Types
   #+PINDEX: demo-it-create
-  #+CINDEX: @command{demo-it-create}
+  #+CINDEX: demo-it-create
 
   The `demo-it-create' is a macro that stores a single demonstration.
   Calling it a second time replaces any previously created demonstrations.
@@ -105,38 +107,67 @@
    The following list of keywords can be passed to =demo-it-create= to
    override various [[Customization]] settings:
 
-   - =:simple-mode= turn on mode where space advances demonstration
-   - =:advance-mode= turn on mode where ~F12~ advances demonstration
-   - =:use-eshell=
-   - =:use-shell=
-   - =:eshell=
-   - =:shell=
-   - =:windows-on-side=
-   - =:windows-on-right=
-   - =:windows-on-left=
-   - =:windows-below=
-   - =:windows-above=
-   - =:fullscreen=
-   - =:single-window=
-   - =:text-small=
-   - =:text-normal=
-   - =:text-medium=
-   - =:text-large=
-   - =:text-x-large=
-   - =:text-xx-large=
-   - =:text-huge=
-   - =:insert-quickly=
-   - =:insert-fast=
-   - =:insert-medium=
-   - =:insert-slow=
-   - =:show-mode-line=
-   - =:hide-mode-line=
-   - =:show-org-markers=
-   - =:hide-org-markers=
-   - =:variable-width=
-   - =:fixed-width=
-   - =:show-block-headers=
-   - =:hide-block-headers=
+   - =:simple-mode= uses mode where space advances demonstration.
+   - =:advance-mode= uses mode where ~F12~ advances demonstration.
+   - =:use-shell= chooses a standard =shell= command line interface when
+     running the [[demo-it-start-shell]] command.
+   - =:use-shell= chooses to use the built-in Emacs shell, which Emacs
+     uses find more comfortable when subjected to Windows systems.
+   - =:eshell= is an alias for =:use-eshell.=
+   - =:shell= is an alias for =:user-shell=.
+   - =:windows-on-right= defaults to opening auxiliary windows on the
+     right side of the frame (see [[Showing Files][demo-it-load-file]] and other helper
+     functions for examples).
+   - =:windows-on-side= is an alias for =:windows-on-right=.
+   - =:windows-on-left= like the above, but defaults to the /left/ side of
+     the frame.
+   - =:windows-below= opens other windows at the bottom of the current frame.
+   - =:windows-above= opens other windows at the top of the current frame.
+   - =:fullscreen= starts the demonstration with the current frame in fullscreen mode.
+   - =:single-window= deletes other windows when started, and restores
+     those windows when the demonstration completes.
+   - =:text-small= starts presentations and other files in a slightly
+     smaller font that the current default. Yeah, it seems like a nice
+     idea to offer it, but I wonder if that is really helpful as a
+     default for a demonstration.
+   - =:text-normal= starts presentations and other loaded files in the
+     default font and size.
+   - =:text-medium= starts presentations and other loaded files in a
+     slight larger font size (technically scaled at 1).
+   - =:text-large= scales presentations and other loaded files at 2.
+   - =:text-x-large= scales loaded files at 3.
+   - =:text-xx-large= scales loaded files at 4 ... go figure.
+   - =:text-huge= scales newly loaded files at 5. Got a big monitor or
+     very few words, I see.
+   - =:insert-slow= shell commands (and other calls to [[Inserting Text][demo-it-insert]]
+     function) are inserted character by character as if a hacker who
+     never took a typing class in middle school was typing the text.
+   - =:insert-medium= shell commands and other text are inserted as if a
+     medium-grade nerd with sufficient typing skills entered them.
+   - =:insert-fast= shell commands are entered like a typist, but to an
+     audience with the attention span of a gerbil.
+   - =:insert-quickly= shell commands are instantly entered, and the
+     audience is spared the gimmickry of yet-another Emacs feature.
+   - =:show-mode-line= leaves the mode-line alone for presentations and
+     files loaded by the demonstration package.
+   - =:hide-mode-line= hides the mode line so neckbeards pay attention
+     to your demonstration and quit straining to see what minor modes
+     you prefer. Still using paredit, I see.
+   - =:hide-org-markers= hides the asterisks, slashes, and other markup
+     characters that format text, but still shows the text in bold and
+     italics.
+   - =:show-org-markers= displays org-mode presentations as you wrote it.
+   - =:variable-width= uses a variable width font for presentations
+     because we want to make the vi users cry.
+   - =:fixed-width= displays org-mode presentations with your default
+     monospaced font for ultra nerd cred. You may need this feature if
+     source code in your presentation.
+   - =:show-block-headers= Should the =#+begin= and =#+end= markers be
+     shown? If you are trying to talk about /literate devops/ then, the
+     answer is yes, show them the way you see them.
+   - =:hide-block-headers= Hides the =#+begin= and =#+end= markers, but
+     shows the glorious source code inside. Currently, also shows the
+     surrounding =#+HEADER= entries, so beware.
 
 ** Running the Demo
   #+PINDEX: demo-it-start
@@ -386,8 +417,8 @@
    has been loaded. The demonstration will need to issue a ~require~.
 
 ** demo-it-show-image
-   #+PINDEX: demo-it-load-file
-   #+CINDEX: demo-it-load-file
+   #+PINDEX: demo-it-show-image
+   #+CINDEX: demo-it-show-image
 
    Loads a file as an image (or any other special file) in another
    window without a mode line or fringe.
@@ -395,8 +426,8 @@
    The optional parameters this function takes are [[Showing Files][described above]].
 
 ** demo-it-compare-files
-   #+PINDEX: demo-it-load-file
-   #+CINDEX: demo-it-load-file
+   #+PINDEX: demo-it-compare-files
+   #+CINDEX: demo-it-compare-files
 
    Loads two files in either two windows on top of each other on the
    right side of the screen, or two windows below (depending on the
@@ -887,6 +918,10 @@
   and with no Back-Cover Texts.  A copy of the license is included in
   the section entitled "GNU Free Documentation License".
   #+END_QUOTE
+
+  #+TEXINFO_DIR_CATEGORY: Emacs
+  #+TEXINFO_DIR_TITLE: Demo It: (demo-it)
+  #+TEXINFO_DIR_DESC: Demonstrations made and shown in Emacs
 
 * Index
   :PROPERTIES:

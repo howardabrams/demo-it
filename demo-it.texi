@@ -1,0 +1,1334 @@
+\input texinfo    @c -*- texinfo -*-
+@c %**start of header
+@setfilename demo-it.info
+@settitle Demo It
+@documentencoding UTF-8
+@documentlanguage en
+@syncodeindex pg cp
+@c %**end of header
+
+@copying
+This manual is for @verb{~demo-it~} (version 2.0,
+last updated 24 October 2016), a project for running demonstrations within Emacs.
+
+Copyright @copyright{} 2016, Howard Abrams
+
+@quotation
+Permission is granted to copy, distribute and/or modify this
+document under the terms of the GNU Free Documentation License,
+Version 1.3 or any later version published by the Free Software
+Foundation; with no Invariant Sections, with no Front-Cover Texts,
+and with no Back-Cover Texts.  A copy of the license is included in
+the section entitled ``GNU Free Documentation License''.
+@end quotation
+@end copying
+
+@dircategory Emacs
+@direntry
+* Demo It: (demo-it).   Demonstrations made and shown in Emacs.
+@end direntry
+
+@finalout
+@titlepage
+@title Demo It
+@author Howard Abrams (@email{howard.abrams@@gmail.com})
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top Demo It
+@insertcopying
+@end ifnottex
+
+@menu
+* Basics::
+* Showing Presentations::
+* Showing Files::
+* Running Commands::
+* Inserting Text::
+* Extra Functions::
+* Customization::
+* Index::
+
+@detailmenu
+--- The Detailed Node Listing ---
+
+Basics
+
+* Simple Example::
+* Step Types::
+* Demonstration Options::
+* Running the Demo::
+* Demo Modes::
+
+
+
+
+
+Demo Modes
+
+* demo-it-mode::
+* demo-it-mode-adv::
+
+Showing Presentations
+
+* demo-it-presentation::
+* demo-it-presentation-quit::
+* demo-it-presentation-return::
+* demo-it-presentation-return-noadvance::
+* demo-it-presentation-highlight-phrase::
+* demo-it-single-presentation::
+
+
+
+Showing Files
+
+* demo-it-load-file::
+* demo-it-load-part-file::
+* demo-it-load-fancy-file::
+* demo-it-show-image::
+* demo-it-compare-files::
+
+
+
+Running Commands
+
+* demo-it-start-shell::
+* demo-it-run-in-shell::
+* demo-it-show-shell::
+
+
+
+
+Extra Functions
+
+* demo-it-end::
+* demo-it-step::
+* demo-it-restep::
+* demo-it-show-step::
+* demo-it-hide-mode-line::
+* demo-it-show-mode-line::
+* demo-it-title-screen::
+* demo-it-message-keybinding::
+* demo-it-highlight-dwim::
+
+
+
+Customization
+
+* demo-it--keymap-mode-style::
+* demo-it--shell-or-eshell::
+* demo-it--open-windows::
+* demo-it--open-windows-size::
+* demo-it--text-scale::
+* demo-it--start-fullscreen::
+* demo-it--start-single-window::
+* demo-it--presentation-hide-mode-line::
+* demo-it--presentation-hide-org-markers::
+* demo-it--presentation-variable-width::
+* demo-it--presentation-hide-org-blocks::
+* demo-it--insert-text-speed::
+@end detailmenu
+@end menu
+
+
+
+@node Basics
+@unnumbered Basics
+
+At the end of each sprint, each of us demonstrate our accomplishments.
+These reviews often incorporate the following trifecta:
+
+@itemize
+@item
+Presentations explaining the technology and whatnot
+@item
+Source code reviews@dots{}correctly highlighted and interactive
+@item
+Executing the code in a shell
+@end itemize
+
+During my sprint reviews, I noticed I used my org-mode-formatted
+files, eshell and source code buffers@dots{} In other words, I was
+always in Emacs.  However, fat-fingering or mentally burping delayed
+the gratification for my audience while I laboriously typed.  I
+originally solved this problem by predefining each ``step'' as an
+Emacs Lisp function, and then had another function execute each
+function when I hit an @emph{advance} key (@verb{~F12~}).
+
+After I had amassed a small army of @emph{helper functions}, I packaged it as
+@verb{~demo-it~}, because I lack the imagination to come up with anything more
+clever.
+
+See the following videos as examples of what can be done:
+
+@itemize
+@item
+@uref{http://www.youtube.com/watch?v=B6jfrrwR10k,Emacs: An Introduction for the Curious}
+@item
+@uref{https://www.youtube.com/watch?v=dljNabciEGg,Literate DevOps Programming}
+@item
+@uref{http://www.youtube.com/watch?v=3T00X_sNg4Q,Learn You Some Lisp for Great Good}
+@end itemize
+
+@menu
+* Simple Example::
+* Step Types::
+* Demonstration Options::
+* Running the Demo::
+* Demo Modes::
+@end menu
+
+@node Simple Example
+@unnumberedsec Simple Example
+
+Using this project is a four step process:
+
+@enumerate
+@item
+Load the library in your own Elisp source code file
+@item
+Create zero or more helper functions that ``do things'', or use the
+functions provided by this project.
+@item
+Order the functions by calling @verb{~(demo-it-create)~}
+@item
+Call @verb{~demo-it-start~} to begin the fun.
+@end enumerate
+
+Press the space for each step, or call @verb{~demo-it-end~} to end early.
+
+For instance:
+
+@lisp
+(require 'demo-it)
+
+(defun my-demo-step/show-code ()
+  "Helper demo function that displays some source code and
+advances the presentation at the same time."
+  (demo-it-load-side-window "example/example.py")
+  (demo-it-presentation-advance))
+
+;; Order the functions and forms for this presentation:
+(demo-it-create (demo-it-presentation "example/example.org")
+                 my-demo-step/show-code
+                 demo-it-presentation-return ; close file and advance
+                (demo-it-run-in-eshell "python example/example.py"))
+
+(demo-it-start)
+@end lisp
+
+@node Step Types
+@unnumberedsec Step Types
+
+@pindex demo-it-create
+@cindex demo-it-create
+
+The `demo-it-create' is a macro that stores a single demonstration.
+Calling it a second time replaces any previously created demonstrations.
+
+Each ``step'' given to the @verb{~demo-it-create~} macro can be one of the
+following:
+
+@itemize
+@item
+Expression typically calling a helper function, for instance:
+@lisp
+(demo-it-presentation "example/example.org")
+@end lisp
+
+@item
+Name of a function to call that does multiple actions, for instance:
+@lisp
+demo-it-presentation-return
+@end lisp
+
+@item
+a string referring to a key-binding to run, for instance:
+@lisp
+"C-x C-f example.el "
+@end lisp
+
+@item
+a property that affects demonstration behavior, see the
+@ref{Demonstration Options,Demonstration Options} or @ref{Customization,Customization}
+@end itemize
+
+Note: Any Emacs function can be called, either by name or as part
+of an expression.  These functions can be standard functions,
+supplied by this @verb{~demo-it~} package, or even ones you write. ;-)
+
+@node Demonstration Options
+@unnumberedsec Demonstration Options
+
+The following list of keywords can be passed to @verb{~demo-it-create~} to
+override various @ref{Customization,Customization} settings:
+
+@itemize
+@item
+@verb{~:simple-mode~} uses mode where space advances demonstration.
+@item
+@verb{~:advance-mode~} uses mode where @code{F12} advances demonstration.
+@item
+@verb{~:use-shell~} chooses a standard @verb{~shell~} command line interface when
+running the @ref{demo-it-start-shell,demo-it-start-shell} command.
+@item
+@verb{~:use-shell~} chooses to use the built-in Emacs shell, which Emacs
+uses find more comfortable when subjected to Windows systems.
+@item
+@verb{~:eshell~} is an alias for @verb{~:use-eshell.~}
+@item
+@verb{~:shell~} is an alias for @verb{~:user-shell~}.
+@item
+@verb{~:windows-on-right~} defaults to opening auxiliary windows on the
+right side of the frame (see @ref{Showing Files,demo-it-load-file} and other helper
+functions for examples).
+@item
+@verb{~:windows-on-side~} is an alias for @verb{~:windows-on-right~}.
+@item
+@verb{~:windows-on-left~} like the above, but defaults to the @emph{left} side of
+the frame.
+@item
+@verb{~:windows-below~} opens other windows at the bottom of the current frame.
+@item
+@verb{~:windows-above~} opens other windows at the top of the current frame.
+@item
+@verb{~:fullscreen~} starts the demonstration with the current frame in fullscreen mode.
+@item
+@verb{~:single-window~} deletes other windows when started, and restores
+those windows when the demonstration completes.
+@item
+@verb{~:text-small~} starts presentations and other files in a slightly
+smaller font that the current default. Yeah, it seems like a nice
+idea to offer it, but I wonder if that is really helpful as a
+default for a demonstration.
+@item
+@verb{~:text-normal~} starts presentations and other loaded files in the
+default font and size.
+@item
+@verb{~:text-medium~} starts presentations and other loaded files in a
+slight larger font size (technically scaled at 1).
+@item
+@verb{~:text-large~} scales presentations and other loaded files at 2.
+@item
+@verb{~:text-x-large~} scales loaded files at 3.
+@item
+@verb{~:text-xx-large~} scales loaded files at 4 @dots{} go figure.
+@item
+@verb{~:text-huge~} scales newly loaded files at 5. Got a big monitor or
+very few words, I see.
+@item
+@verb{~:insert-slow~} shell commands (and other calls to @ref{Inserting Text,demo-it-insert}
+function) are inserted character by character as if a hacker who
+never took a typing class in middle school was typing the text.
+@item
+@verb{~:insert-medium~} shell commands and other text are inserted as if a
+medium-grade nerd with sufficient typing skills entered them.
+@item
+@verb{~:insert-fast~} shell commands are entered like a typist, but to an
+audience with the attention span of a gerbil.
+@item
+@verb{~:insert-quickly~} shell commands are instantly entered, and the
+audience is spared the gimmickry of yet-another Emacs feature.
+@item
+@verb{~:show-mode-line~} leaves the mode-line alone for presentations and
+files loaded by the demonstration package.
+@item
+@verb{~:hide-mode-line~} hides the mode line so neckbeards pay attention
+to your demonstration and quit straining to see what minor modes
+you prefer. Still using paredit, I see.
+@item
+@verb{~:hide-org-markers~} hides the asterisks, slashes, and other markup
+characters that format text, but still shows the text in bold and
+italics.
+@item
+@verb{~:show-org-markers~} displays org-mode presentations as you wrote it.
+@item
+@verb{~:variable-width~} uses a variable width font for presentations
+because we want to make the vi users cry.
+@item
+@verb{~:fixed-width~} displays org-mode presentations with your default
+monospaced font for ultra nerd cred. You may need this feature if
+source code in your presentation.
+@item
+@verb{~:show-block-headers~} Should the @verb{~#+begin~} and @verb{~#+end~} markers be
+shown? If you are trying to talk about @emph{literate devops} then, the
+answer is yes, show them the way you see them.
+@item
+@verb{~:hide-block-headers~} Hides the @verb{~#+begin~} and @verb{~#+end~} markers, but
+shows the glorious source code inside. Currently, also shows the
+surrounding @verb{~#+HEADER~} entries, so beware.
+@end itemize
+
+@node Running the Demo
+@unnumberedsec Running the Demo
+
+@pindex demo-it-start
+@cindex demo-it-start
+
+Once the demonstration has been created using @code{demo-it-create},
+start it by calling @verb{~demo-it-start~}, as this will invoke the
+first step.
+
+Typically, pressing the @verb{~SPACE~} or @verb{~RETURN~} key will advance to the
+next step, but this depends on which of the @ref{Demo Modes,Demo Modes} was chosen.
+
+A deprecated version of @verb{~demo-it-start~} allows you to pass in a list
+of the steps, but creating this list can be problematic, so you'll
+get more mileage from the @verb{~demo-it-create~} macro.
+
+@node Demo Modes
+@unnumberedsec Demo Modes
+
+Some demonstrations are so complete that pressing the space bar to
+advance to each step is sufficient. However, this project can be
+used as a @emph{helper} where each step merely sets up an environment
+where some Emacs feature or source code can be elaborated with
+personal prestidigitation. In this case, using the space and return
+to advance the demonstration would limit what can be demonstrated manually.
+
+So @verb{~demo-it~} contains two minor modes, and starting a
+demonstration, one of the following minor mode is chosen.
+
+The choice is either made by setting the global customization
+value, , or by passing the following keyword to @verb{~demo-it-create~}.
+@itemize
+@item
+@verb{~:simple-mode~}
+@item
+@verb{~:advance-mode~}
+@end itemize
+
+@menu
+* demo-it-mode::
+* demo-it-mode-adv::
+@end menu
+
+@node demo-it-mode
+@unnumberedsubsec demo-it-mode
+
+@pindex demo-it-mode
+@cindex demo-it-mode
+
+The standard minor mode for demonstrations, has the following key
+features:
+@itemize
+@item
+@code{Space} or @code{Return} advances to the next demonstration step
+@item
+@code{q} turns off this mode, allowing you to type normally.
+Call @verb{~demo-it-mode~} to resume this mode
+@item
+@code{Q} ends the demonstration
+@end itemize
+
+Note: In this mode, clicking the mouse on the right-side of the
+screen will advance the demonstration, while clicking elsewhere,
+repositions the cursor.
+
+@node demo-it-mode-adv
+@unnumberedsubsec demo-it-mode-adv
+
+@pindex demo-it-mode-adv
+@cindex demo-it-mode-adv
+
+The advanced mode is used when the @verb{~demo-it~} project simply sets
+up an environment, where you want most keys available to enter
+commands manually. This mode has the following key features:
+
+@itemize
+@item
+@code{F12} advances to the next step in the demonstration
+@item
+@code{M-F12} ends the demonstration
+@end itemize
+
+Why yes, while called @emph{advanced} is certainly has limited features.
+
+@node Showing Presentations
+@unnumbered Showing Presentations
+
+This project relies on other projects to do most of the heavy
+lifting for using @code{org-mode} files as the basis of a presentation,
+especially the @uref{http://asdfasdf,org-tree-slide} project, which displays each section
+under a header as the sole contents of a buffer.
+
+The following functions can be added to your demonstration to
+control the display of the presentation.
+
+@menu
+* demo-it-presentation::
+* demo-it-presentation-quit::
+* demo-it-presentation-return::
+* demo-it-presentation-return-noadvance::
+* demo-it-presentation-highlight-phrase::
+* demo-it-single-presentation::
+@end menu
+
+@node demo-it-presentation
+@unnumberedsec demo-it-presentation
+
+@pindex demo-it-presentation
+@cindex demo-it-presentation
+
+(file &optional size style section)
+
+Loads the given @code{org-mode} file as a presentation.  This
+automatically calls @code{org-tree-slide} if available.
+
+This function takes an optional @code{size} parameter to specifies the
+text scale. If @code{nil}, this defaults to the value set in
+@ref{demo-it--text-scale,demo-it--text-scale} customization variable.
+
+The optional @code{style} parameter can be set to either :variable for
+variable font pitch, :blocks for diminished headers on org-blocks,
+or :both to enable both features. This is a deprecated, legacy
+feature, since it is easier and clearer to either use the
+customization variables:
+@itemize
+@item
+@ref{demo-it--presentation-variable-width,demo-it--presentation-variable-width}
+@item
+@ref{demo-it--presentation-hide-org-blocks,demo-it--presentation-hide-org-blocks}
+@end itemize
+
+The final parameter, @code{section}, is a string containing the name of
+an @code{org-mode} header to specify as the first section to display.
+
+@node demo-it-presentation-quit
+@unnumberedsec demo-it-presentation-quit
+
+@pindex demo-it-presentation-quit
+@cindex demo-it-presentation-quit
+
+Undoes the display settings made to the presentation buffer.
+
+@node demo-it-presentation-return
+@unnumberedsec demo-it-presentation-return
+
+@pindex demo-it-presentation-return
+@cindex demo-it-presentation-return
+
+Makes the last running presentation the current buffer, deletes
+other windows, and advances to the next @code{org-mode} section.
+
+@node demo-it-presentation-return-noadvance
+@unnumberedsec demo-it-presentation-return-noadvance
+
+@pindex demo-it-presentation-return-noadvance
+@cindex demo-it-presentation-return-noadvance
+
+Similar to calling @ref{demo-it-presentation-return,demo-it-presentation-return} in that the latest
+specified presentation becomes the current buffer and all other
+windows are deleted.
+
+However, the presentation is not advanced to the next section.
+
+@node demo-it-presentation-highlight-phrase
+@unnumberedsec demo-it-presentation-highlight-phrase
+
+@pindex demo-it-presentation-highlight-phrase
+@cindex demo-it-presentation-highlight-phrase
+
+Given a string parameter, @code{phrase}, as a regular expression, this
+function highlights a @emph{phrase} in the presentation buffer without
+changing the current buffer. This is
+useful to highlight bullet point items while executing appropriate
+code.
+
+The @code{color} parameter is a face from the @code{hi-lock} project,
+e.g. :hi-yellow.
+
+Note: This unhighlights previous highlighted phrases.
+Call @code{demo-it-presentation-unhighlight-all} if you just want to
+remove the highlighting.
+
+@node demo-it-single-presentation
+@unnumberedsec demo-it-single-presentation
+
+@pindex demo-it-single-presentation
+@cindex demo-it-single-presentation
+
+Demonstration similar to calling @ref{demo-it-presentation,demo-it-presentation}, in that it
+presents an @code{org-mode} file as a full-screen presentation. In this
+form, the demonstration doesn't do anything more than advance
+through the presentation, and calling either @code{demo-it-create} or
+@code{demo-it-start} is not needed.
+
+This function begins a minor-mode where the space or return key
+advances the presentation to the next section. In this mode, the
+@code{q} disables this mode, and @code{Q} quits the demonstration and
+presentation.
+
+While the standard customization variables configure the
+presentation display style, this function accepts a @code{size}
+parameter to set the text scaling size.
+
+The optional @code{style} parameter can be set to either :variable for
+variable font pitch, :blocks for diminished headers on org-blocks,
+or :both to enable both features.
+
+@node Showing Files
+@unnumbered Showing Files
+
+While a simple call to @verb{~find-file~} is often sufficient to display a
+file in Emacs, the following functions can be helpful for showing
+files and source code during a demonstration.
+
+These functions often take the following optional parameters, and in
+the spirit of DRY, we will specify them here:
+
+The optional @code{side} parameter specifies the side of the frame to
+ display the new window. Acceptable values can one of the following
+ keywords:
+@itemize
+@item
+@verb{~:above~}
+@item
+@verb{~:below~}
+@item
+@verb{~:left~}
+@item
+@verb{~:right~}
+@item
+@verb{~:side~} is a synomym for @verb{~:right~}
+@item
+@verb{~:none~} loads the file in the current buffer.
+@end itemize
+
+If @code{nil}, defaults is to use the customized value of
+@ref{demo-it--open-windows,demo-it--open-windows}.
+
+The optional @code{size} parameter takes an integer and specifies the
+text scale. If @code{nil}, this defaults to the value set in
+@ref{demo-it--text-scale,demo-it--text-scale} customization variable.
+
+The @code{width} parameter specifies the size of
+the new window, which is either the width of a side window, or
+the height if the window is @verb{~:above~} or @verb{~:below~}.
+
+@menu
+* demo-it-load-file::
+* demo-it-load-part-file::
+* demo-it-load-fancy-file::
+* demo-it-show-image::
+* demo-it-compare-files::
+@end menu
+
+@node demo-it-load-file
+@unnumberedsec demo-it-load-file
+
+@pindex demo-it-load-file
+@cindex demo-it-load-file
+
+Calling this function with a file, first splits the root frame into
+a side window and loads the file into that window.
+
+Keep in mind, that calling it a second time will result in further
+splitting of the root window. Call @verb{~delete-window~} or
+@ref{demo-it-presentation-return-noadvance,demo-it-presentation-return-noadvance}, or close the window
+while also updating the presentation with @ref{demo-it-presentation-return,demo-it-presentation-return}.
+
+The optional parameters this function takes are @ref{Showing Files,described above}.
+
+@node demo-it-load-part-file
+@unnumberedsec demo-it-load-part-file
+
+@pindex demo-it-load-part-file
+@cindex demo-it-load-part-file
+
+Splits window and loads a file, but also narrows to particular region.
+
+If the @code{type} parameter is set to @verb{~:line~}, then the @code{start} and
+@code{end} parameters specify the first and last lines of the region to
+narrow. If @code{type} is set to @verb{~:char~}, then @code{start} and @code{end} refer
+to specific character positions.
+
+The other optional parameters this function takes are @ref{Showing Files,described above}.
+
+See @ref{demo-it-load-fancy-file,demo-it-load-fancy-file} for an alternative version.
+
+@node demo-it-load-fancy-file
+@unnumberedsec demo-it-load-fancy-file
+
+@cindex demo-it-load-fancy-file
+@pindex demo-it-load-fancy-file
+
+Splits the root frame and loads a @code{file} specified by the first
+parameter in that window (see @ref{demo-it-load-file,demo-it-load-file}), however, this
+function can use the
+@uref{https://github.com/Malabarba/fancy-narrow,fancy narrow} to
+highlight part of the buffer (if it has been loaded), otherwise, it
+behaves like @ref{demo-it-load-part-file,demo-it-load-part-file} and narrows to the area specified.
+
+If the second parameter, @code{type} is a string that specifies a
+function name (available via @code{imenu}), then it highlights
+that function.
+
+If @code{type} is a @verb{~:line~}, then the next two parameters, @code{start} and @code{end}
+specifies the beginning or ending lines.
+
+If @code{type} is @verb{~:char~}, then @code{start} and @code{end} are exact buffer
+positions, which you can determine by evaluating (@code{M-;}) the
+following expression:
+@lisp
+(kill-new (int-to-string (point)))
+@end lisp
+
+The optional parameters @code{side} and @code{size} are
+@ref{Showing Files,described above}.
+
+Note: This function simply detects if the @code{fancy-narrow} package
+has been loaded. The demonstration will need to issue a @code{require}.
+
+@node demo-it-show-image
+@unnumberedsec demo-it-show-image
+
+@pindex demo-it-show-image
+@cindex demo-it-show-image
+
+Loads a file as an image (or any other special file) in another
+window without a mode line or fringe.
+
+The optional parameters this function takes are @ref{Showing Files,described above}.
+
+@node demo-it-compare-files
+@unnumberedsec demo-it-compare-files
+
+@pindex demo-it-compare-files
+@cindex demo-it-compare-files
+
+Loads two files in either two windows on top of each other on the
+right side of the screen, or two windows below (depending on the
+value of the @code{side}, which should either be @verb{~:below~} or @verb{~:side~}.
+
+The other optional parameter, @code{size} is @ref{Showing Files,described above}.
+
+@node Running Commands
+@unnumbered Running Commands
+
+What Emacs-sponsored demonstration would be complete without being
+able to run the application you created. While your demonstration
+could easily call @code{shell-command}, starting a shell, and having
+Emacs @emph{type} the commands makes a demonstration appear more real and
+interactive.
+
+The @emph{typing} abilities when inserting text are not very realistic,
+as it simply picks a random delay between each letter. What is
+lacking, however, it clacking should of the switches going off while
+the letter appears (PRs are acceptable).
+
+The following functions can be added to your demonstration to enter
+commands in a shell (both your default shell, as well as the Eshell
+is supported by setting the @ref{demo-it--shell-or-eshell,demo-it--shell-or-eshell} variable or
+giving @verb{~demo-it-create~} one of the following keyword configurations:
+
+@itemize
+@item
+@verb{~:use-shell~}
+@item
+@verb{~:use-eshell~}
+@end itemize
+
+@menu
+* demo-it-start-shell::
+* demo-it-run-in-shell::
+* demo-it-show-shell::
+@end menu
+
+@node demo-it-start-shell
+@unnumberedsec demo-it-start-shell
+
+@pindex demo-it-start-shell
+@cindex demo-it-start-shell
+
+Starts a shell or eshell instance, in a particular directory and
+executes the given command. The command can be entered into the
+shell with a slight random delay intended to mimic a person typing.
+This speed of this is specified by @ref{demo-it--insert-text-speed,demo-it--insert-text-speed}.
+
+The optional @code{name} parameter labels the buffer, and defaults to
+@code{Shell}.
+
+The other optional parameters this function takes are
+@ref{Showing Files,described above}.
+
+@node demo-it-run-in-shell
+@unnumberedsec demo-it-run-in-shell
+
+@pindex demo-it-run-in-shell
+@cindex demo-it-run-in-shell
+
+Run shell command in a shell previously started with @ref{demo-it-start-shell,demo-it-start-shell}.
+If a @code{name} is not specified, it defaults to @code{Shell}.
+
+The optional @code{speed} parameter overrides the customization value
+set by @ref{demo-it--insert-text-speed,demo-it--insert-text-speed}, or the text-speed related
+keyword given to @verb{~demo-it-create~}.
+
+@node demo-it-show-shell
+@unnumberedsec demo-it-show-shell
+
+@pindex demo-it-show-shell
+@cindex demo-it-show-shell
+
+Call to display the shell buffer if the shell window of a given
+@code{name} has been hidden. If @code{name} is not specified, it defaults to
+@code{Shell}.
+
+The other optional parameters this function takes are
+@ref{Showing Files,described above}.
+
+@node Inserting Text
+@unnumbered Inserting Text
+
+@pindex demo-it-insert
+@cindex demo-it-insert
+
+Perhaps you want to regale your audience with your programmatic
+prowess, but don't dare attempt to do live-coding in front of live
+individuals? Yes, even creating a series of yasnippets can result in
+some serious embarrassment (and compiler errors) if you fat-finger
+any of the fields.
+
+Have no fear, just create a series of entries that contains calls to
+@code{demo-it-insert}, as this function inserts a string into the current
+buffer as if you were typing it by hand (this is called by
+@ref{demo-it-run-in-shell,demo-it-run-in-shell}).
+
+The following @verb{~demo-it~} example uses this function as well as
+the @verb{~def~} yasnippet for Ruby and particular keystrokes to move from
+field to field:
+
+@lisp
+(demo-it-create (find-file "foobar.rb")
+                (demo-it-insert "def")
+                (yas-expand)
+                (demo-it-insert "hello")
+                "TAB TAB"
+                (demo-it-insert "name")
+                "TAB"
+                (demo-it-insert "\"Hello, #@{name@}\"" :fast))
+@end lisp
+
+The optional @code{speed} parameter is @ref{Showing Files,described above}.
+
+Note: The previous version of @verb{~demo-it~} offered specialized
+feature for inserting text where each string to entered was put in
+a hashmap, @code{demo-it-text-entries}, and the entries were inserted
+with calls to a dedicated function, @code{demo-it-insert-text}. However,
+the above seems to work just as well without a special function, so
+it has been deprecated and removed.
+
+@node Extra Functions
+@unnumbered Extra Functions
+
+The following are useful functions that don't fit in the previous
+sections, so consider this the @emph{miscellaeous} section.
+
+@menu
+* demo-it-end::
+* demo-it-step::
+* demo-it-restep::
+* demo-it-show-step::
+* demo-it-hide-mode-line::
+* demo-it-show-mode-line::
+* demo-it-title-screen::
+* demo-it-message-keybinding::
+* demo-it-highlight-dwim::
+@end menu
+
+@node demo-it-end
+@unnumberedsec demo-it-end
+
+@pindex demo-it-end
+@cindex demo-it-end
+
+Calling this command ends the current demonstration by disabling
+the mode (see @ref{Demo Modes,Demo Modes}), resetting the values inflicted on the presentation buffer
+as well as restoring the window arrangement to their original glory
+before @verb{~demo-it-start~} was called.
+
+@node demo-it-step
+@unnumberedsec demo-it-step
+
+@pindex demo-it-step
+@cindex demo-it-step
+
+This function is typically called by one of the @ref{Demo Modes,Demo Modes}
+to execute the next step in the current demonstration.
+
+However, this function can be called to jump to a particular STEP
+by specifying a step number to the optional parameter, @code{step}. This
+can also be done with a prefix, e.g. C-6 <F12> to run the 6th step.
+
+Keep in mind that normally step functions expect a particular state
+to be established, so calling this function to jump to a particular
+step may not work as intended.
+
+Why yes, we do want to figure out a good mechanism for establishing
+a state for each called step, but that be a wee-bit challenging.
+
+@node demo-it-restep
+@unnumberedsec demo-it-restep
+
+@pindex demo-it-restep
+@cindex demo-it-restep
+
+Re-executes the previous step in the current demonstration.
+
+Note, this doesn't handle the concept of the state of the Emacs
+system, so calling this function interactively does not rewind and
+re-executes, it just re-executes given the current Emacs state.
+
+@node demo-it-show-step
+@unnumberedsec demo-it-show-step
+
+@pindex demo-it-show-step
+@cindex demo-it-show-step
+
+Displays a message about the expected function (that is, the
+function that @emph{will be run}) during the next step. This can be
+useful when you've lost your way, and ask yourself, How did I
+get here?
+
+Of course, you may ask yourself, How do I work this? @*
+And you may ask yourself, Where is that large automobile? @*
+And you may tell yourself, This is not my beautiful house! @*
+And you may tell yourself, This is not my beautiful wife!
+
+@node demo-it-hide-mode-line
+@unnumberedsec demo-it-hide-mode-line
+
+@pindex demo-it-hide-mode-line
+@cindex demo-it-hide-mode-line
+
+Hides the mode line for a current buffer. This is done by setting
+the @code{mode-line-format} to @code{nil}, but also saves off the value so
+that it can be restored by calling @ref{demo-it-show-mode-line,demo-it-show-mode-line}.
+
+@node demo-it-show-mode-line
+@unnumberedsec demo-it-show-mode-line
+
+@pindex demo-it-how-mode-line
+@cindex demo-it-show-mode-line
+
+Shows the mode line of the current buffer, if it was previously
+hidden with a call to @ref{demo-it-hide-mode-line,demo-it-hide-mode-line}.
+
+@node demo-it-title-screen
+@unnumberedsec demo-it-title-screen
+
+@pindex demo-it-title-screen
+@cindex demo-it-title-screen
+
+Displays a file as the demonstration's title, e.g.
+displayed with a larger-than-life font without a mode line,
+etc. Typically, a specially-formatted org-mode file would do the
+job, but any file, including an image will work.
+
+The @code{size} parameter specifies the text scale, which ignores the
+@ref{demo-it--text-scale,demo-it--text-scale} customization setting and defaults to :huge
+(or 5x your normal text font size).
+
+@node demo-it-message-keybinding
+@unnumberedsec demo-it-message-keybinding
+
+@pindex demo-it-message-keybinding
+@cindex demo-it-message-keybinding
+
+When demonstrating Emacs features, you may want to display the
+keystroke you type. Yes, you could (and probably should) use a
+package like @uref{http://www.foldr.org/~michaelw/emacs/mwe-log-commands.el,mwe-log-commands} by Michael Weber, but you can't
+really use that sort of feature with @verb{~demo-it~}, as you'd just log a
+bunch of spacebars bound to @ref{demo-it-step,demo-it-step}.
+
+What you really want is to display the key you @emph{wanted} to type.
+For that, you'll want to end your @emph{step function} with a call to
+@code{demo-it-message-keybinding}, as it will take two strings, where
+the first one is the ``key'' and the other is a function or command
+that it normally calls.
+
+For instance:
+@lisp
+(defun my-demo/dired-a-directory ()
+  "Opens a `dired' buffer on a particular directory.
+This is a step function that I add to demo-it-create."
+  (dired (expand-file-name "~/work"))
+  (demo-it-message-keybinding "C-x d" "dired"))
+@end lisp
+
+This sort of @emph{step function} would be added to @verb{~demo-it-create~} as
+a simple symbol, like:
+@lisp
+(demo-it-create ;; :keybindings
+                ;; other functions and expressions
+                my-demo/dired-a-directory
+                ;; other functions and expressions
+                )
+@end lisp
+
+@node demo-it-highlight-dwim
+@unnumberedsec demo-it-highlight-dwim
+
+@cindex demo-it-highlight-dwim
+@pindex demo-it-highlight-dwim
+
+Can use the @uref{https://github.com/Malabarba/fancy-narrow,fancy-narrow}
+package to highlight a particular @emph{section}. If the package is not
+available, it simply @emph{narrows} to that area. If called
+interactively, this highlights the region (if active) or the
+current function.
+
+If the first parameter, @code{type-or-fn} is a string, this specifies
+the name of a function to highlight.
+
+If it is a @verb{~:line~}, then the next two parameters, @code{start} and @code{end}
+specifies the beginning or ending lines.
+
+If it is @verb{~:char~}, then @code{start} and @code{end} are exact buffer
+positions, which you can determine by evaluating (@code{M-;}) the
+following expression:
+@lisp
+(kill-new (int-to-string (point)))
+@end lisp
+
+If @code{type-or-fn} is @code{nil} and the region is active, highlight the
+region.
+
+If none of the following match, simply select the function the
+point is currently in.
+
+Note: While this function checks to see if the package is
+available and loaded, it does not actually do the loading (or the
+installing of the package), for that, you will need to do something
+like:
+
+@lisp
+(require 'fancy-narrow)
+@end lisp
+
+@node Customization
+@appendix Customization
+
+The following is a list of custom variables that can be set through
+the standard Emacs customization feature (under the @verb{~demo-it~} group).
+Note, each custom value may be overridden with a magic symbol to the
+@ref{Step Types,demo-it-create} macro or with a parameter to many functions.
+
+@menu
+* demo-it--keymap-mode-style::
+* demo-it--shell-or-eshell::
+* demo-it--open-windows::
+* demo-it--open-windows-size::
+* demo-it--text-scale::
+* demo-it--start-fullscreen::
+* demo-it--start-single-window::
+* demo-it--presentation-hide-mode-line::
+* demo-it--presentation-hide-org-markers::
+* demo-it--presentation-variable-width::
+* demo-it--presentation-hide-org-blocks::
+* demo-it--insert-text-speed::
+@end menu
+
+@node demo-it--keymap-mode-style
+@unnumberedsec demo-it--keymap-mode-style
+
+@pindex demo-it--keymap-mode-style
+@cindex demo-it--keymap-mode-style
+
+The keymap-specific minor mode to use when a demonstration
+starts. Should either be set to the symbol, @verb{~:simple-mode~} for using
+the space to advance to next step and @code{q} to exit the demonstration,
+or @verb{~:advanced-mode~}, where @code{F12} advances.
+
+Defaults to @verb{~:simple-mode~}
+
+This setting can be overridden by a keyword to @verb{~demo-it-create~}:
+@itemize
+@item
+@verb{~:simple-mode~}
+@item
+@verb{~:advanced-mode~}
+@end itemize
+
+@node demo-it--shell-or-eshell
+@unnumberedsec demo-it--shell-or-eshell
+
+@pindex demo-it--shell-or-eshell
+@cindex demo-it--shell-or-eshell
+
+When opening up a shell, this customization value specifies whether
+it should run the @verb{~shell~} or @verb{~eshell~} command.
+
+Should be set to one of the following keywords:
+@itemize
+@item
+@verb{~:shell~}
+@item
+@verb{~:eshell~}
+@end itemize
+
+Defaults to @verb{~:eshell~}
+
+This setting can be overridden by the following keywords to
+@verb{~demo-it-create~} macro:
+@itemize
+@item
+@verb{~:use-eshell~}
+@item
+@verb{~:use-shell~}
+@end itemize
+
+@node demo-it--open-windows
+@unnumberedsec demo-it--open-windows
+
+@pindex demo-it--open-windows
+@cindex demo-it--open-windows
+
+When opening side windows, split the frame on a particular side.
+Should be set to one of the following keywords:
+
+@itemize
+@item
+@verb{~:above~}
+@item
+@verb{~:below~}
+@item
+@verb{~:left~}
+@item
+@verb{~:right~}
+@end itemize
+
+The keyword, @verb{~:side~} is a synonym for @verb{~:right~}.
+
+Defaults to @verb{~:right~}
+
+This setting can be overridden by one of the following keywords
+passed to @verb{~demo-it-create~}:
+@itemize
+@item
+@verb{~:windows-on-side~}
+@item
+@verb{~:windows-on-right~}
+@item
+@verb{~:windows-on-left~}
+@item
+@verb{~:windows-below~}
+@item
+@verb{~:windows-above~}
+@end itemize
+
+@node demo-it--open-windows-size
+@unnumberedsec demo-it--open-windows-size
+
+@pindex demo-it--open-windows-size
+@cindex demo-it--open-windows-size
+
+The size of side windows to open. This is the width if the window
+is opened on one of the sides (@verb{~:left~} or @verb{~:right~}), or the height
+if the window is opened @verb{~:above~} or @verb{~:below~}.
+
+Defaults to @verb{~80~}
+
+@node demo-it--text-scale
+@unnumberedsec demo-it--text-scale
+
+@pindex demo-it--text-scale
+@cindex demo-it--text-scale
+
+Sets the default text scale when opening files in side windows (see
+@ref{demo-it--open-windows,demo-it--open-windows}).  While this can be set to an integer, it
+can also be set to one of the following keywords:
+@itemize
+@item
+@verb{~:small~}, set to a text scale of -1
+@item
+@verb{~:normal~}, set to a text scale of 0
+@item
+@verb{~:medium~}, set to a text scale of 1
+@item
+@verb{~:large~}, set to a text scale of 2
+@item
+@verb{~:x-large~}, set to a text scale of 3
+@item
+@verb{~:xx-large~}, set to a text scale of 4
+@item
+@verb{~:huge~}, set to a text scale of 5
+@end itemize
+
+It defaults to @verb{~:large~} (a @verb{~text-scale-set~} value of @verb{~2~}).
+
+This customization value can be overridden with one of the
+following keywords passed to @verb{~demo-it-create~}:
+@itemize
+@item
+@verb{~:text-small~}
+@item
+@verb{~:text-normal~}
+@item
+@verb{~:text-medium~}
+@item
+@verb{~:text-large~}
+@item
+@verb{~:text-x-large~}
+@item
+@verb{~:text-xx-large~}
+@item
+@verb{~:text-huge~}
+@end itemize
+
+@node demo-it--start-fullscreen
+@unnumberedsec demo-it--start-fullscreen
+
+@pindex demo-it--start-fullscreen
+@cindex demo-it--start-fullscreen
+
+A boolean setting that if set to a non-nil value, demonstrations
+start with the current frame in fullscreen mode. Defaults to
+@verb{~false~}.
+
+This customization value can be overridden with @verb{~:fullscreen~}
+keyword passed to @verb{~demo-it-create~}.
+
+@node demo-it--start-single-window
+@unnumberedsec demo-it--start-single-window
+
+@pindex demo-it--start-single-window
+@cindex demo-it--start-single-window
+
+A boolean setting that if non-nil, deletes other windows to start
+the demonstration with a current buffer window being the only
+displayed window. Defaults to @verb{~t~}.
+
+This customization value can be overridden with @verb{~:single-window~}
+keyword passed to @verb{~demo-it-create~}.
+
+@node demo-it--presentation-hide-mode-line
+@unnumberedsec demo-it--presentation-hide-mode-line
+
+@pindex demo-it--presentation-hide-mode-line
+@cindex demo-it--presentation-hide-mode-line
+
+If set to a nil value (@emph{false}), the mode-line is hidden for any
+presentation files (this doesn't affect other files opened with the
+@ref{demo-it-load-file,demo-it-load-file}).   Defaults to @verb{~t~}.
+
+This customization value can be overridden with either of the
+following keywords passed to @verb{~demo-it-create~}:
+@itemize
+@item
+@verb{~:show-mode-line~}
+@item
+@verb{~:hide-mode-line~}
+@end itemize
+
+@node demo-it--presentation-hide-org-markers
+@unnumberedsec demo-it--presentation-hide-org-markers
+
+@pindex demo-it--presentation-hide-org-markers
+@cindex demo-it--presentation-hide-org-markers
+
+If set to a non-nil value, surrounding asterisks, underlines and
+slashes that define an @code{org-mode} textual formats in a presentation
+are displayed. Otherwise those characters hidden, even though the
+effects of bolding and italics are still shown.  Defaults to @verb{~t~}.
+
+This customization value can be overridden with either of the
+following keywords passed to @verb{~demo-it-create~}:
+@itemize
+@item
+@verb{~:show-org-markers~}
+@item
+@verb{~:hide-org-markers~}
+@end itemize
+
+@node demo-it--presentation-variable-width
+@unnumberedsec demo-it--presentation-variable-width
+
+@pindex demo-it--presentation-variable-width
+@cindex demo-it--presentation-variable-width
+
+If set to a non-nil value, a @emph{variable-width} font is used when
+displaying @code{org-mode} presentation files, otherwise the standard
+fixed-width font is used. Defaults to @verb{~nil~}.
+
+This customization value can be overridden with either of the
+following keywords passed to @verb{~demo-it-create~}:
+@itemize
+@item
+@verb{~:variable-width~}
+@item
+@verb{~:fixed-width~}
+@end itemize
+
+@node demo-it--presentation-hide-org-blocks
+@unnumberedsec demo-it--presentation-hide-org-blocks
+
+@pindex demo-it--presentation-hide-org-blocks
+@cindex demo-it--presentation-hide-org-blocks
+
+If set to a non-nil value, the start and ending lines of @code{org-mode}
+blocks are shown during a presentation, otherwise these lines are
+hidden, but the contents within the blocks are still shown.
+
+This currently only hides these lines:
+@verbatim
+#+BEGIN_SRC
+   ...
+#+END_SRC
+@end verbatim
+
+Other surrounding header values, like @verb{~#+HEADERS:~} may still be seen.
+
+This defaults to @verb{~t~}, however, this customization value can be
+overridden with either of the following keywords passed to
+@verb{~demo-it-create~}:
+@itemize
+@item
+@verb{~:show-block-headers~}
+@item
+@verb{~:hide-block-headers~}
+@end itemize
+
+@node demo-it--insert-text-speed
+@unnumberedsec demo-it--insert-text-speed
+
+@pindex demo-it--insert-text-speed
+@cindex demo-it--insert-text-speed
+
+The functions, @ref{demo-it-run-in-shell,demo-it-run-in-shell}, @ref{demo-it-start-shell,demo-it-start-shell},
+and @ref{Inserting Text,demo-it-insert}, enters the text into the shell as if a human
+were typing it. This value specifies the speed at which that text
+is inserted into the shell.
+
+This can set to one of the following keywords:
+@itemize
+@item
+@verb{~:instant~} to insert text with no delay
+@item
+@verb{~:slow~}
+@item
+@verb{~:medium~}
+@item
+@verb{~:fast~}
+@end itemize
+
+Defaults to @verb{~:medium~}.
+
+This can also specify a tuple of two integer values for the random
+number of milliseconds between those two values to delay before
+inserting each character, for instance, the @verb{~:medium~} delay has a
+lower value of 30 milliseconds, and an upper delay of 500.
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye

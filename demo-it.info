@@ -12,6 +12,10 @@ a project for running demonstrations within Emacs.
      Foundation; with no Invariant Sections, with no Front-Cover Texts,
      and with no Back-Cover Texts.  A copy of the license is included in
      the section entitled “GNU Free Documentation License”.
+INFO-DIR-SECTION Emacs
+START-INFO-DIR-ENTRY
+* Demo It: (demo-it).   Demonstrations made and shown in Emacs.
+END-INFO-DIR-ENTRY
 
 
 File: demo-it.info,  Node: Top,  Next: Basics,  Up: (dir)
@@ -235,38 +239,71 @@ Demonstration Options
 The following list of keywords can be passed to demo-it-create to
 override various *note Customization: Customization. settings:
 
-   • :simple-mode turn on mode where space advances demonstration
-   • :advance-mode turn on mode where ‘F12’ advances demonstration
-   • :use-eshell
-   • :use-shell
-   • :eshell
-   • :shell
-   • :windows-on-side
-   • :windows-on-right
-   • :windows-on-left
-   • :windows-below
-   • :windows-above
-   • :fullscreen
-   • :single-window
-   • :text-small
-   • :text-normal
-   • :text-medium
-   • :text-large
-   • :text-x-large
-   • :text-xx-large
-   • :text-huge
-   • :insert-quickly
-   • :insert-fast
-   • :insert-medium
-   • :insert-slow
-   • :show-mode-line
-   • :hide-mode-line
-   • :show-org-markers
-   • :hide-org-markers
-   • :variable-width
-   • :fixed-width
-   • :show-block-headers
-   • :hide-block-headers
+   • :simple-mode uses mode where space advances demonstration.
+   • :advance-mode uses mode where ‘F12’ advances demonstration.
+   • :use-shell chooses a standard shell command line interface when
+     running the *note demo-it-start-shell: demo-it-start-shell.
+     command.
+   • :use-shell chooses to use the built-in Emacs shell, which Emacs
+     uses find more comfortable when subjected to Windows systems.
+   • :eshell is an alias for :use-eshell.
+   • :shell is an alias for :user-shell.
+   • :windows-on-right defaults to opening auxiliary windows on the
+     right side of the frame (see *note demo-it-load-file: Showing
+     Files. and other helper functions for examples).
+   • :windows-on-side is an alias for :windows-on-right.
+   • :windows-on-left like the above, but defaults to the _left_ side of
+     the frame.
+   • :windows-below opens other windows at the bottom of the current
+     frame.
+   • :windows-above opens other windows at the top of the current frame.
+   • :fullscreen starts the demonstration with the current frame in
+     fullscreen mode.
+   • :single-window deletes other windows when started, and restores
+     those windows when the demonstration completes.
+   • :text-small starts presentations and other files in a slightly
+     smaller font that the current default.  Yeah, it seems like a nice
+     idea to offer it, but I wonder if that is really helpful as a
+     default for a demonstration.
+   • :text-normal starts presentations and other loaded files in the
+     default font and size.
+   • :text-medium starts presentations and other loaded files in a
+     slight larger font size (technically scaled at 1).
+   • :text-large scales presentations and other loaded files at 2.
+   • :text-x-large scales loaded files at 3.
+   • :text-xx-large scales loaded files at 4 … go figure.
+   • :text-huge scales newly loaded files at 5.  Got a big monitor or
+     very few words, I see.
+   • :insert-slow shell commands (and other calls to *note
+     demo-it-insert: Inserting Text. function) are inserted character by
+     character as if a hacker who never took a typing class in middle
+     school was typing the text.
+   • :insert-medium shell commands and other text are inserted as if a
+     medium-grade nerd with sufficient typing skills entered them.
+   • :insert-fast shell commands are entered like a typist, but to an
+     audience with the attention span of a gerbil.
+   • :insert-quickly shell commands are instantly entered, and the
+     audience is spared the gimmickry of yet-another Emacs feature.
+   • :show-mode-line leaves the mode-line alone for presentations and
+     files loaded by the demonstration package.
+   • :hide-mode-line hides the mode line so neckbeards pay attention to
+     your demonstration and quit straining to see what minor modes you
+     prefer.  Still using paredit, I see.
+   • :hide-org-markers hides the asterisks, slashes, and other markup
+     characters that format text, but still shows the text in bold and
+     italics.
+   • :show-org-markers displays org-mode presentations as you wrote it.
+   • :variable-width uses a variable width font for presentations
+     because we want to make the vi users cry.
+   • :fixed-width displays org-mode presentations with your default
+     monospaced font for ultra nerd cred.  You may need this feature if
+     source code in your presentation.
+   • :show-block-headers Should the #+begin and #+end markers be shown?
+     If you are trying to talk about _literate devops_ then, the answer
+     is yes, show them the way you see them.
+   • :hide-block-headers Hides the #+begin and #+end markers, but shows
+     the glorious source code inside.  Currently, also shows the
+     surrounding #+HEADER entries, so beware.
 
 
 File: demo-it.info,  Node: Running the Demo,  Next: Demo Modes,  Prev: Demonstration Options,  Up: Basics
@@ -1155,32 +1192,73 @@ Index
  [index ]
 * Menu:
 
-* ‘demo-it-create’:                      Step Types.            (line 6)
+* demo-it--insert-text-speed:            demo-it--insert-text-speed.
+                                                                (line 6)
+* demo-it--keymap-mode-style:            demo-it--keymap-mode-style.
+                                                                (line 6)
+* demo-it--open-windows:                 demo-it--open-windows. (line 6)
+* demo-it--open-windows-size:            demo-it--open-windows-size.
+                                                                (line 6)
+* demo-it--presentation-hide-mode-line:  demo-it--presentation-hide-mode-line.
+                                                                (line 6)
+* demo-it--presentation-hide-org-blocks: demo-it--presentation-hide-org-blocks.
+                                                                (line 6)
+* demo-it--presentation-hide-org-markers: demo-it--presentation-hide-org-markers.
+                                                                (line 6)
+* demo-it--presentation-variable-width:  demo-it--presentation-variable-width.
+                                                                (line 6)
+* demo-it--shell-or-eshell:              demo-it--shell-or-eshell.
+                                                                (line 6)
+* demo-it--start-fullscreen:             demo-it--start-fullscreen.
+                                                                (line 6)
+* demo-it--start-single-window:          demo-it--start-single-window.
+                                                                (line 6)
+* demo-it--text-scale:                   demo-it--text-scale.   (line 6)
+* demo-it-compare-files:                 demo-it-compare-files. (line 6)
+* demo-it-compare-files <1>:             demo-it-compare-files. (line 6)
+* demo-it-create:                        Step Types.            (line 6)
+* demo-it-create <1>:                    Step Types.            (line 6)
 * demo-it-end:                           demo-it-end.           (line 6)
+* demo-it-end <1>:                       demo-it-end.           (line 6)
 * demo-it-hide-mode-line:                demo-it-hide-mode-line.
+                                                                (line 6)
+* demo-it-hide-mode-line <1>:            demo-it-hide-mode-line.
                                                                 (line 6)
 * demo-it-highlight-dwim:                demo-it-highlight-dwim.
                                                                 (line 6)
+* demo-it-highlight-dwim <1>:            demo-it-highlight-dwim.
+                                                                (line 6)
+* demo-it-how-mode-line:                 demo-it-show-mode-line.
+                                                                (line 6)
 * demo-it-insert:                        Inserting Text.        (line 6)
+* demo-it-insert <1>:                    Inserting Text.        (line 6)
 * demo-it–insert-text-speed:             demo-it--insert-text-speed.
                                                                 (line 6)
 * demo-it–keymap-mode-style:             demo-it--keymap-mode-style.
                                                                 (line 6)
 * demo-it-load-fancy-file:               demo-it-load-fancy-file.
                                                                 (line 6)
+* demo-it-load-fancy-file <1>:           demo-it-load-fancy-file.
+                                                                (line 6)
 * demo-it-load-file:                     demo-it-load-file.     (line 6)
-* demo-it-load-file <1>:                 demo-it-show-image.    (line 6)
-* demo-it-load-file <2>:                 demo-it-compare-files. (line 6)
+* demo-it-load-file <1>:                 demo-it-load-file.     (line 6)
 * demo-it-load-part-file:                demo-it-load-part-file.
+                                                                (line 6)
+* demo-it-load-part-file <1>:            demo-it-load-part-file.
                                                                 (line 6)
 * demo-it-message-keybinding:            demo-it-message-keybinding.
                                                                 (line 6)
+* demo-it-message-keybinding <1>:        demo-it-message-keybinding.
+                                                                (line 6)
 * demo-it-mode:                          demo-it-mode.          (line 6)
+* demo-it-mode <1>:                      demo-it-mode.          (line 6)
 * demo-it-mode-adv:                      demo-it-mode-adv.      (line 6)
+* demo-it-mode-adv <1>:                  demo-it-mode-adv.      (line 6)
 * demo-it–open-windows:                  demo-it--open-windows. (line 6)
 * demo-it–open-windows-size:             demo-it--open-windows-size.
                                                                 (line 6)
 * demo-it-presentation:                  demo-it-presentation.  (line 6)
+* demo-it-presentation <1>:              demo-it-presentation.  (line 6)
 * demo-it–presentation-hide-mode-line:   demo-it--presentation-hide-mode-line.
                                                                 (line 6)
 * demo-it–presentation-hide-org-blocks:  demo-it--presentation-hide-org-blocks.
@@ -1189,88 +1267,108 @@ Index
                                                                 (line 6)
 * demo-it-presentation-highlight-phrase: demo-it-presentation-highlight-phrase.
                                                                 (line 6)
+* demo-it-presentation-highlight-phrase <1>: demo-it-presentation-highlight-phrase.
+                                                                (line 6)
 * demo-it-presentation-quit:             demo-it-presentation-quit.
+                                                                (line 6)
+* demo-it-presentation-quit <1>:         demo-it-presentation-quit.
                                                                 (line 6)
 * demo-it-presentation-return:           demo-it-presentation-return.
                                                                 (line 6)
+* demo-it-presentation-return <1>:       demo-it-presentation-return.
+                                                                (line 6)
 * demo-it-presentation-return-noadvance: demo-it-presentation-return-noadvance.
+                                                                (line 6)
+* demo-it-presentation-return-noadvance <1>: demo-it-presentation-return-noadvance.
                                                                 (line 6)
 * demo-it–presentation-variable-width:   demo-it--presentation-variable-width.
                                                                 (line 6)
 * demo-it-restep:                        demo-it-restep.        (line 6)
+* demo-it-restep <1>:                    demo-it-restep.        (line 6)
 * demo-it-run-in-shell:                  demo-it-run-in-shell.  (line 6)
+* demo-it-run-in-shell <1>:              demo-it-run-in-shell.  (line 6)
 * demo-it–shell-or-eshell:               demo-it--shell-or-eshell.
                                                                 (line 6)
+* demo-it-show-image:                    demo-it-show-image.    (line 6)
+* demo-it-show-image <1>:                demo-it-show-image.    (line 6)
 * demo-it-show-mode-line:                demo-it-show-mode-line.
                                                                 (line 6)
 * demo-it-show-shell:                    demo-it-show-shell.    (line 6)
+* demo-it-show-shell <1>:                demo-it-show-shell.    (line 6)
 * demo-it-show-step:                     demo-it-show-step.     (line 6)
+* demo-it-show-step <1>:                 demo-it-show-step.     (line 6)
 * demo-it-single-presentation:           demo-it-single-presentation.
                                                                 (line 6)
+* demo-it-single-presentation <1>:       demo-it-single-presentation.
+                                                                (line 6)
 * demo-it-start:                         Running the Demo.      (line 6)
+* demo-it-start <1>:                     Running the Demo.      (line 6)
 * demo-it–start-fullscreen:              demo-it--start-fullscreen.
                                                                 (line 6)
 * demo-it-start-shell:                   demo-it-start-shell.   (line 6)
+* demo-it-start-shell <1>:               demo-it-start-shell.   (line 6)
 * demo-it–start-single-window:           demo-it--start-single-window.
                                                                 (line 6)
 * demo-it-step:                          demo-it-step.          (line 6)
+* demo-it-step <1>:                      demo-it-step.          (line 6)
 * demo-it–text-scale:                    demo-it--text-scale.   (line 6)
 * demo-it-title-screen:                  demo-it-title-screen.  (line 6)
+* demo-it-title-screen <1>:              demo-it-title-screen.  (line 6)
 
 
 
 Tag Table:
-Node: Top650
-Node: Basics2767
-Node: Simple Example4202
-Node: Step Types5326
-Node: Demonstration Options6388
-Node: Running the Demo7455
-Node: Demo Modes8081
-Node: demo-it-mode8923
-Node: demo-it-mode-adv9493
-Node: Showing Presentations9981
-Node: demo-it-presentation10713
-Node: demo-it-presentation-quit11858
-Node: demo-it-presentation-return12122
-Node: demo-it-presentation-return-noadvance12474
-Node: demo-it-presentation-highlight-phrase12984
-Node: demo-it-single-presentation13728
-Node: Showing Files14807
-Node: demo-it-load-file16155
-Node: demo-it-load-part-file16835
-Node: demo-it-load-fancy-file17528
-Node: demo-it-show-image18836
-Node: demo-it-compare-files19199
-Node: Running Commands19626
-Node: demo-it-start-shell20719
-Node: demo-it-run-in-shell21342
-Node: demo-it-show-shell21881
-Node: Inserting Text22271
-Node: Extra Functions23892
-Node: demo-it-end24371
-Node: demo-it-step24752
-Node: demo-it-restep25541
-Node: demo-it-show-step25948
-Node: demo-it-hide-mode-line26541
-Node: demo-it-show-mode-line26950
-Node: demo-it-title-screen27273
-Node: demo-it-message-keybinding27887
-Node: demo-it-highlight-dwim29346
-Node: Customization30607
-Node: demo-it--keymap-mode-style31448
-Node: demo-it--shell-or-eshell31996
-Node: demo-it--open-windows32527
-Node: demo-it--open-windows-size33165
-Node: demo-it--text-scale33547
-Node: demo-it--start-fullscreen34533
-Node: demo-it--start-single-window34960
-Node: demo-it--presentation-hide-mode-line35441
-Node: demo-it--presentation-hide-org-markers36042
-Node: demo-it--presentation-variable-width36730
-Node: demo-it--presentation-hide-org-blocks37317
-Node: demo-it--insert-text-speed38099
-Node: Index38993
+Node: Top777
+Node: Basics2894
+Node: Simple Example4329
+Node: Step Types5453
+Node: Demonstration Options6515
+Node: Running the Demo10619
+Node: Demo Modes11245
+Node: demo-it-mode12087
+Node: demo-it-mode-adv12657
+Node: Showing Presentations13145
+Node: demo-it-presentation13877
+Node: demo-it-presentation-quit15022
+Node: demo-it-presentation-return15286
+Node: demo-it-presentation-return-noadvance15638
+Node: demo-it-presentation-highlight-phrase16148
+Node: demo-it-single-presentation16892
+Node: Showing Files17971
+Node: demo-it-load-file19319
+Node: demo-it-load-part-file19999
+Node: demo-it-load-fancy-file20692
+Node: demo-it-show-image22000
+Node: demo-it-compare-files22363
+Node: Running Commands22790
+Node: demo-it-start-shell23883
+Node: demo-it-run-in-shell24506
+Node: demo-it-show-shell25045
+Node: Inserting Text25435
+Node: Extra Functions27056
+Node: demo-it-end27535
+Node: demo-it-step27916
+Node: demo-it-restep28705
+Node: demo-it-show-step29112
+Node: demo-it-hide-mode-line29705
+Node: demo-it-show-mode-line30114
+Node: demo-it-title-screen30437
+Node: demo-it-message-keybinding31051
+Node: demo-it-highlight-dwim32510
+Node: Customization33771
+Node: demo-it--keymap-mode-style34612
+Node: demo-it--shell-or-eshell35160
+Node: demo-it--open-windows35691
+Node: demo-it--open-windows-size36329
+Node: demo-it--text-scale36711
+Node: demo-it--start-fullscreen37697
+Node: demo-it--start-single-window38124
+Node: demo-it--presentation-hide-mode-line38605
+Node: demo-it--presentation-hide-org-markers39206
+Node: demo-it--presentation-variable-width39894
+Node: demo-it--presentation-hide-org-blocks40481
+Node: demo-it--insert-text-speed41263
+Node: Index42157
 
 End Tag Table
 
