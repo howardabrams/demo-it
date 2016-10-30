@@ -467,14 +467,17 @@ on the value of SIDE).  The SIZE specifies the text scaling of
 both buffers."
   (if (null side)
       (setq side demo-it--open-windows))
+  (if (null size)
+      (setq size demo-it--text-scale))
 
-  (if (or (eq side 'below) (eq side :below))
-      (progn
-        (demo-it-load-file file1 :below size)
-        (demo-it-load-file file2 :side size))
-    (progn
-      (demo-it-load-file file1 :side size)
-      (demo-it-load-file file2 :below size))))
+  (cl-flet ((open-other-window (file side size)
+               (if (or (eq side 'below) (eq side :below))
+                   (split-window-horizontally)
+                 (split-window-below))
+               (find-file file)
+               (text-scale-set (demo-it--get-text-scale size))))
+    (demo-it-load-file file2 side size)
+    (open-other-window file1 side size)))
 
 ;; ----------------------------------------------------------------------
 ;; SHELL WORK
