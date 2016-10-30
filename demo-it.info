@@ -695,7 +695,7 @@ demo-it-run-in-shell
 
 Run shell command in a shell previously started with *note
 demo-it-start-shell: demo-it-start-shell.  If a ‘name’ is not specified,
-it defaults to ‘Shell’.
+it defaults to name, ‘Shell’.
 
    The optional ‘speed’ parameter overrides the customization value set
 by *note demo-it–insert-text-speed: demo-it--insert-text-speed, or the
@@ -1322,32 +1322,32 @@ Node: demo-it-compare-files22363
 Node: Running Commands22790
 Node: demo-it-start-shell23883
 Node: demo-it-run-in-shell24506
-Node: demo-it-show-shell25045
-Node: Inserting Text25435
-Node: Extra Functions27056
-Node: demo-it-end27535
-Node: demo-it-step27916
-Node: demo-it-restep28705
-Node: demo-it-show-step29112
-Node: demo-it-hide-mode-line29705
-Node: demo-it-show-mode-line30114
-Node: demo-it-title-screen30437
-Node: demo-it-message-keybinding31051
-Node: demo-it-highlight-dwim32510
-Node: Customization33771
-Node: demo-it--keymap-mode-style34612
-Node: demo-it--shell-or-eshell35160
-Node: demo-it--open-windows35691
-Node: demo-it--open-windows-size36329
-Node: demo-it--text-scale36711
-Node: demo-it--start-fullscreen37697
-Node: demo-it--start-single-window38124
-Node: demo-it--presentation-hide-mode-line38605
-Node: demo-it--presentation-hide-org-markers39206
-Node: demo-it--presentation-variable-width39894
-Node: demo-it--presentation-hide-org-blocks40481
-Node: demo-it--insert-text-speed41263
-Node: Index42157
+Node: demo-it-show-shell25051
+Node: Inserting Text25441
+Node: Extra Functions27062
+Node: demo-it-end27541
+Node: demo-it-step27922
+Node: demo-it-restep28711
+Node: demo-it-show-step29118
+Node: demo-it-hide-mode-line29711
+Node: demo-it-show-mode-line30120
+Node: demo-it-title-screen30443
+Node: demo-it-message-keybinding31057
+Node: demo-it-highlight-dwim32516
+Node: Customization33777
+Node: demo-it--keymap-mode-style34618
+Node: demo-it--shell-or-eshell35166
+Node: demo-it--open-windows35697
+Node: demo-it--open-windows-size36335
+Node: demo-it--text-scale36717
+Node: demo-it--start-fullscreen37703
+Node: demo-it--start-single-window38130
+Node: demo-it--presentation-hide-mode-line38611
+Node: demo-it--presentation-hide-org-markers39212
+Node: demo-it--presentation-variable-width39900
+Node: demo-it--presentation-hide-org-blocks40487
+Node: demo-it--insert-text-speed41269
+Node: Index42163
 
 End Tag Table
 

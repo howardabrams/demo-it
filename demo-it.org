@@ -474,8 +474,9 @@
    #+PINDEX: demo-it-run-in-shell
    #+CINDEX: Typing in Shell
 
-   Run shell command in a shell previously started with [[demo-it-start-shell]].
-   If a ~name~ is not specified, it defaults to ~Shell~.
+   Run shell command in a shell previously started with
+   [[demo-it-start-shell]].  If a ~name~ is not specified, it defaults to
+   name, ~Shell~.
 
    The optional ~speed~ parameter overrides the customization value
    set by [[demo-it--insert-text-speed]], or the text-speed related
@@ -650,11 +651,10 @@
    #+CINDEX: demo-it-highlight-dwim
    #+PINDEX: Text highlighting
 
-   Can use the [[https://github.com/Malabarba/fancy-narrow][fancy-narrow]]
-   package to highlight a particular /section/. If the package is not
-   available, it simply /narrows/ to that area. If called
-   interactively, this highlights the region (if active) or the
-   current function.
+   Can use the [[https://github.com/Malabarba/fancy-narrow][fancy-narrow]] package to highlight a particular
+   /section/. If the package is not available, it simply /narrows/ to that
+   area. If called interactively, this highlights the region (if
+   active) or the current function.
 
    If the first parameter, ~type-or-fn~ is a string, this specifies
    the name of a function to highlight.

@@ -771,8 +771,9 @@ The other optional parameters this function takes are
 @pindex demo-it-run-in-shell
 @cindex Typing in Shell
 
-Run shell command in a shell previously started with @ref{demo-it-start-shell,demo-it-start-shell}.
-If a @code{name} is not specified, it defaults to @code{Shell}.
+Run shell command in a shell previously started with
+@ref{demo-it-start-shell,demo-it-start-shell}.  If a @code{name} is not specified, it defaults to
+name, @code{Shell}.
 
 The optional @code{speed} parameter overrides the customization value
 set by @ref{demo-it--insert-text-speed,demo-it--insert-text-speed}, or the text-speed related
@@ -982,11 +983,10 @@ a simple symbol, like:
 @cindex demo-it-highlight-dwim
 @pindex Text highlighting
 
-Can use the @uref{https://github.com/Malabarba/fancy-narrow,fancy-narrow}
-package to highlight a particular @emph{section}. If the package is not
-available, it simply @emph{narrows} to that area. If called
-interactively, this highlights the region (if active) or the
-current function.
+Can use the @uref{https://github.com/Malabarba/fancy-narrow,fancy-narrow} package to highlight a particular
+@emph{section}. If the package is not available, it simply @emph{narrows} to that
+area. If called interactively, this highlights the region (if
+active) or the current function.
 
 If the first parameter, @code{type-or-fn} is a string, this specifies
 the name of a function to highlight.

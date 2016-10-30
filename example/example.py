@@ -2,7 +2,7 @@
 import sys
 
 
-def world(name):
+def greeting(name):
     """Prints a greeting when given the
        optional name variable."""
     if name:
@@ -12,6 +12,9 @@ def world(name):
 
 
 if __name__ == "__main__":
-    world(sys.argv[1])
+    if len(sys.argv) > 0:
+        name = sys.argv[1]
+    else:
+        name = None
 
-# Hi-lock: (("^.*\\(?:%s\\).*$" (0 (quote hi-yellow) t)))
+    greeting(name)
