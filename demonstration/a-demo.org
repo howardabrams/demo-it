@@ -1,0 +1,123 @@
+#+TITLE:  Demo-It
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2016 Oct 26
+#+TAGS:   presentation demo-it
+
+* What and Why?
+
+  We all communicate in a /demonstrable way/.
+
+  End of Sprint demonstration/retrospectives often involve
+  /showing/ what you did...
+
+  - Source code viewing
+  - Source code running
+  - High-level explanations...
+
+* Once upon a time...
+
+  A demonstration is just a /number of steps/
+
+  I do everything in Emacs, so...
+
+  I created some helper functions: [[http://github.com/howardabrams/demo-it][demo-it]]
+
+  I now /program/ my demonstrations
+
+* Example of a Demo
+
+  Each /step/ in the demo can be:
+    1. a function to call
+    2. an expression to evaluate
+    3. a key to press
+
+  #+BEGIN_EXAMPLE
+    (demo-it-create (find-file "example.rb") ; expression
+                     demo-it-start-shell     ; function
+                    (demo-it-run-in-shell "ruby example.rb")
+                     "M-p"                   ; keystroke
+                    (demo-it-insert " Everyone")
+                     "RET")
+  #+END_EXAMPLE
+
+  Start with =M-x demo-it-start=
+
+* Demo It Functions
+
+  Creating Emacs demonstrations is that simple.
+
+  Demo-It also provides many /helper functions/:
+
+** Showing Code
+
+   Usually want to show files /next/ to the presentation:
+
+   - =demo-it-load-file= :: Shows code in side window
+
+   - =demo-it-load-part-file= :: Narrows to a section
+
+   - =demo-it-load-fancy-file= :: Highlights part
+
+   - =demo-it-compare-files= :: Shows two files
+
+** Running Code
+
+   Begin a shell (or eshell) to /psuedo-interactive/ enter commands.
+
+   - =demo-it-start-shell= :: Begin a shell, optional parameters:
+     - =directory=
+     - =command= to run
+     - =name= (defaults to "Shell")
+     - =side= can be =:right= or =:below=, etc.
+     - =size= is the font size
+     - =width= is the size of window either, /width/ or /length/
+
+   - =demo-it-run-in-shell= :: Run a command
+
+   - =demo-it-show-shell= :: Switches to shell buffer
+
+** Presenting
+
+   Uses =org-tree-slide= to display an =org-mode= as a /presentation/.
+   (Each /section/ is a /screen/)
+
+   - =demo-it-presentation= :: loads a presentation and optionally goes
+        to a particular section
+
+   - =demo-it-presentation-quit= :: stops presentation but not demo
+
+   - =demo-it-presentation-return= :: closes other windows and advances
+        to next section
+
+   - =demo-it-presentation-return-noadvance= :: closes other windows,
+        but /does not/ advance to the next section
+
+   - =demo-it-presentation-highlight-phrase= :: regular expression
+        highlights some part of the presentation
+
+** Misc Functions
+
+   - =demo-it-insert= :: /types/ into a buffer
+
+   - =demo-it-highlight-dwim= :: highlights region or function
+        (actually can be interactive)
+
+   - =demo-it-show-image= :: loads file without mode-line
+
+   - =demo-it-single-presentation= :: complete demo of only
+        a presentation
+
+* Getting Started
+
+  Use =package-install= from MELPA: =demo-it=
+
+  - Customize the package
+
+  - Read the [[info:demo-it][Info File]]
+
+  - Use a [[file:~/Work/demo-it/snippets/demo-it][yasnippet template]]
+
+  - Keep it simple
+
+** Questions?
