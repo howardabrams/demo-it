@@ -84,6 +84,7 @@ Showing Presentations
 * demo-it-presentation-quit::
 * demo-it-presentation-return::
 * demo-it-presentation-return-noadvance::
+* demo-it-presentation-advance::
 * demo-it-presentation-highlight-phrase::
 * demo-it-single-presentation::
 
@@ -464,7 +465,7 @@ Why yes, while called @emph{advanced} is certainly has limited features.
 
 This project relies on other projects to do most of the heavy
 lifting for using @code{org-mode} files as the basis of a presentation,
-especially the @uref{http://asdfasdf,org-tree-slide} project, which displays each section
+especially the @uref{https://github.com/takaxp/org-tree-slide,org-tree-slide} project, which displays each section
 under a header as the sole contents of a buffer.
 
 The following functions can be added to your demonstration to
@@ -475,6 +476,7 @@ control the display of the presentation.
 * demo-it-presentation-quit::
 * demo-it-presentation-return::
 * demo-it-presentation-return-noadvance::
+* demo-it-presentation-advance::
 * demo-it-presentation-highlight-phrase::
 * demo-it-single-presentation::
 @end menu
@@ -488,7 +490,7 @@ control the display of the presentation.
 (file &optional size style section)
 
 Loads the given @code{org-mode} file as a presentation.  This
-automatically calls @code{org-tree-slide} if available.
+automatically calls @uref{https://github.com/takaxp/org-tree-slide,org-tree-slide} if available.
 
 This function takes an optional @code{size} parameter to specifies the
 text scale. If @code{nil}, this defaults to the value set in
@@ -534,6 +536,52 @@ specified presentation becomes the current buffer and all other
 windows are deleted.
 
 However, the presentation is not advanced to the next section.
+
+@node demo-it-presentation-advance
+@unnumberedsec demo-it-presentation-advance
+
+@pindex demo-it-presentation-advance
+
+Advances the currently running presentation to the next section,
+but doesn't change focus to the window. Any further commands happen
+in the current window.
+
+This function is useful if a presentation discusses multiple
+commands, then you can advance through them while other commands
+actually perform the action (like executing commands in a shell).
+
+As an example, the following demonstration will @emph{live-code} while the
+presentation discusses each part:
+
+@lisp
+(demo-it-create (demo-it-presentation "elisp-cookbook.org")
+                (demo-it-load-file "elisp-example.el")
+
+                ; Advance to next section that talks about defun:
+                 demo-it-presentation-advance
+
+                ; Start coding an Emacs Lisp function:
+                (demo-it-insert "def")       ; Begin yasnippet template
+                "TAB"                        ; Trigger yasnippet
+                (demo-it-insert "some-func") ; The function name
+                "TAB"                        ; Advance to parameters
+                (demo-it-insert "x y")       ; parameters
+                "TAB"                        ; Advance to parameters
+                (demo-it-insert "Example function.")
+                "TAB"                        ; Advance to interactive
+                (demo-it-insert " ")         ; No need for this section
+                "TAB"                        ; Advance to function body
+
+                ; Advance to next section to talk about if statements
+                 demo-it-presentation-advance
+
+                (demo-it-insert "if")        ; Begin next template
+                "TAB"                        ; Trigger yasnippet
+                (demo-it-insert "(eq x y)")  ; predicate expression
+                "TAB"                        ; Advance to if body
+
+                 ) ;; etc.
+@end lisp
 
 @node demo-it-presentation-highlight-phrase
 @unnumberedsec demo-it-presentation-highlight-phrase

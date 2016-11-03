@@ -71,6 +71,7 @@ Showing Presentations
 * demo-it-presentation-quit::
 * demo-it-presentation-return::
 * demo-it-presentation-return-noadvance::
+* demo-it-presentation-advance::
 * demo-it-presentation-highlight-phrase::
 * demo-it-single-presentation::
 
@@ -388,8 +389,9 @@ Showing Presentations
 
 This project relies on other projects to do most of the heavy lifting
 for using ‘org-mode’ files as the basis of a presentation, especially
-the org-tree-slide (http://asdfasdf) project, which displays each
-section under a header as the sole contents of a buffer.
+the org-tree-slide (https://github.com/takaxp/org-tree-slide) project,
+which displays each section under a header as the sole contents of a
+buffer.
 
    The following functions can be added to your demonstration to control
 the display of the presentation.
@@ -400,6 +402,7 @@ the display of the presentation.
 * demo-it-presentation-quit::
 * demo-it-presentation-return::
 * demo-it-presentation-return-noadvance::
+* demo-it-presentation-advance::
 * demo-it-presentation-highlight-phrase::
 * demo-it-single-presentation::
 
@@ -412,7 +415,8 @@ demo-it-presentation
 (file &optional size style section)
 
    Loads the given ‘org-mode’ file as a presentation.  This
-automatically calls ‘org-tree-slide’ if available.
+automatically calls org-tree-slide
+(https://github.com/takaxp/org-tree-slide) if available.
 
    This function takes an optional ‘size’ parameter to specifies the
 text scale.  If ‘nil’, this defaults to the value set in *note
@@ -449,7 +453,7 @@ Makes the last running presentation the current buffer, deletes other
 windows, and advances to the next ‘org-mode’ section.
 
 
-File: demo-it.info,  Node: demo-it-presentation-return-noadvance,  Next: demo-it-presentation-highlight-phrase,  Prev: demo-it-presentation-return,  Up: Showing Presentations
+File: demo-it.info,  Node: demo-it-presentation-return-noadvance,  Next: demo-it-presentation-advance,  Prev: demo-it-presentation-return,  Up: Showing Presentations
 
 demo-it-presentation-return-noadvance
 =====================================
@@ -461,7 +465,52 @@ becomes the current buffer and all other windows are deleted.
    However, the presentation is not advanced to the next section.
 
 
-File: demo-it.info,  Node: demo-it-presentation-highlight-phrase,  Next: demo-it-single-presentation,  Prev: demo-it-presentation-return-noadvance,  Up: Showing Presentations
+File: demo-it.info,  Node: demo-it-presentation-advance,  Next: demo-it-presentation-highlight-phrase,  Prev: demo-it-presentation-return-noadvance,  Up: Showing Presentations
+
+demo-it-presentation-advance
+============================
+
+Advances the currently running presentation to the next section, but
+doesn’t change focus to the window.  Any further commands happen in the
+current window.
+
+   This function is useful if a presentation discusses multiple
+commands, then you can advance through them while other commands
+actually perform the action (like executing commands in a shell).
+
+   As an example, the following demonstration will _live-code_ while the
+presentation discusses each part:
+
+     (demo-it-create (demo-it-presentation "elisp-cookbook.org")
+                     (demo-it-load-file "elisp-example.el")
+
+                     ; Advance to next section that talks about defun:
+                      demo-it-presentation-advance
+
+                     ; Start coding an Emacs Lisp function:
+                     (demo-it-insert "def")       ; Begin yasnippet template
+                     "TAB"                        ; Trigger yasnippet
+                     (demo-it-insert "some-func") ; The function name
+                     "TAB"                        ; Advance to parameters
+                     (demo-it-insert "x y")       ; parameters
+                     "TAB"                        ; Advance to parameters
+                     (demo-it-insert "Example function.")
+                     "TAB"                        ; Advance to interactive
+                     (demo-it-insert " ")         ; No need for this section
+                     "TAB"                        ; Advance to function body
+
+                     ; Advance to next section to talk about if statements
+                      demo-it-presentation-advance
+
+                     (demo-it-insert "if")        ; Begin next template
+                     "TAB"                        ; Trigger yasnippet
+                     (demo-it-insert "(eq x y)")  ; predicate expression
+                     "TAB"                        ; Advance to if body
+
+                      ) ;; etc.
+
+
+File: demo-it.info,  Node: demo-it-presentation-highlight-phrase,  Next: demo-it-single-presentation,  Prev: demo-it-presentation-advance,  Up: Showing Presentations
 
 demo-it-presentation-highlight-phrase
 =====================================
@@ -1241,6 +1290,8 @@ well-done.
 * demo-it-mode:                          demo-it-mode.          (line 6)
 * demo-it-mode-adv:                      demo-it-mode-adv.      (line 6)
 * demo-it-presentation:                  demo-it-presentation.  (line 6)
+* demo-it-presentation-advance:          demo-it-presentation-advance.
+                                                                (line 6)
 * demo-it-presentation-highlight-phrase: demo-it-presentation-highlight-phrase.
                                                                 (line 6)
 * demo-it-presentation-quit:             demo-it-presentation-quit.
@@ -1298,56 +1349,57 @@ well-done.
 
 Tag Table:
 Node: Top777
-Node: Basics2894
-Node: Simple Example4329
-Node: Step Types5453
-Node: Demonstration Options6515
-Node: Running the Demo10619
-Node: Demo Modes11245
-Node: demo-it-mode12087
-Node: demo-it-mode-adv12657
-Node: Showing Presentations13145
-Node: demo-it-presentation13877
-Node: demo-it-presentation-quit15022
-Node: demo-it-presentation-return15286
-Node: demo-it-presentation-return-noadvance15638
-Node: demo-it-presentation-highlight-phrase16148
-Node: demo-it-single-presentation16892
-Node: Showing Files17971
-Node: demo-it-load-file19319
-Node: demo-it-load-part-file19999
-Node: demo-it-load-fancy-file20692
-Node: demo-it-show-image22000
-Node: demo-it-compare-files22363
-Node: Running Commands22790
-Node: demo-it-start-shell23883
-Node: demo-it-run-in-shell24506
-Node: demo-it-show-shell25051
-Node: Inserting Text25441
-Node: Extra Functions27062
-Node: demo-it-end27541
-Node: demo-it-step27922
-Node: demo-it-restep28711
-Node: demo-it-show-step29118
-Node: demo-it-hide-mode-line29711
-Node: demo-it-show-mode-line30120
-Node: demo-it-title-screen30443
-Node: demo-it-message-keybinding31057
-Node: demo-it-highlight-dwim32516
-Node: Customization33777
-Node: demo-it--keymap-mode-style34618
-Node: demo-it--shell-or-eshell35166
-Node: demo-it--open-windows35697
-Node: demo-it--open-windows-size36335
-Node: demo-it--text-scale36717
-Node: demo-it--start-fullscreen37703
-Node: demo-it--start-single-window38130
-Node: demo-it--presentation-hide-mode-line38611
-Node: demo-it--presentation-hide-org-markers39212
-Node: demo-it--presentation-variable-width39900
-Node: demo-it--presentation-hide-org-blocks40487
-Node: demo-it--insert-text-speed41269
-Node: Index42163
+Node: Basics2927
+Node: Simple Example4362
+Node: Step Types5486
+Node: Demonstration Options6548
+Node: Running the Demo10652
+Node: Demo Modes11278
+Node: demo-it-mode12120
+Node: demo-it-mode-adv12690
+Node: Showing Presentations13178
+Node: demo-it-presentation13968
+Node: demo-it-presentation-quit15150
+Node: demo-it-presentation-return15414
+Node: demo-it-presentation-return-noadvance15766
+Node: demo-it-presentation-advance16267
+Node: demo-it-presentation-highlight-phrase18441
+Node: demo-it-single-presentation19176
+Node: Showing Files20255
+Node: demo-it-load-file21603
+Node: demo-it-load-part-file22283
+Node: demo-it-load-fancy-file22976
+Node: demo-it-show-image24284
+Node: demo-it-compare-files24647
+Node: Running Commands25074
+Node: demo-it-start-shell26167
+Node: demo-it-run-in-shell26790
+Node: demo-it-show-shell27335
+Node: Inserting Text27725
+Node: Extra Functions29346
+Node: demo-it-end29825
+Node: demo-it-step30206
+Node: demo-it-restep30995
+Node: demo-it-show-step31402
+Node: demo-it-hide-mode-line31995
+Node: demo-it-show-mode-line32404
+Node: demo-it-title-screen32727
+Node: demo-it-message-keybinding33341
+Node: demo-it-highlight-dwim34800
+Node: Customization36061
+Node: demo-it--keymap-mode-style36902
+Node: demo-it--shell-or-eshell37450
+Node: demo-it--open-windows37981
+Node: demo-it--open-windows-size38619
+Node: demo-it--text-scale39001
+Node: demo-it--start-fullscreen39987
+Node: demo-it--start-single-window40414
+Node: demo-it--presentation-hide-mode-line40895
+Node: demo-it--presentation-hide-org-markers41496
+Node: demo-it--presentation-variable-width42184
+Node: demo-it--presentation-hide-org-blocks42771
+Node: demo-it--insert-text-speed43553
+Node: Index44447
 
 End Tag Table
 
