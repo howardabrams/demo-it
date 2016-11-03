@@ -236,7 +236,7 @@
 
   This project relies on other projects to do most of the heavy
   lifting for using ~org-mode~ files as the basis of a presentation,
-  especially the [[http://asdfasdf][org-tree-slide]] project, which displays each section
+  especially the [[https://github.com/takaxp/org-tree-slide][org-tree-slide]] project, which displays each section
   under a header as the sole contents of a buffer.
 
   The following functions can be added to your demonstration to
@@ -249,7 +249,7 @@
    (file &optional size style section)
 
    Loads the given ~org-mode~ file as a presentation.  This
-   automatically calls ~org-tree-slide~ if available.
+   automatically calls [[https://github.com/takaxp/org-tree-slide][org-tree-slide]] if available.
 
    This function takes an optional ~size~ parameter to specifies the
    text scale. If ~nil~, this defaults to the value set in
