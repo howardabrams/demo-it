@@ -80,7 +80,7 @@
 ** Presenting
 
    Uses =org-tree-slide= to display an =org-mode= as a /presentation/.
-   (Each /section/ is a /screen/)
+                                  (Each /section/ is a /screen/)
 
    - =demo-it-presentation= :: loads a presentation and optionally goes
         to a particular section
@@ -92,6 +92,8 @@
 
    - =demo-it-presentation-return-noadvance= :: closes other windows,
         but /does not/ advance to the next section
+
+   - =demo-it-presentation-advance= ::  goes to next section
 
    - =demo-it-presentation-highlight-phrase= :: regular expression
         highlights some part of the presentation
