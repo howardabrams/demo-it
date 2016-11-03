@@ -286,6 +286,50 @@
 
    However, the presentation is not advanced to the next section.
 
+** demo-it-presentation-advance
+   #+PINDEX: demo-it-presentation-advance
+
+   Advances the currently running presentation to the next section,
+   but doesn't change focus to the window. Any further commands happen
+   in the current window.
+
+   This function is useful if a presentation discusses multiple
+   commands, then you can advance through them while other commands
+   actually perform the action (like executing commands in a shell).
+
+   As an example, the following demonstration will /live-code/ while the
+   presentation discusses each part:
+
+   #+BEGIN_SRC elisp
+     (demo-it-create (demo-it-presentation "elisp-cookbook.org")
+                     (demo-it-load-file "elisp-example.el")
+
+                     ; Advance to next section that talks about defun:
+                      demo-it-presentation-advance
+
+                     ; Start coding an Emacs Lisp function:
+                     (demo-it-insert "def")       ; Begin yasnippet template
+                     "TAB"                        ; Trigger yasnippet
+                     (demo-it-insert "some-func") ; The function name
+                     "TAB"                        ; Advance to parameters
+                     (demo-it-insert "x y")       ; parameters
+                     "TAB"                        ; Advance to parameters
+                     (demo-it-insert "Example function.")
+                     "TAB"                        ; Advance to interactive
+                     (demo-it-insert " ")         ; No need for this section
+                     "TAB"                        ; Advance to function body
+
+                     ; Advance to next section to talk about if statements
+                      demo-it-presentation-advance
+
+                     (demo-it-insert "if")        ; Begin next template
+                     "TAB"                        ; Trigger yasnippet
+                     (demo-it-insert "(eq x y)")  ; predicate expression
+                     "TAB"                        ; Advance to if body
+
+                      ) ;; etc.
+   #+END_SRC
+
 ** demo-it-presentation-highlight-phrase
    #+PINDEX: demo-it-presentation-highlight-phrase
 
