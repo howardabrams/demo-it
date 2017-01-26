@@ -1,4 +1,4 @@
-;;; DEMO-IT --- Create demonstrations
+;;; demo-it.el --- Create demonstrations
 ;;
 ;; Author: Howard Abrams <howard.abrams@gmail.com>
 ;; Copyright (C) 2014  Howard Abrams
