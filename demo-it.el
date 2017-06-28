@@ -146,6 +146,7 @@
              (define-key map (kbd   "<f12>") 'demo-it-step)
              (define-key map (kbd "s-<f12>") 'demo-it-insert-text)
              (define-key map (kbd "A-<f12>") 'demo-it-insert-text)
+             (define-key map (kbd "C-<f12>") 'demo-it-highlight-dwim)
              (define-key map (kbd "M-<f12>") 'demo-it-end)
              map))
 
@@ -414,20 +415,44 @@ If TYPE is :char or 'char, START and END refers to specific
 character positions, but if TYPE is :line or 'line, this returns
 the point positions as if START and END are line numbers."
 
-  ;; Due to the way we call this function, we need to allow start and
-  ;; end to be null, and if so, we select the entire buffer.
-  (when (or (null start) (null end))
-    (setq type :char)
-    (setq start (point-min))
-    (setq end   (point-max)))
-
-  (when (or (eq type :line) (eq type 'line))
+  (cond
+   ;; LINE ... resets the START and END positions to be character
+   ;; positions based on the line numbers given.
+   ((or (eq type :line) (eq type 'line))
     (save-excursion
       ;; Re-implementing `goto-line' for the win!
       (goto-char (point-min)) (forward-line (1- start))
       (setq start (point))
-      (goto-char (point-min)) (forward-line end)
+      (goto-char (point-min)) (end-of-line end)
       (setq end (point))))
+
+   ;; CHAR ... start and end should already be the positions. Unless
+   ;; START or END are null, in which case, we can assume we are
+   ;; looking at the end of the buffer.
+   ((or (eq type :char) (eq type 'char))
+    (when (null start)
+      (setq start (point-min)))
+    (when (null end)
+      (setq end (point-max))))
+
+   ;; REGEXP
+   ((or (eq type :regex) (eq type :regexp))
+    (save-excursion
+      (goto-char (point-min))
+      (re-search-forward start)
+      (setq start (match-beginning 0))
+      (re-search-forward end)
+      (setq end (match-end 0))))
+
+   ;; STRING
+   ((or (eq type :str) (eq type :string))
+    (save-excursion
+      (goto-char (point-min))
+      (search-forward start)
+      (setq start (match-beginning 0))
+      (search-forward end)
+      (setq end (match-end 0)))))
+
   (cons start end))
 
 (defun demo-it-load-part-file (file type start end &optional side size width)

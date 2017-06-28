@@ -53,11 +53,15 @@
   "Highlights or narrows to a particular 'section'.
 
 If TYPE-OR-FN is a string, it specifies the name of a function to
-highlight. If it is a :line, then START and END specifies the
+highlight. If it is :line, then START and END specifies the
 beginning or ending lines. If TYPE-OR-FN is :char, then START and
-END are buffer positions.
+END are buffer positions. Finally, if TYPE-OR-FN is :regex, then
+START and END are regular expressions that refers to a match in
+the buffer.
 
-If TYPE-OR-FN is `nil' and region is active, use, the region,
+If TYPE-OR-FN is `nil', (or running interactively), then if a
+section is currently highlighted/narrowed, it is
+unhighlighted/widened. If the region is active, use, the region,
 otherwise, select the function the point is currently in.
 
 If the `fancy-narrow' package is installed, we'll call
@@ -75,22 +79,35 @@ we narrow to it."
                            (fancy-narrow-to-region start end)
                          (narrow-to-region start end))
                        (if (region-active-p)
-                           (deactivate-mark))))
-    (cond
-     ;; Type is null, we assume we are interactive:
-     ((null type-or-fn) (if (region-active-p)
-                            (hi-region (region-beginning) (region-end))
-                          (hi-defun)))
+                           (deactivate-mark)))
+            (active-p ()
+                      (if (fboundp 'fancy-narrow-active-p)
+                          (fancy-narrow-active-p)
+                        (buffer-narrowed-p)))
+            (unhighlight ()
+                         (if (fboundp 'fancy-narrow-to-region)
+                             (ignore-errors
+                               (fancy-widen))
+                           (widen))))
+    (let ((should-highlight (not (active-p))))
+      (unhighlight)
+      (cond
+       ;; Type is null, we assume we are interactive:
+       ((null type-or-fn) (when should-highlight
+                            (if (region-active-p)
+                                (hi-region (region-beginning) (region-end))
+                              (hi-defun))))
 
-     ;; With a specified type, we aren't interactive, and if we got a
-     ;; symbol, then we can use `demo-it--get-section' for our bounds.
-     ((symbolp type-or-fn)
-      (let ((positions (demo-it--get-section type-or-fn start end)))
-        (hi-region (car positions) (cdr positions))))
+       ;; With a specified type, we aren't interactive, and if we got a
+       ;; symbol, then we can use `demo-it--get-section' for our bounds.
+       ((symbolp type-or-fn)
+        (let ((positions (demo-it--get-section type-or-fn start end)))
+          (goto-char (car positions))
+          (hi-region (car positions) (cdr positions))))
 
-     ;; With string, use `imenu' for matching:
-     ((stringp type-or-fn)   (imenu type-or-fn)
-                             (hi-defun)))))
+       ;; With string, use `imenu' for matching:
+       ((stringp type-or-fn)   (imenu type-or-fn)
+        (hi-defun))))))
 
 
 (defun demo-it-load-fancy-file (file type &optional start end side size)
