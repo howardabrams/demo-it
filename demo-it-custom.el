@@ -144,6 +144,7 @@ or :slow, :medium or :fast.
 This can also be a tuple of two integer values for the random
 number of milliseconds between inserting each character."
   :type '(choice (const :tag "fast"    :fast)
+                 (const :tag "faster"  :faster)
                  (const :tag "medium"  :medium)
                  (const :tag "slow"    :slow)
                  (const :tag "instant" :instant))
@@ -155,6 +156,7 @@ based on the symbol stored in `demo-it--insert-text-speed'.
 The optional value for SPEED override the default value."
   (let ((requested-speed (or speed demo-it--insert-text-speed)))
     (pcase requested-speed
+      ((or :faster :insert-faster)        '(1 . 10))
       ((or :fast   :insert-fast)          '(10 . 100))
       ((or :medium :insert-medium)        '(30 . 500))
       ((or :slow   :insert-slow)          '(200 . 1000))
@@ -205,6 +207,7 @@ integer matching the symbol specified by SIZE, e.g. `:large'."
     (:text-huge        (setq demo-it--text-scale 5))
 
     (:insert-quickly   (setq demo-it--insert-text-speed :instant))
+    (:insert-faster    (setq demo-it--insert-text-speed :faster))
     (:insert-fast      (setq demo-it--insert-text-speed :fast))
     (:insert-medium    (setq demo-it--insert-text-speed :medium))
     (:insert-slow      (setq demo-it--insert-text-speed :slow))
