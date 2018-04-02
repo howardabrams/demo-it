@@ -514,10 +514,12 @@ both buffers."
   "Uses comint-clear-buffer in Emacs >=25, otherwise erase buffer. Better
 compatibility with read-only shell-mode prompts"
   (let ((inhibit-read-only t))
-    (if (fboundp 'comint-clear-buffer)
-        (progn (comint-clear-buffer)
-               t)
-     (erase-buffer))))
+    (if (and (fboundp 'comint-clear-buffer)
+             (derived-mode-p 'comint-mode))
+        (progn
+          (comint-clear-buffer)
+          t)
+      (erase-buffer))))
 
 (defun demo-it-start-shell (&optional directory command name
                                       side size width)
