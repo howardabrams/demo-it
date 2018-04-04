@@ -192,6 +192,20 @@ advance to the next 'org-mode' section."
     (when (fboundp 'org-tree-slide-move-next-tree)
       (org-tree-slide-move-next-tree))))
 
+(defun demo-it-presentation-jump-to-link (link)
+  "Jump the presentation to an org-mode link, showing
+children, but don't change the focus of the current window
+
+Ex: (demo-it-presentation-jump-to-link \"[[file:pres.org::*Some%20Header]]\")"
+  (when demo-it--presentation-buffer
+    (let ((orig-window (current-buffer))
+          (org-link-frame-setup '((file . find-file))))
+      (switch-to-buffer demo-it--presentation-buffer)
+      (org-open-link-from-string link t)
+      (org-narrow-to-subtree)
+      (outline-show-children)
+      (switch-to-buffer orig-window))))
+
 ;; Advance Presentation without Changing Focus
 ;;
 ;;    Advances the org-mode presentation, but after popping into that
