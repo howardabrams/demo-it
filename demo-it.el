@@ -510,6 +510,17 @@ both buffers."
 ;;    Kick off a shell in another window, change to a particular
 ;;    directory, and automatically run something.
 
+(defun demo-it--erase-shell-buffer ()
+  "Uses comint-clear-buffer in Emacs >=25, otherwise erase buffer. Better
+compatibility with read-only shell-mode prompts"
+  (let ((inhibit-read-only t))
+    (if (and (fboundp 'comint-clear-buffer)
+             (derived-mode-p 'comint-mode))
+        (progn
+          (comint-clear-buffer)
+          t)
+      (erase-buffer))))
+
 (defun demo-it-start-shell (&optional directory command name
                                       side size width)
   "Start a shell or eshell instance, and change to DIRECTORY to
@@ -553,8 +564,8 @@ in a particular DIRECTORY."
 
     (text-scale-set (demo-it--get-text-scale size))
 
-    (erase-buffer)
-    (demo-it-insert-shell "" :instant)))
+    (unless (demo-it--erase-shell-buffer)
+      (demo-it-insert-shell "" :instant))))
 
 (defun demo-it--start-shell-reuse (title directory)
   "Attempt to re-use existing shell/eshell with a buffer named
@@ -563,8 +574,8 @@ TITLE in a particular DIRECTORY."
   (when directory
     (goto-char (point-max))
     (demo-it-insert-shell (format "cd %s" directory) :instant)
-    (erase-buffer)
-    (demo-it-insert-shell "" :instant)))
+    (unless (demo-it--erase-shell-buffer)
+      (demo-it-insert-shell "" :instant))))
 
 (defun demo-it--shell-buffer-name (&optional name)
   "Return the buffer NAME for the shell or eshell window."
