@@ -21,7 +21,7 @@ See the following videos as examples of what can be done:
 
   * [[http://www.youtube.com/watch?v=B6jfrrwR10k][Emacs: An Introduction for the Curious]]
   * [[https://www.youtube.com/watch?v=dljNabciEGg][Literate DevOps Programming]]
-  * [[http://www.youtube.com/watch?v=3T00X_sNg4Q][Learn You Some Lisp for Great Good]]
+  * [[https://www.youtube.com/watch?v=_l1oj5CEh7k][Learn You Some Lisp for Great Good]]
 
 Click the following image for a quicker example:
 
