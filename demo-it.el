@@ -348,9 +348,10 @@ demonstration from flipping out."
 (defun demo-it--make-side-window (&optional side size)
   "Opens window on the side of the current frame and selects that window.
 
-SIDE is either `:above', `:below', `:left', `:right' or `:side'
-and defaults to the value of `demo-it--open-windows' (A value of
-`:none' acts as a no-op and doesn't open a window).
+SIDE is either `:above', `:below', `:left', `:right', `:side' (a
+synonym for `:right') or `:none' (for a window that occupies
+the entire frame). Defaults to the value of `demo-it--open-windows'
+(A value of `:none' acts as a no-op and doesn't open a window).
 
 SIZE specifies the width of the window if new window is on the
 side, or the height if the window is either `:above' or
@@ -562,6 +563,7 @@ in a particular DIRECTORY."
       (eshell "new-shell")
       (rename-buffer title))
 
+    (read-only-mode -1)
     (text-scale-set (demo-it--get-text-scale size))
 
     (unless (demo-it--erase-shell-buffer)

@@ -103,12 +103,12 @@ we narrow to it."
        ((symbolp type-or-fn)
         (let ((positions (demo-it--get-section type-or-fn start end)))
           (goto-char (car positions))
-          (hi-region (car positions) (cdr positions))))
+          (hi-region (car positions) (cdr positions))
+          (recenter)))
 
        ;; With string, use `imenu' for matching:
        ((stringp type-or-fn)   (imenu type-or-fn)
         (hi-defun))))))
-
 
 (defun demo-it-load-fancy-file (file type &optional start end side size)
   "Splits window and loads FILE in another window, and use fancy

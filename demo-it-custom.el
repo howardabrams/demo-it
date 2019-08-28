@@ -193,6 +193,7 @@ integer matching the symbol specified by SIZE, e.g. `:large'."
     (:windows-on-left  (setq demo-it--open-windows      :left))
     (:windows-below    (setq demo-it--open-windows      :below))
     (:windows-above    (setq demo-it--open-windows      :above))
+    (:windows-replace  (setq demo-it--open-windows      :none))
 
     (:fullscreen       (setq demo-it--start-fullscreen    t))
     (:full-screen      (setq demo-it--start-fullscreen    t))
