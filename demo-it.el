@@ -557,11 +557,14 @@ the height if the window is `:above' or `:below'."
 in a particular DIRECTORY."
   (let ((default-directory (or directory
                                (file-name-directory (buffer-file-name)))))
-    (if (eq demo-it--shell-or-eshell :shell)
-        (shell title)
+    (cond
+     ((not (keywordp demo-it--shell-or-eshell))
+      (funcall-interactively demo-it--shell-or-eshell title))
 
-      (eshell "new-shell")
-      (rename-buffer title))
+     ((eq demo-it--shell-or-eshell :shell) (shell title))
+     (t (progn
+          (eshell "new-shell")
+          (rename-buffer title))))
 
     (read-only-mode -1)
     (text-scale-set (demo-it--get-text-scale size))
@@ -589,9 +592,9 @@ TITLE in a particular DIRECTORY."
   "Inserts some text in the given shell or eshell. The optional
 SPEED overrides the custom, `demo-it--insert-text-speed'."
   (demo-it-insert command speed)
-  (if (eq demo-it--shell-or-eshell :shell)
-      (comint-send-input)
-    (eshell-send-input)))
+  (if (eq demo-it--shell-or-eshell :eshell)
+      (eshell-send-input)
+    (comint-send-input)))
 
 (defun demo-it-insert (str &optional speed)
   "Insert STR into the current buffer as if you were typing it by hand.
@@ -601,12 +604,15 @@ The SPEED (if non-nil) overrides the default value settings of the
 
     (if (eq timings :instant)
         (insert str)
-      (let ((bottom-limit (car timings))
-            (top-limit    (cdr timings)))
 
+      (let ((entries (if (stringp str)
+                         (string-to-list str)
+                       str))
+            (bottom-limit (car timings))
+            (top-limit    (cdr timings)))
         ;; If we are not inserting instantaneously, then loop over each
         ;; character in the string with a random delay based on this range:
-        (dolist (ch (string-to-list str))
+        (dolist (ch entries)
           (insert ch)
           (let ((tm  (+ (/ bottom-limit 1000.0)
                         (/ (random top-limit) 1000.0))))
