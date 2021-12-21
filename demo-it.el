@@ -214,18 +214,7 @@ keywords, like `:advanced-mode' and `:variable-width'."
      (demo-it--set-properties (cl-remove-if-not 'keywordp '(,@forms)))
      (setq demo-it--steps     (cl-remove-if     'keywordp '(,@forms)))))
 
-(defun demo-it--set-properties (l)
-  "Sets a series of single property values from list, L."
-  ;; First, save all the customization properties...
-  (demo-it-setq-save demo-it--keymap-mode-style
-                     demo-it--shell-or-eshell
-                     demo-it--open-windows
-                     demo-it--text-scale
-                     demo-it--start-fullscreen
-                     demo-it--start-single-window
-                     demo-it--insert-text-speed)
-  ;; Second, set all the new customization properties:
-  (mapc 'demo-it--set-property l))
+
 
 (defun demo-it-end ()
   "End the current demonstration by resetting the values
@@ -751,6 +740,18 @@ the variables."
   (setq demo-it--setq-nilvars nil
         demo-it--setq-voidvars nil))
 
+(defun demo-it--set-properties (l)
+  "Sets a series of single property values from list, L."
+  ;; First, save all the customization properties...
+  (demo-it-setq-save demo-it--keymap-mode-style
+                     demo-it--shell-or-eshell
+                     demo-it--open-windows
+                     demo-it--text-scale
+                     demo-it--start-fullscreen
+                     demo-it--start-single-window
+                     demo-it--insert-text-speed)
+  ;; Second, set all the new customization properties:
+  (mapc 'demo-it--set-property l))
 ;; Helper Functions
 
 (defun demo-it-message-keybinding (key command)
