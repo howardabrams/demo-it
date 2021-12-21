@@ -45,7 +45,7 @@ For instance:
   (defun my-demo-step/show-code ()
     "Helper demo function that displays some source code and
   advances the presentation at one time."
-    (demo-it-load-side-window "example/example.py")
+    (demo-it-load-file "example/example.py" :right)
     (demo-it-presentation-advance))
 
   ;; Order the functions and forms for this presentation:
